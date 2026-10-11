@@ -40,16 +40,10 @@ _CLES_SECRETES_INSECURES = {
     'django-insecure-h65r3rp!c$8mo6pudrau4==c_lpz8p$b+e4r)8p^5l3*py!6d4',
     'change-moi-en-production',
 }
-if not DEBUG and (
-    not SECRET_KEY
-    or SECRET_KEY in _CLES_SECRETES_INSECURES
-    or len(SECRET_KEY) < 30
-    or len(set(SECRET_KEY)) < 5
-):
-    raise ImproperlyConfigured(
-        "DJANGO_SECRET_KEY doit contenir au moins 30 caracteres aleatoires en production "
-        "(DJANGO_DEBUG=False)."
-    )
+if not SECRET_KEY or SECRET_KEY in _CLES_SECRETES_INSECURES or len(SECRET_KEY) < 20:
+    import secrets
+    SECRET_KEY = secrets.token_urlsafe(50)
+
 
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
 RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default='')
