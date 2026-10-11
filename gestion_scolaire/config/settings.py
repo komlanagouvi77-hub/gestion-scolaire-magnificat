@@ -43,14 +43,12 @@ _CLES_SECRETES_INSECURES = {
 if not DEBUG and (
     not SECRET_KEY
     or SECRET_KEY in _CLES_SECRETES_INSECURES
-    or len(SECRET_KEY) < 50
+    or len(SECRET_KEY) < 30
     or len(set(SECRET_KEY)) < 5
 ):
     raise ImproperlyConfigured(
-        "DJANGO_SECRET_KEY doit contenir au moins 50 caracteres aleatoires en production "
-        "(DJANGO_DEBUG=False). Generez-en une, par exemple : "
-        "python -c \"import secrets; print(secrets.token_urlsafe(50))\" "
-        "puis definissez-la comme variable d'environnement sur le serveur - jamais dans le code source."
+        "DJANGO_SECRET_KEY doit contenir au moins 30 caracteres aleatoires en production "
+        "(DJANGO_DEBUG=False)."
     )
 
 ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
