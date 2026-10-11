@@ -233,22 +233,22 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
   let statCards;
   if (estEnseignant) {
     statCards = [
-      { label: "Mes eleves", valeur: eleves.donnees.length },
-      { label: "Mes classes", valeur: repartitionParClasse.length },
-      { label: "Absences signalees", valeur: absences.donnees.length },
+      { label: "Mes eleves", valeur: eleves.donnees.length, lien: "eleves" },
+      { label: "Mes classes", valeur: repartitionParClasse.length, lien: "eleves" },
+      { label: "Absences signalees", valeur: absences.donnees.length, lien: "absences" },
     ];
   } else if (estParent) {
     statCards = [
-      { label: "Mes enfants", valeur: eleves.donnees.length },
-      { label: "Absences", valeur: absences.donnees.length },
-      { label: "Paiements enregistres", valeur: paiements.donnees.length },
+      { label: "Mes enfants", valeur: eleves.donnees.length, lien: "eleves" },
+      { label: "Absences", valeur: absences.donnees.length, lien: "absences" },
+      { label: "Paiements enregistres", valeur: paiements.donnees.length, lien: "paiements" },
     ];
   } else {
     statCards = [
-      { label: "Eleves inscrits", valeur: eleves.donnees.length },
-      { label: "Classes", valeur: classes.donnees.length },
-      { label: "Absences", valeur: absences.donnees.length },
-      { label: "Paiements", valeur: paiements.donnees.length },
+      { label: "Eleves inscrits", valeur: eleves.donnees.length, lien: "eleves" },
+      { label: "Classes", valeur: classes.donnees.length, lien: "classes-gestion" },
+      { label: "Absences", valeur: absences.donnees.length, lien: "absences" },
+      { label: "Paiements", valeur: paiements.donnees.length, lien: "paiements-gestion" },
     ];
   }
 
@@ -335,7 +335,7 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
       {chargementGlobal ? <Spinner texte="Recuperation des donnees..." /> : (
         <>
           <div className={statCards.length === 4 ? "mag-grid-4" : "mag-grid-4-auto"} style={{ marginBottom: "1.5rem" }}>
-            {statCards.map(function (s) { return <CarteStat key={s.label} label={s.label} valeur={s.valeur} />; })}
+            {statCards.map(function (s) { return <CarteStat key={s.label} label={s.label} valeur={s.valeur} lien={s.lien} />; })}
           </div>
 
           {estParent ? (
@@ -373,8 +373,17 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
                   )}
                 </div>
 
-                <div className="mag-card">
-                  <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Recouvrement</div>
+                <div
+                  className="mag-card mag-card-cliquable"
+                  style={{ cursor: "pointer" }}
+                  role="button"
+                  tabIndex={0}
+                  onClick={function () { window.location.hash = "/situation-financiere"; }}
+                >
+                  <div className="mag-stat-label" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.9rem" }}>
+                    <span>Recouvrement</span>
+                    <span style={{ opacity: 0.5, fontSize: "0.85rem" }}>→</span>
+                  </div>
                   <div className="mag-stat-value" style={{ fontSize: "2rem", color: "var(--green-600)" }}>{totalRecouvre.toLocaleString(localeActive())} FCFA</div>
                   <p style={{ fontSize: "0.8rem", color: "var(--ink-600)", marginTop: "0.4rem" }}>Total percu, toutes tranches et classes confondues ({paiements.donnees.length} paiement{paiements.donnees.length > 1 ? "s" : ""}).</p>
                 </div>

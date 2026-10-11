@@ -364,6 +364,21 @@ body {
   box-shadow: 0 8px 24px rgba(14, 116, 144, 0.12);
   border-color: var(--azur-500);
 }
+.mag-card-cliquable {
+  cursor: pointer;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.mag-card-cliquable:active {
+  transform: scale(0.98);
+}
+.mag-card-cliquable .mag-stat-fleche {
+  transition: transform 0.18s ease;
+}
+.mag-card-cliquable:hover .mag-stat-fleche {
+  transform: translateX(4px);
+  color: var(--indigo-700);
+}
 
 .mag-grid-2 > .mag-card,
 .mag-grid-4 > .mag-card,

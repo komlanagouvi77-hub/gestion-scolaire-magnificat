@@ -1,10 +1,24 @@
 // src/components/Widgets.jsx
 import { traduireTexte } from "../localisation.js";
 
-export function CarteStat({ label, valeur }) {
+export function CarteStat({ label, valeur, lien, onClick }) {
+  const estCliquable = !!(lien || onClick);
+  const gererClic = function () {
+    if (onClick) onClick();
+    else if (lien) window.location.hash = "/" + lien.replace(/^#?\/?/, "");
+  };
   return (
-    <div className="mag-card react-fade-in">
-      <div className="mag-stat-label">{typeof label === "string" ? traduireTexte(label) : label}</div>
+    <div
+      className={"mag-card react-fade-in" + (estCliquable ? " mag-card-cliquable" : "")}
+      onClick={estCliquable ? gererClic : undefined}
+      role={estCliquable ? "button" : undefined}
+      tabIndex={estCliquable ? 0 : undefined}
+      style={estCliquable ? { cursor: "pointer" } : undefined}
+    >
+      <div className="mag-stat-label" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+        <span>{typeof label === "string" ? traduireTexte(label) : label}</span>
+        {estCliquable ? <span className="mag-stat-fleche" style={{ opacity: 0.5, fontSize: "0.85rem" }}>→</span> : null}
+      </div>
       <div className="mag-stat-value">{valeur}</div>
     </div>
   );

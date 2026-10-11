@@ -150,7 +150,7 @@ export default function App() {
     contenuPage = <GestionEnseignants token={token} />;
   } else if (page === "parents-gestion") {
     contenuPage = <GestionParents token={token} />;
-  } else if (page === "paiements-gestion") {
+  } else if (page === "paiements-gestion" || (page === "paiements" && role === "administrateur")) {
     contenuPage = <GestionPaiements token={token} />;
   } else if (page === "bulletins") {
     contenuPage = <GestionBulletins token={token} role={role} />;
