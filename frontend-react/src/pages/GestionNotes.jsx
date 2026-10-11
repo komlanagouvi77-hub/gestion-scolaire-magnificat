@@ -124,6 +124,18 @@ export default function GestionNotes({ token, role }) {
           echecs += 1;
         }
       }
+      if (enregistrees > 0) {
+        lister("notes", token).then(function (toutes) {
+          const liste = Array.isArray(toutes) ? toutes : (toutes && Array.isArray(toutes.results) ? toutes.results : []);
+          const filtrees = liste.filter(function (n) {
+            return String(n.matiere) === String(matiereId)
+              && String(n.trimestre) === String(trimestre)
+              && n.type_evaluation === typeEvaluation
+              && elevesDeLaClasse.some(function (e) { return String(e.id) === String(n.eleve); });
+          });
+          setNotesExistantes(filtrees);
+        }).catch(function () {});
+      }
       setMessage({
         type: echecs === 0 ? "succes" : "erreur",
         texte: enregistrees + " note(s) enregistree(s)" + (echecs > 0 ? ", " + echecs + " en erreur." : "."),
@@ -185,14 +197,19 @@ export default function GestionNotes({ token, role }) {
             <div className="mag-card" style={{ textAlign: "center", padding: "2.5rem", border: "1px dashed var(--line)", color: "var(--ink-600)" }}>
               Choisissez une classe, une matiere, un trimestre et un type d'evaluation pour commencer la saisie.
             </div>
-          ) : estVerrouille ? (
-            <Alerte>Ce trimestre est verrouille par l'administration : les notes ne peuvent plus etre modifiees.</Alerte>
+          ) : (estVerrouille && !estAdmin) ? (
+            <Alerte>{traduireTexte("Ce trimestre est verrouille par l'administration : les notes ne peuvent plus etre modifiees.")}</Alerte>
           ) : chargementNotes ? (
-            <Spinner texte="Chargement des notes..." />
+            <Spinner texte={traduireTexte("Chargement des notes...")} />
           ) : elevesDeLaClasse.length === 0 ? (
-            <Alerte>Aucun eleve dans cette classe.</Alerte>
+            <Alerte>{traduireTexte("Aucun eleve dans cette classe.")}</Alerte>
           ) : (
             <form onSubmit={soumettre} className="react-fade-in">
+              {estVerrouille && estAdmin ? (
+                <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "rgba(234, 179, 8, 0.12)", border: "1px solid rgba(202, 138, 4, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "var(--ink-800)" }}>
+                  ℹ️ <strong>{traduireTexte("Trimestre verrouille")} :</strong> {traduireTexte("En tant qu'administrateur, vous disposez des droits de saisie et de correction exceptionnelle.")}
+                </div>
+              ) : null}
               <div className="mag-table-wrap">
                 <table className="mag-table mag-table-pro">
                   <thead><tr><th>Eleve</th><th style={{ width: "160px" }}>Note / 20</th></tr></thead>

@@ -39,6 +39,7 @@ const PHRASE_ACCUEIL_PAR_ROLE = {
 };
 
 const RACCOURCIS_ADMIN = [
+  { cle: "notes", titre: "Saisie des notes", texte: "Saisir ou corriger les notes de toutes les classes.", couleur: "#2563EB" },
   { cle: "enseignants-gestion", titre: "Enseignants", texte: "Creer et gerer les comptes enseignants.", couleur: "#1D4E89" },
   { cle: "parents-gestion", titre: "Parents", texte: "Creer et gerer les comptes parents.", couleur: "#7C3AED" },
   { cle: "paiements-gestion", titre: "Comptabilite & Frais", texte: "Enregistrer un paiement, consulter l'historique.", couleur: "#16A34A" },

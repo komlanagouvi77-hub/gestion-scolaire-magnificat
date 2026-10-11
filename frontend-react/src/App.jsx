@@ -27,6 +27,7 @@ import Evenements from "./pages/Evenements.jsx";
 import GestionConges from "./pages/GestionConges.jsx";
 import SituationFinanciere from "./pages/SituationFinanciere.jsx";
 import FicheEleve from "./pages/FicheEleve.jsx";
+import ErrorBoundary from "./components/ErrorBoundary.jsx";
 
 function lirePageDepuisUrl() {
   const hash = window.location.hash.replace(/^#\//, "");
@@ -197,7 +198,9 @@ export default function App() {
       <div className="react-zone-principale">
         <Header utilisateur={utilisateur} role={role} langue={langue} onChangerLangue={changerLangue} parametres={parametres} etapesOnboarding={etapesOnboarding} onDeconnexion={seDeconnecter} onBasculerMenu={function () { setMenuMobileOuvert(function (v) { return !v; }); }} />
         <main className="react-contenu" key={page}>
-          {contenuPage}
+          <ErrorBoundary clePage={page}>
+            {contenuPage}
+          </ErrorBoundary>
         </main>
       </div>
     </div>

@@ -9,7 +9,7 @@ import { Alerte } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
 import useConfirmation from "../hooks/useConfirmation.js";
-import { localeActive } from "../localisation.js";
+import { traduireTexte, localeActive } from "../localisation.js";
 import BoutonSupprimer from "../components/BoutonSupprimer.jsx";
 import RecuPaiementModal from "../components/RecuPaiementModal.jsx";
 
@@ -46,8 +46,10 @@ export default function GestionPaiements({ token }) {
     setStatut("chargement");
     Promise.all([lister("paiements", token), lister("eleves", token)])
       .then(function (resultats) {
-        setPaiements(resultats[0]);
-        setEleves(resultats[1]);
+        const listeP = Array.isArray(resultats[0]) ? resultats[0] : (resultats[0] && Array.isArray(resultats[0].results) ? resultats[0].results : []);
+        const listeE = Array.isArray(resultats[1]) ? resultats[1] : (resultats[1] && Array.isArray(resultats[1].results) ? resultats[1].results : []);
+        setPaiements(listeP);
+        setEleves(listeE);
         setStatut("ok");
       })
       .catch(function () { setStatut("refuse"); });
@@ -126,9 +128,9 @@ export default function GestionPaiements({ token }) {
           <div className="mag-field">
             <label className="mag-label-requis" htmlFor="pai-eleve">Eleve</label>
             <select id="pai-eleve" value={champs.eleveId} onChange={function (e) { modifierChamp("eleveId", e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
-              <option value="">-- Choisir un eleve --</option>
-              {eleves.map(function (el) {
-                return <option key={el.id} value={el.id}>{el.nom} {el.prenom} — {el.classe_nom}</option>;
+              <option value="">-- {traduireTexte("Choisir un eleve")} --</option>
+              {Array.isArray(eleves) && eleves.map(function (el) {
+                return <option key={el.id} value={el.id}>{el.nom} {el.prenom} — {el.classe_nom || "Classe non assignee"}</option>;
               })}
             </select>
           </div>
@@ -164,7 +166,7 @@ export default function GestionPaiements({ token }) {
 
       <div className="mag-section-entete">
         <div className="mag-stat-label">Historique des paiements</div>
-        <span className="mag-compteur-pill">{paiements.length}</span>
+        <span className="mag-compteur-pill">{Array.isArray(paiements) ? paiements.length : 0}</span>
       </div>
 
       {statut === "chargement" ? <Spinner texte="Chargement..." /> : null}
@@ -174,16 +176,16 @@ export default function GestionPaiements({ token }) {
           <table className="mag-table mag-table-pro">
             <thead><tr><th>Eleve</th><th>Tranche</th><th>Montant</th><th>Mode</th><th>Date</th><th>Reference</th><th></th></tr></thead>
             <tbody>
-              {paiements.length === 0 ? (
+              {!Array.isArray(paiements) || paiements.length === 0 ? (
                 <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--ink-600)", padding: "2rem" }}>Aucun paiement enregistre.</td></tr>
               ) : paiements.map(function (p) {
                 return (
                   <tr key={p.id}>
                     <td style={{ fontWeight: 600 }}>{p.eleve_nom || p.eleve}</td>
                     <td>{p.tranche ? p.tranche + "e tranche" : "-"}</td>
-                    <td style={{ fontWeight: 600 }}>{Number(p.montant).toLocaleString(localeActive())} FCFA</td>
+                    <td style={{ fontWeight: 600 }}>{Number(p.montant || 0).toLocaleString(localeActive())} FCFA</td>
                     <td><span className="mag-badge">{p.mode_paiement}</span></td>
-                    <td>{p.date_paiement}</td>
+                    <td>{p.date_paiement || "-"}</td>
                     <td>{p.reference || "-"}</td>
                     <td style={{ whiteSpace: "nowrap" }}>
                       <button type="button" className="mag-btn-lien" onClick={function () { setPaiementPourRecu(p); }}>Recu</button>

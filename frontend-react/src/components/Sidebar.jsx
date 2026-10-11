@@ -1,4 +1,4 @@
-﻿// src/components/Sidebar.jsx
+// src/components/Sidebar.jsx
 import { useState, useEffect } from "react";
 import {
   IconeGrille, IconeEleves, IconeCasquette, IconeCalendrier, IconeCarnet,
@@ -47,7 +47,7 @@ const SECTIONS_NAV = [
 ];
 
 export const ONGLETS_PAR_ROLE = {
-  administrateur: ["dashboard", "eleves", "classes-gestion", "matieres-gestion", "bulletins", "enseignants-gestion", "parents-gestion", "notes", "absences", "emploi-du-temps", "evenements", "paiements-gestion", "situation-financiere", "conges", "annonces", "demandes-acces", "suivi", "import", "parametres"],
+  administrateur: ["dashboard", "eleves", "classes-gestion", "matieres-gestion", "bulletins", "enseignants-gestion", "parents-gestion", "notes", "absences", "emploi-du-temps", "evenements", "paiements-gestion", "paiements", "situation-financiere", "conges", "annonces", "demandes-acces", "suivi", "import", "parametres"],
   enseignant: ["dashboard", "eleves", "bulletins", "notes", "absences", "emploi-du-temps", "evenements", "messagerie", "conges", "annonces"],
   parent: ["dashboard", "eleves", "bulletins", "notes", "absences", "emploi-du-temps", "evenements", "messagerie", "paiements", "annonces"],
 };
