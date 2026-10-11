@@ -47,7 +47,7 @@ const SECTIONS_NAV = [
 ];
 
 export const ONGLETS_PAR_ROLE = {
-  administrateur: ["dashboard", "eleves", "classes-gestion", "matieres-gestion", "bulletins", "enseignants-gestion", "parents-gestion", "notes", "absences", "emploi-du-temps", "evenements", "paiements-gestion", "paiements", "situation-financiere", "conges", "annonces", "demandes-acces", "suivi", "import", "parametres"],
+  administrateur: ["dashboard", "eleves", "classes-gestion", "matieres-gestion", "bulletins", "enseignants-gestion", "parents-gestion", "notes", "absences", "emploi-du-temps", "evenements", "paiements-gestion", "situation-financiere", "conges", "annonces", "demandes-acces", "suivi", "import", "parametres"],
   enseignant: ["dashboard", "eleves", "bulletins", "notes", "absences", "emploi-du-temps", "evenements", "messagerie", "conges", "annonces"],
   parent: ["dashboard", "eleves", "bulletins", "notes", "absences", "emploi-du-temps", "evenements", "messagerie", "paiements", "annonces"],
 };
@@ -128,7 +128,7 @@ export default function Sidebar({ pageActive, utilisateur, role, langue, nomEcol
               {!replie ? <div className="react-sidebar-section-titre">{traduire(section.titre)}</div> : null}
               <ul className="react-nav-liste">
                 {itemsVisibles.map(function (item) {
-                  const estActif = pageActive === item.cle;
+                  const estActif = pageActive === item.cle || (item.cle === "paiements-gestion" && pageActive === "paiements");
                   const Icone = item.icone;
                   return (
                     <li key={item.cle + section.titre}>

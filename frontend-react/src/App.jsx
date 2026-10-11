@@ -182,7 +182,8 @@ export default function App() {
   const nomEcole = parametres ? parametres.nom_ecole : null;
 
   const onglets = ONGLETS_PAR_ROLE[role] || ["dashboard"];
-  const acces_autorise = page === "dashboard" || onglets.indexOf(page) !== -1 || page.indexOf("fiche-eleve/") === 0;
+  const acces_autorise = page === "dashboard" || onglets.indexOf(page) !== -1 || page.indexOf("fiche-eleve/") === 0
+    || (role === "administrateur" && (page === "paiements" || page === "paiements-gestion"));
   if (!acces_autorise) {
     contenuPage = (
       <div className="mag-card" style={{ maxWidth: "520px", textAlign: "center", padding: "2.5rem" }}>
