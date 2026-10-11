@@ -1,0 +1,24 @@
+{% extends "comptes/emails/base_email.html" %}
+
+{% block titre %}Votre demande d'acces{% endblock %}
+{% block statut %}Demande non retenue{% endblock %}
+
+{% block contenu %}
+<p style="margin:0 0 16px;">Bonjour {{ prenom }},</p>
+<p style="margin:0 0 16px;">
+  Nous vous informons que votre demande d'acces a l'espace
+  <strong>{{ type_compte_label }}</strong> n'a malheureusement pas ete retenue
+  par l'administration.
+</p>
+{% if motif %}
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; background-color:#F7F1DE; border-radius:8px; margin:0 0 20px;">
+  <tr>
+    <td style="padding:16px 20px; font-family: Arial, Helvetica, sans-serif; font-size:14px; color:#0F172A;">
+      <span style="display:block; font-size:11px; font-weight:bold; letter-spacing:0.04em; text-transform:uppercase; color:#A32424; margin-bottom:4px;">Motif indique</span>
+      {{ motif }}
+    </td>
+  </tr>
+</table>
+{% endif %}
+<p style="margin:0;">Pour toute question, veuillez contacter directement l'etablissement.</p>
+{% endblock %}

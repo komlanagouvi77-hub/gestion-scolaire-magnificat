@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord - Enseignant{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Espace enseignant</span> Bonjour {{ enseignant.get_full_name|default:enseignant.username }}</div>
+<p style="color:var(--ink-600);margin-top:-1rem;margin-bottom:1.6rem;">
+    Specialite : {{ enseignant.specialite|default:"non renseignee" }}
+    &nbsp;·&nbsp;
+    <a href="{% url 'scolarite:saisir_notes' %}" style="color:var(--indigo-950);font-weight:600;">Saisir des notes →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'scolarite:saisir_absences' %}" style="color:var(--indigo-950);font-weight:600;">Saisir les absences →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'communication:messagerie' %}" style="color:var(--indigo-950);font-weight:600;">Messagerie →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'communication:liste_evenements' %}" style="color:var(--indigo-950);font-weight:600;">Calendrier →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'comptes:mes_conges' %}" style="color:var(--indigo-950);font-weight:600;">Demander un conge →</a>
+</p>
+
+<div class="mag-grid-2" style="margin-bottom:1.5rem;">
+    <div class="mag-card">
+        <div class="mag-stat-label" style="margin-bottom:0.7rem;">Mes classes</div>
+        <table class="mag-table" style="border:none;">
+            <tbody>
+                {% for classe in classes %}
+                <tr>
+                    <td style="padding-left:0;">{{ classe }}</td>
+                    <td style="text-align:right;padding-right:0;">
+                        <a href="{% url 'scolarite:gestion_classe' classe.id %}" style="color:var(--indigo-950);font-weight:600;font-size:0.85rem;">Gerer →</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td style="padding-left:0;color:var(--ink-600);">Aucune classe assignee.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mag-card">
+        <div class="mag-stat-label" style="margin-bottom:0.7rem;">Mes matieres</div>
+        <table class="mag-table" style="border:none;">
+            <tbody>
+                {% for matiere in matieres %}
+                <tr><td style="padding-left:0;">{{ matiere }}</td></tr>
+                {% empty %}
+                <tr><td style="padding-left:0;color:var(--ink-600);">Aucune matiere assignee.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mag-card">
+    <div class="mag-stat-label" style="margin-bottom:0.9rem;">Mon emploi du temps</div>
+    <div class="mag-table-wrap">
+    <table class="mag-table">
+        <thead><tr><th>Jour</th><th>Horaire</th><th>Matiere</th><th>Classe</th><th>Salle</th></tr></thead>
+        <tbody>
+            {% for cours in emploi_du_temps %}
+            <tr>
+                <td>{{ cours.get_jour_display }}</td>
+                <td>{{ cours.heure_debut|time:"H:i" }} - {{ cours.heure_fin|time:"H:i" }}</td>
+                <td>{{ cours.matiere }}</td>
+                <td>{{ cours.classe }}</td>
+                <td>{{ cours.salle|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="5" style="text-align:center;color:var(--ink-600);">Aucun cours planifie pour le moment.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+    </div>
+</div>
+{% endblock %}

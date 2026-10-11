@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+{% block titre %}Modifier le parent{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Utilisateurs</span> Modifier {{ parent.get_full_name|default:parent.username }}</div>
+
+<div class="mag-panneau-form" style="max-width:680px;">
+    <form method="post">
+        {% csrf_token %}
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Prenom</label>{{ formulaire.first_name }}</div>
+            <div class="mag-field"><label>Nom</label>{{ formulaire.last_name }}</div>
+            <div class="mag-field"><label>Email</label>{{ formulaire.email }}</div>
+            <div class="mag-field"><label>Telephone</label>{{ formulaire.telephone }}</div>
+        </div>
+        <div class="mag-field"><label>Profession</label>{{ formulaire.profession }}</div>
+        <div class="mag-field">
+            <label>{{ formulaire.password.label }}</label>
+            {{ formulaire.password }}
+            <div style="font-size:0.78rem;color:var(--ink-600);margin-top:0.3rem;">{{ formulaire.password.help_text }}</div>
+        </div>
+        <div class="mag-field">
+            <label>Enfant(s)</label>
+            <div class="mag-checkbox-list-wrap">{{ formulaire.eleves }}</div>
+        </div>
+        <button type="submit" class="mag-btn-primary" style="width:auto;padding:0.6rem 1.8rem;">Enregistrer</button>
+        <a href="{% url 'comptes:liste_parents' %}" class="mag-btn-lien" style="margin-left:0.8rem;">Annuler</a>
+    </form>
+</div>
+{% endblock %}

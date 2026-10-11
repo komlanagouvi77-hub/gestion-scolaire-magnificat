@@ -1,0 +1,541 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titre %}{{ parametres.nom_ecole|default:"Accueil" }}{% endblock %}
+{% block contenu %}
+<style>
+.accueil-fullbleed { margin: -2rem -1.5rem 0; overflow-x: hidden; }
+
+/* ===== Nav ===== */
+.accueil-nav {
+    position: sticky; top: 0; z-index: 40;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.5rem;
+    background: var(--indigo-950);
+    border-bottom: 1px solid rgba(176,138,46,0.35);
+}
+.accueil-nav-marque {
+    display: flex; align-items: center; gap: 0.7rem;
+    color: #fff; font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.05rem;
+    text-decoration: none;
+}
+.accueil-nav-crest {
+    width: 38px; height: 38px; border-radius: 50%;
+    background: var(--gold-500); color: var(--indigo-950);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    box-shadow: 0 0 0 2px rgba(176,138,46,0.35);
+}
+.accueil-nav-crest img { width: 100%; height: 100%; object-fit: cover; }
+.accueil-nav-liens {
+    display: none; align-items: center; gap: 1.6rem;
+}
+.accueil-nav-liens a {
+    color: rgba(255,255,255,0.78); text-decoration: none; font-size: 0.88rem; font-weight: 500;
+}
+.accueil-nav-liens a:hover { color: var(--gold-300); }
+.accueil-nav-droite { display: flex; align-items: center; gap: 0.7rem; }
+.accueil-nav-connexion {
+    background: var(--gold-500); color: var(--indigo-950); font-weight: 600;
+    padding: 0.5rem 1.1rem; border-radius: 7px; text-decoration: none; font-size: 0.85rem;
+    white-space: nowrap;
+}
+.accueil-burger {
+    display: flex; align-items: center; justify-content: center;
+    width: 38px; height: 38px; border-radius: 7px;
+    background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    color: #fff; cursor: pointer;
+}
+.accueil-menu-mobile {
+    display: none;
+    flex-direction: column;
+    background: var(--indigo-950);
+    border-bottom: 1px solid rgba(176,138,46,0.35);
+    padding: 0.5rem 1.5rem 1.2rem;
+}
+.accueil-menu-mobile.ouvert { display: flex; }
+.accueil-menu-mobile a {
+    color: rgba(255,255,255,0.85); text-decoration: none; padding: 0.7rem 0;
+    border-bottom: 1px solid rgba(255,255,255,0.08); font-size: 0.92rem;
+}
+@media (min-width: 860px) {
+    .accueil-nav-liens { display: flex; }
+    .accueil-burger { display: none; }
+}
+
+/* ===== Hero ===== */
+.accueil-hero {
+    background: linear-gradient(150deg, var(--indigo-950) 0%, #0D2E52 55%, var(--indigo-800) 100%);
+    padding: 3.5rem 1.5rem 3rem;
+    text-align: center;
+    color: #fff;
+}
+.accueil-badge {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.68rem;
+    letter-spacing: 0.07em;
+    text-transform: uppercase;
+    color: var(--indigo-950);
+    background: var(--gold-300);
+    padding: 0.35rem 0.8rem;
+    border-radius: 999px;
+    margin-bottom: 1.3rem;
+    font-weight: 600;
+}
+.accueil-hero h1 {
+    font-family: 'Fraunces', serif;
+    font-size: 1.9rem;
+    font-weight: 600;
+    max-width: 720px;
+    margin: 0 auto 1rem;
+    line-height: 1.25;
+}
+.accueil-hero p {
+    font-size: 0.98rem;
+    color: rgba(255,255,255,0.8);
+    max-width: 540px;
+    margin: 0 auto 1.8rem;
+    line-height: 1.6;
+}
+.accueil-hero-ctas { display: flex; flex-direction: column; gap: 0.8rem; max-width: 340px; margin: 0 auto; }
+@media (min-width: 560px) { .accueil-hero-ctas { flex-direction: row; max-width: none; justify-content: center; } }
+.accueil-cta-primaire, .accueil-cta-secondaire {
+    display: inline-flex; align-items: center; justify-content: center; gap: 0.5rem;
+    padding: 0.85rem 1.6rem;
+    border-radius: 9px;
+    font-weight: 600;
+    font-size: 0.92rem;
+    text-decoration: none;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, filter 0.15s ease;
+}
+.accueil-cta-primaire {
+    background: var(--gold-500); color: var(--indigo-950);
+    box-shadow: 0 6px 18px rgba(176,138,46,0.3);
+}
+.accueil-cta-primaire:hover { filter: brightness(1.08); transform: translateY(-1px); }
+.accueil-cta-secondaire {
+    background: rgba(255,255,255,0.08); color: #fff; border: 1px solid rgba(255,255,255,0.35);
+}
+.accueil-cta-secondaire:hover { background: rgba(255,255,255,0.16); transform: translateY(-1px); }
+
+/* ===== Bandeau stats ===== */
+.accueil-stats {
+    display: grid; grid-template-columns: 1fr; gap: 0.9rem;
+    max-width: 1000px; margin: -1.8rem auto 0; padding: 0 1.5rem 0;
+    position: relative; z-index: 2;
+}
+@media (min-width: 720px) { .accueil-stats { grid-template-columns: repeat(3, 1fr); } }
+.accueil-stat-carte {
+    background: #fff; border: 1px solid var(--line); border-radius: 10px;
+    padding: 1.1rem 1.3rem;
+    box-shadow: 0 8px 24px rgba(10,37,64,0.1);
+}
+.accueil-stat-label {
+    font-family: 'IBM Plex Mono', monospace; font-size: 0.66rem; letter-spacing: 0.06em;
+    text-transform: uppercase; color: var(--ink-600); margin-bottom: 0.35rem;
+}
+.accueil-stat-valeur { font-family: 'Fraunces', serif; font-weight: 700; font-size: 1.25rem; color: var(--indigo-950); }
+.accueil-stat-sous { font-size: 0.82rem; color: var(--ink-600); margin-top: 0.15rem; }
+
+/* ===== Sections generiques ===== */
+.accueil-section { max-width: 1080px; margin: 0 auto; padding: 4rem 1.5rem 3.5rem; }
+.accueil-eyebrow-clair {
+    display: inline-flex; font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem;
+    letter-spacing: 0.07em; text-transform: uppercase; color: var(--indigo-800);
+    background: var(--paper-100); border: 1px solid var(--line);
+    padding: 0.3rem 0.75rem; border-radius: 999px; margin-bottom: 0.9rem; font-weight: 600;
+}
+.accueil-section-titre {
+    font-family: 'Fraunces', serif; font-size: 1.6rem; font-weight: 600;
+    color: var(--indigo-950); margin-bottom: 0.5rem; line-height: 1.3;
+}
+.accueil-section-sous { color: var(--ink-600); max-width: 560px; margin-bottom: 2.2rem; font-size: 0.94rem; line-height: 1.6; }
+
+/* ===== Modules interactifs ===== */
+.accueil-modules-liste {
+    background: #fff; border: 1px solid var(--line); border-radius: 12px;
+    overflow: hidden; margin-bottom: 1.3rem;
+}
+.accueil-module-item {
+    width: 100%; display: flex; align-items: center; gap: 0.8rem;
+    padding: 1rem 1.2rem; background: none; border: none; border-bottom: 1px solid var(--line);
+    text-align: left; cursor: pointer; font-family: 'Inter', sans-serif;
+    color: var(--indigo-950); font-weight: 600; font-size: 0.86rem;
+}
+.accueil-module-item:last-child { border-bottom: none; }
+.accueil-module-item svg { flex-shrink: 0; width: 19px; height: 19px; color: var(--gold-500); }
+.accueil-module-item.actif { background: var(--indigo-950); color: #fff; }
+.accueil-module-item.actif svg { color: var(--gold-300); }
+.accueil-module-detail {
+    background: var(--paper-50); border: 1px solid var(--line); border-radius: 12px; padding: 1.6rem;
+}
+.accueil-module-detail-tete { display: flex; align-items: flex-start; gap: 1rem; margin-bottom: 1rem; }
+.accueil-module-detail-icone {
+    width: 46px; height: 46px; border-radius: 10px; background: var(--paper-100);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.accueil-module-detail-icone svg { width: 22px; height: 22px; color: var(--indigo-800); }
+.accueil-module-detail-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.64rem; text-transform: uppercase; letter-spacing: 0.06em; color: var(--ink-600); }
+.accueil-module-detail-titre { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1.15rem; color: var(--indigo-950); }
+.accueil-module-detail p { color: var(--ink-600); font-size: 0.9rem; line-height: 1.65; margin-bottom: 1.1rem; }
+.accueil-module-detail ul { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 0.55rem; }
+.accueil-module-detail li { display: flex; align-items: flex-start; gap: 0.55rem; font-size: 0.86rem; color: var(--ink-900); }
+.accueil-module-detail li svg { width: 16px; height: 16px; color: var(--green-600); flex-shrink: 0; margin-top: 0.15rem; }
+
+/* ===== A propos ===== */
+.accueil-apropos { background: var(--paper-100); }
+.accueil-grille-3 { display: grid; grid-template-columns: 1fr; gap: 1.1rem; }
+@media (min-width: 720px) { .accueil-grille-3 { grid-template-columns: repeat(3, 1fr); } }
+.accueil-icone-carte { background: #fff; border: 1px solid var(--line); border-radius: 10px; padding: 1.4rem; }
+.accueil-icone-carte-badge {
+    width: 42px; height: 42px; border-radius: 9px; background: var(--paper-100);
+    display: flex; align-items: center; justify-content: center; margin-bottom: 0.9rem;
+}
+.accueil-icone-carte-badge svg { width: 20px; height: 20px; color: var(--indigo-800); }
+.accueil-icone-carte-titre { font-family: 'Fraunces', serif; font-weight: 600; font-size: 1rem; color: var(--indigo-950); margin-bottom: 0.4rem; }
+.accueil-icone-carte-texte { font-size: 0.86rem; color: var(--ink-600); line-height: 1.55; }
+
+/* ===== Etapes d'acces ===== */
+.accueil-etapes { display: grid; grid-template-columns: 1fr; gap: 1.5rem; counter-reset: etape; }
+@media (min-width: 720px) { .accueil-etapes { grid-template-columns: repeat(3, 1fr); } }
+.accueil-etape { position: relative; padding-left: 2.6rem; }
+.accueil-etape::before {
+    counter-increment: etape; content: counter(etape);
+    position: absolute; left: 0; top: 0;
+    width: 2rem; height: 2rem; border-radius: 50%;
+    background: var(--indigo-950); color: var(--gold-300);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif; font-weight: 700; font-size: 0.95rem;
+}
+.accueil-etape-titre { font-weight: 600; color: var(--indigo-950); margin-bottom: 0.3rem; font-size: 0.94rem; }
+.accueil-etape-texte { font-size: 0.85rem; color: var(--ink-600); line-height: 1.55; }
+
+/* ===== Contact ===== */
+.accueil-contact { background: var(--indigo-950); color: #fff; }
+.accueil-contact .accueil-eyebrow-clair { background: rgba(255,255,255,0.08); border-color: rgba(255,255,255,0.2); color: var(--gold-300); }
+.accueil-contact .accueil-section-titre { color: #fff; }
+.accueil-contact .accueil-section-sous { color: rgba(255,255,255,0.72); }
+.accueil-contact-grille { display: grid; grid-template-columns: 1fr; gap: 0.9rem; margin-bottom: 2rem; }
+@media (min-width: 640px) { .accueil-contact-grille { grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); } }
+.accueil-contact-carte {
+    background: rgba(255,255,255,0.06); border: 1px solid rgba(255,255,255,0.14);
+    border-radius: 10px; padding: 1.1rem; display: flex; gap: 0.8rem; align-items: flex-start;
+}
+.accueil-contact-carte-icone {
+    width: 38px; height: 38px; border-radius: 8px; background: rgba(255,255,255,0.1);
+    display: flex; align-items: center; justify-content: center; flex-shrink: 0;
+}
+.accueil-contact-carte-icone svg { width: 18px; height: 18px; color: var(--gold-300); }
+.accueil-contact-carte-label { font-family: 'IBM Plex Mono', monospace; font-size: 0.63rem; text-transform: uppercase; letter-spacing: 0.05em; color: rgba(255,255,255,0.55); margin-bottom: 0.2rem; }
+.accueil-contact-carte-valeur { font-weight: 600; font-size: 0.92rem; }
+.accueil-contact-carte-sous { font-size: 0.78rem; color: rgba(255,255,255,0.55); margin-top: 0.1rem; }
+.accueil-contact-cta { text-align: center; }
+
+/* ===== Pied ===== */
+.accueil-pied { background: #081B33; color: rgba(255,255,255,0.65); padding: 2.5rem 1.5rem 1.5rem; }
+.accueil-pied-inner { max-width: 1080px; margin: 0 auto; display: grid; grid-template-columns: 1fr; gap: 2rem; }
+@media (min-width: 720px) { .accueil-pied-inner { grid-template-columns: 1.4fr 1fr 1fr; } }
+.accueil-pied-marque { display: flex; align-items: center; gap: 0.6rem; color: #fff; font-family: 'Fraunces', serif; font-weight: 600; margin-bottom: 0.6rem; }
+.accueil-pied-tagline { font-size: 0.83rem; line-height: 1.6; max-width: 320px; }
+.accueil-pied-titre { font-family: 'IBM Plex Mono', monospace; font-size: 0.68rem; text-transform: uppercase; letter-spacing: 0.06em; color: rgba(255,255,255,0.85); margin-bottom: 0.8rem; }
+.accueil-pied-liens { display: flex; flex-direction: column; gap: 0.55rem; }
+.accueil-pied-liens a { color: rgba(255,255,255,0.65); text-decoration: none; font-size: 0.85rem; }
+.accueil-pied-liens a:hover { color: var(--gold-300); }
+.accueil-pied-liens span { font-size: 0.85rem; }
+.accueil-pied-bas { max-width: 1080px; margin: 2rem auto 0; padding-top: 1.3rem; border-top: 1px solid rgba(255,255,255,0.1); font-size: 0.78rem; text-align: center; }
+</style>
+
+<div class="accueil-fullbleed">
+
+<nav class="accueil-nav">
+    <a href="#accueil" class="accueil-nav-marque">
+        <span class="accueil-nav-crest">
+            <img src="{% if parametres.logo %}{{ parametres.logo.url }}{% else %}{% static 'img/logo-ecole-defaut.png' %}{% endif %}" alt="Logo">
+        </span>
+        {{ parametres.nom_ecole|default:"Etablissement" }}
+    </a>
+    <div class="accueil-nav-liens">
+        <a href="#modules">Modules</a>
+        <a href="#apropos">A propos</a>
+        <a href="#contact">Contact</a>
+    </div>
+    <div class="accueil-nav-droite">
+        <a href="{% url 'application_react' %}" class="accueil-nav-connexion">Connexion</a>
+        <button type="button" class="accueil-burger" onclick="document.getElementById('accueil-menu-mobile').classList.toggle('ouvert')" aria-label="Menu">
+            <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+        </button>
+    </div>
+</nav>
+<div class="accueil-menu-mobile" id="accueil-menu-mobile">
+    <a href="#modules">Modules</a>
+    <a href="#apropos">A propos de l'etablissement</a>
+    <a href="#contact">Contact</a>
+</div>
+
+<div class="accueil-hero" id="accueil">
+    <div class="accueil-badge">Plateforme de gestion scolaire</div>
+    <h1>{{ parametres.nom_ecole|default:"Votre etablissement" }}, pilote depuis un seul espace numerique</h1>
+    <p>Notes, bulletins, absences, paiements et communication avec les familles : tout est centralise, accessible depuis un telephone, une tablette ou un ordinateur.</p>
+    <div class="accueil-hero-ctas">
+        <a href="{% url 'application_react' %}" class="accueil-cta-primaire">
+            Acceder a mon espace
+            <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></svg>
+        </a>
+        <a href="{% url 'comptes:demande_acces' %}" class="accueil-cta-secondaire">Demander un acces parent</a>
+    </div>
+</div>
+
+<div class="accueil-stats">
+    <div class="accueil-stat-carte">
+        <div class="accueil-stat-label">Conformite pedagogique</div>
+        <div class="accueil-stat-valeur">Moyennes ponderees</div>
+        <div class="accueil-stat-sous">Calcul automatique par coefficient</div>
+    </div>
+    <div class="accueil-stat-carte">
+        <div class="accueil-stat-label">Disponibilite</div>
+        <div class="accueil-stat-valeur">Accessible partout</div>
+        <div class="accueil-stat-sous">Mobile, tablette et ordinateur</div>
+    </div>
+    <div class="accueil-stat-carte">
+        <div class="accueil-stat-label">Securite des acces</div>
+        <div class="accueil-stat-valeur">Espace par role</div>
+        <div class="accueil-stat-sous">Administration, enseignants, parents</div>
+    </div>
+</div>
+
+<div class="accueil-section" id="modules">
+    <div class="accueil-eyebrow-clair">Fonctionnalites</div>
+    <div class="accueil-section-titre">Ce que propose la plateforme</div>
+    <div class="accueil-section-sous">Un espace distinct pour l'administration, les enseignants et les parents, chacun avec les outils qui lui correspondent. Touchez un module pour en savoir plus.</div>
+
+    <div class="accueil-modules-liste" id="accueil-liste-modules">
+        <button type="button" class="accueil-module-item actif" data-module="0">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/></svg>
+            Notes &amp; Bulletins
+        </button>
+        <button type="button" class="accueil-module-item" data-module="1">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+            Absences &amp; Discipline
+        </button>
+        <button type="button" class="accueil-module-item" data-module="2">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="13" rx="2"/><line x1="2" y1="11" x2="22" y2="11"/></svg>
+            Scolarite &amp; Paiements
+        </button>
+        <button type="button" class="accueil-module-item" data-module="3">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg>
+            Messagerie parents-enseignants
+        </button>
+        <button type="button" class="accueil-module-item" data-module="4">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+            Suivi pedagogique
+        </button>
+        <button type="button" class="accueil-module-item" data-module="5">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Import d'eleves en masse
+        </button>
+    </div>
+
+    <div class="accueil-module-detail" id="accueil-detail-module"></div>
+</div>
+
+<div class="accueil-section accueil-apropos" id="apropos">
+    <div class="accueil-eyebrow-clair">Notre etablissement</div>
+    <div class="accueil-section-titre">A propos de {{ parametres.nom_ecole|default:"l'etablissement" }}</div>
+    <div class="accueil-section-sous">{{ parametres.adresse|default:"" }}</div>
+    <div class="accueil-grille-3">
+        <div class="accueil-icone-carte">
+            <div class="accueil-icone-carte-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+            </div>
+            <div class="accueil-icone-carte-titre">Annee scolaire active</div>
+            <div class="accueil-icone-carte-texte">{{ parametres.annee_scolaire_active|default:"—" }}</div>
+        </div>
+        <div class="accueil-icone-carte">
+            <div class="accueil-icone-carte-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+            </div>
+            <div class="accueil-icone-carte-titre">Systeme de periodes</div>
+            <div class="accueil-icone-carte-texte">{{ parametres.get_systeme_periodes_display|default:"—" }}</div>
+        </div>
+        <div class="accueil-icone-carte">
+            <div class="accueil-icone-carte-badge">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div class="accueil-icone-carte-titre">Localisation</div>
+            <div class="accueil-icone-carte-texte">{{ parametres.adresse|default:"—" }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="accueil-section">
+    <div class="accueil-eyebrow-clair">Comment ca marche</div>
+    <div class="accueil-section-titre">Un espace pret en trois etapes</div>
+    <div class="accueil-section-sous">L'acces se fait uniquement sur invitation de l'etablissement : aucune inscription libre.</div>
+    <div class="accueil-etapes">
+        <div class="accueil-etape">
+            <div class="accueil-etape-titre">Un compte est cree</div>
+            <div class="accueil-etape-texte">L'administration cree votre compte (enseignant ou parent) ou valide votre demande d'acces.</div>
+        </div>
+        <div class="accueil-etape">
+            <div class="accueil-etape-titre">Connexion securisee</div>
+            <div class="accueil-etape-texte">Vous vous connectez avec vos identifiants depuis n'importe quel appareil.</div>
+        </div>
+        <div class="accueil-etape">
+            <div class="accueil-etape-titre">Acces a votre espace</div>
+            <div class="accueil-etape-texte">Vous retrouvez automatiquement les outils correspondant a votre role.</div>
+        </div>
+    </div>
+</div>
+
+<div class="accueil-section accueil-contact" id="contact">
+    <div class="accueil-eyebrow-clair">Nous contacter</div>
+    <div class="accueil-section-titre">Contactez l'etablissement</div>
+    <div class="accueil-section-sous">Une question sur un acces ou sur votre espace ? Contactez directement l'etablissement.</div>
+    <div class="accueil-contact-grille">
+        {% if parametres.adresse %}
+        <div class="accueil-contact-carte">
+            <div class="accueil-contact-carte-icone">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 12-9 12s-9-5-9-12a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+            </div>
+            <div>
+                <div class="accueil-contact-carte-label">Adresse</div>
+                <div class="accueil-contact-carte-valeur">{{ parametres.adresse }}</div>
+            </div>
+        </div>
+        {% endif %}
+        {% if parametres.telephone %}
+        <div class="accueil-contact-carte">
+            <div class="accueil-contact-carte-icone">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.127.96.361 1.903.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            </div>
+            <div>
+                <div class="accueil-contact-carte-label">Telephone</div>
+                <div class="accueil-contact-carte-valeur">{{ parametres.telephone }}</div>
+            </div>
+        </div>
+        {% endif %}
+        {% if parametres.email %}
+        <div class="accueil-contact-carte">
+            <div class="accueil-contact-carte-icone">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2 7 12 13 22 7"/></svg>
+            </div>
+            <div>
+                <div class="accueil-contact-carte-label">Adresse e-mail</div>
+                <div class="accueil-contact-carte-valeur">{{ parametres.email }}</div>
+                <div class="accueil-contact-carte-sous">Reponse par l'etablissement</div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    <div class="accueil-contact-cta">
+        <a href="{% url 'comptes:demande_acces' %}" class="accueil-cta-primaire">Faire une demande d'acces</a>
+    </div>
+</div>
+
+<footer class="accueil-pied">
+    <div class="accueil-pied-inner">
+        <div>
+            <div class="accueil-pied-marque">
+                <span class="accueil-nav-crest">
+                    <img src="{% if parametres.logo %}{{ parametres.logo.url }}{% else %}{% static 'img/logo-ecole-defaut.png' %}{% endif %}" alt="Logo">
+                </span>
+                {{ parametres.nom_ecole|default:"Etablissement" }}
+            </div>
+            <div class="accueil-pied-tagline">Plateforme de gestion scolaire : pedagogie, absences, paiements et communication reunis dans un seul espace, accessible depuis un telephone.</div>
+        </div>
+        <div>
+            <div class="accueil-pied-titre">Raccourcis</div>
+            <div class="accueil-pied-liens">
+                <a href="#modules">Modules</a>
+                <a href="{% url 'application_react' %}">Connexion</a>
+                <a href="{% url 'comptes:demande_acces' %}">Demande d'acces</a>
+            </div>
+        </div>
+        <div>
+            <div class="accueil-pied-titre">Etablissement</div>
+            <div class="accueil-pied-liens">
+                <span>{{ parametres.adresse|default:"" }}</span>
+                {% if parametres.telephone %}<span>{{ parametres.telephone }}</span>{% endif %}
+                {% if parametres.email %}<span>{{ parametres.email }}</span>{% endif %}
+            </div>
+        </div>
+    </div>
+    <div class="accueil-pied-bas">© {% now "Y" %} {{ parametres.nom_ecole|default:"Etablissement" }}. Tous droits reserves.</div>
+</footer>
+
+</div>
+
+<script>
+(function () {
+    var modules = [
+        {
+            titre: "Notes &amp; Bulletins",
+            label: "Module pedagogique",
+            texte: "Saisie des notes par matiere et par trimestre, calcul automatique des moyennes ponderees par coefficient, generation de bulletins au format PDF prets a imprimer.",
+            points: ["Moyennes ponderees calculees automatiquement", "Bulletins PDF officiels par trimestre", "Verrouillage des notes une fois validees"],
+            icone: '<path d="M2 9l10-5 10 5-10 5-10-5z"/><path d="M6 11v5c0 1.5 3 3 6 3s6-1.5 6-3v-5"/>'
+        },
+        {
+            titre: "Absences &amp; Discipline",
+            label: "Module de suivi",
+            texte: "Suivi quotidien des presences par classe et par cours, avec observations comportementales visibles ou non par les parents selon leur nature.",
+            points: ["Appel enregistre par cours", "Observations disciplinaires horodatees", "Visibilite parametrable pour les parents"],
+            icone: '<rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/>'
+        },
+        {
+            titre: "Scolarite &amp; Paiements",
+            label: "Module financier",
+            texte: "Enregistrement des paiements de scolarite par tranche, recu numerique imprimable et situation financiere consultable pour chaque eleve.",
+            points: ["Paiements enregistres par tranche", "Recu genere automatiquement", "Situation financiere par eleve"],
+            icone: '<rect x="2" y="6" width="20" height="13" rx="2"/><line x1="2" y1="11" x2="22" y2="11"/>'
+        },
+        {
+            titre: "Messagerie parents-enseignants",
+            label: "Module de communication",
+            texte: "Echanges directs entre enseignants et parents, strictement limites aux classes et aux enfants concernes.",
+            points: ["Conversations liees a une classe ou un eleve", "Acces reserve aux personnes concernees", "Historique conserve"],
+            icone: '<path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>'
+        },
+        {
+            titre: "Suivi pedagogique",
+            label: "Module administration",
+            texte: "Vue d'ensemble pour l'administration : qui a termine la saisie des notes, qui est en retard, classe par classe et matiere par matiere.",
+            points: ["Tableau de suivi par classe et matiere", "Detection des saisies en retard", "Reservee au profil administrateur"],
+            icone: '<path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>'
+        },
+        {
+            titre: "Import d'eleves en masse",
+            label: "Module administration",
+            texte: "Ajout de plusieurs eleves d'un coup a partir d'un fichier CSV, avec un rapport d'erreurs detaille ligne par ligne.",
+            points: ["Import par fichier CSV", "Rapport d'erreurs ligne par ligne", "Gain de temps en debut d'annee"],
+            icone: '<path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/>'
+        }
+    ];
+
+    var boutons = document.querySelectorAll('.accueil-module-item');
+    var zoneDetail = document.getElementById('accueil-detail-module');
+
+    function afficher(i) {
+        var m = modules[i];
+        zoneDetail.innerHTML =
+            '<div class="accueil-module-detail-tete">' +
+                '<div class="accueil-module-detail-icone"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round">' + m.icone + '</svg></div>' +
+                '<div><div class="accueil-module-detail-label">' + m.label + '</div><div class="accueil-module-detail-titre">' + m.titre + '</div></div>' +
+            '</div>' +
+            '<p>' + m.texte + '</p>' +
+            '<ul>' + m.points.map(function (p) {
+                return '<li><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>' + p + '</li>';
+            }).join('') + '</ul>';
+
+        boutons.forEach(function (b) { b.classList.remove('actif'); });
+        boutons[i].classList.add('actif');
+    }
+
+    boutons.forEach(function (b) {
+        b.addEventListener('click', function () { afficher(parseInt(b.dataset.module, 10)); });
+    });
+
+    afficher(0);
+})();
+</script>
+{% endblock %}

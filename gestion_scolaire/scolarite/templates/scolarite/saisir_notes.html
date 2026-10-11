@@ -1,0 +1,93 @@
+{% extends "base.html" %}
+{% block titre %}Saisir des notes{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Enseignant</span> Saisir des notes</div>
+
+{% if messages %}
+  {% for message in messages %}
+    <div style="padding:0.7rem 0.9rem;margin-bottom:1rem;background:#E7F1EB;border:1px solid var(--green-600);color:var(--green-600);">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<div class="mag-card" style="margin-bottom:1.5rem;">
+    <form method="get">
+        <div class="mag-grid-4" style="align-items:end;">
+            <div>
+                <label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:0.3rem;">Classe</label>
+                <select name="classe" class="form-select" style="width:100%;padding:0.5rem;border:1px solid var(--line);">
+                    <option value="">--</option>
+                    {% for classe in classes %}
+                    <option value="{{ classe.id }}" {% if classe_selectionnee.id == classe.id %}selected{% endif %}>{{ classe }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:0.3rem;">Matiere</label>
+                <select name="matiere" style="width:100%;padding:0.5rem;border:1px solid var(--line);">
+                    <option value="">--</option>
+                    {% for matiere in matieres %}
+                    <option value="{{ matiere.id }}" {% if matiere_selectionnee.id == matiere.id %}selected{% endif %}>{{ matiere }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:0.3rem;">Trimestre</label>
+                <select name="trimestre" style="width:100%;padding:0.5rem;border:1px solid var(--line);">
+                    <option value="">--</option>
+                    {% for valeur, libelle in trimestres %}
+                    <option value="{{ valeur }}" {% if trimestre_selectionne == valeur %}selected{% endif %}>{{ libelle }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div>
+                <label style="font-size:0.82rem;font-weight:600;display:block;margin-bottom:0.3rem;">Type</label>
+                <select name="type_evaluation" style="width:100%;padding:0.5rem;border:1px solid var(--line);">
+                    <option value="">--</option>
+                    {% for valeur, libelle in types_evaluation %}
+                    <option value="{{ valeur }}" {% if type_selectionne == valeur %}selected{% endif %}>{{ libelle }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        <button type="submit" class="mag-btn-primary" style="width:auto;padding:0.55rem 1.5rem;margin-top:1rem;">Afficher les eleves</button>
+    </form>
+</div>
+
+{% if eleves %}
+{% if trimestre_verrouille %}
+<div style="padding:0.9rem 1.1rem;margin-bottom:1.2rem;background:#F5EBD1;border:1px solid var(--red-600);color:var(--red-600);font-weight:600;">
+    Ce trimestre est verrouille par l'administration : la saisie de notes est desactivee.
+</div>
+{% endif %}
+<form method="post">
+    {% csrf_token %}
+    <input type="hidden" name="classe" value="{{ classe_selectionnee.id }}">
+    <input type="hidden" name="matiere" value="{{ matiere_selectionnee.id }}">
+    <input type="hidden" name="trimestre" value="{{ trimestre_selectionne }}">
+    <input type="hidden" name="type_evaluation" value="{{ type_selectionne }}">
+
+    <div class="mag-table-wrap">
+<table class="mag-table">
+        <thead>
+            <tr><th>Matricule</th><th>Eleve</th><th style="text-align:center;">Note / 20</th></tr>
+        </thead>
+        <tbody>
+            {% for eleve in eleves %}
+            <tr>
+                <td style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;">{{ eleve.matricule }}</td>
+                <td>{{ eleve.nom }} {{ eleve.prenom }}</td>
+                <td style="text-align:center;">
+                    <input type="number" step="0.01" min="0" max="20" name="note_{{ eleve.id }}"
+                           style="width:80px;padding:0.35rem;border:1px solid var(--line);text-align:center;" {% if trimestre_verrouille %}disabled{% endif %}>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+    <button type="submit" name="enregistrer" value="1" class="mag-btn-primary" style="width:auto;padding:0.6rem 2rem;margin-top:1rem;" {% if trimestre_verrouille %}disabled{% endif %}>Enregistrer les notes</button>
+</form>
+{% elif classe_selectionnee %}
+<p style="color:var(--ink-600);">Aucun eleve dans cette classe.</p>
+{% endif %}
+{% endblock %}

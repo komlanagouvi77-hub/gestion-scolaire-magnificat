@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>{% block titre %}Gestion Scolaire Magnificat{% endblock %}</title>
+    <link href="{% static 'css/magnificat.css' %}" rel="stylesheet">
+
+    <!-- PWA : installation sur l'ecran d'accueil du telephone -->
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#131C33">
+    <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+    <link rel="icon" href="{% static 'icons/favicon-32.png' %}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Magnificat">
+</head>
+<body>
+
+    {% if user.is_authenticated %}
+    <div class="mag-navbar">
+        <div class="mag-navbar-inner">
+            <a href="{% url 'comptes:apres_connexion' %}" class="brand" style="text-decoration:none;">
+                <span class="crest"><img src="{% static 'img/logo-ecole-defaut.png' %}" alt="Blason Magnificat"></span>Complexe Scolaire Magnificat
+            </a>
+            <div class="mag-navbar-links">
+                <a href="{% url 'scolarite:liste_bulletins' %}" class="btn-mag-outline" style="text-decoration:none;">Bulletins</a>
+                <a href="{% url 'communication:liste_evenements' %}" class="btn-mag-outline" style="text-decoration:none;">Calendrier</a>
+                {% if user.parent or user.enseignant %}
+                <a href="{% url 'communication:messagerie' %}" class="btn-mag-outline" style="text-decoration:none;">Messagerie</a>
+                {% endif %}
+                <span class="user-name">{{ user.get_full_name|default:user.username }}</span>
+                <span class="role-seal">{{ user.get_role_display|default:"?"|first|upper }}</span>
+                <form method="post" action="{% url 'comptes:logout' %}" style="margin:0;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-mag-outline">Se déconnecter</button>
+                </form>
+            </div>
+        </div>
+    </div>
+    {% endif %}
+
+    <div class="mag-container">
+        {% block contenu %}{% endblock %}
+    </div>
+
+    <script>
+        if ("serviceWorker" in navigator) {
+            window.addEventListener("load", function () {
+                navigator.serviceWorker.register("{% static 'js/sw.js' %}").catch(function () {
+                    // Installation silencieuse : si ca echoue, le site continue de
+                    // fonctionner normalement, juste sans mode PWA/offline.
+                });
+            });
+        }
+    </script>
+
+</body>
+</html>

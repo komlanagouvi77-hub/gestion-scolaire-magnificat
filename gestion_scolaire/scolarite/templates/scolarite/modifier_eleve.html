@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block titre %}Modifier l'eleve{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Utilisateurs</span> Modifier {{ eleve.nom }} {{ eleve.prenom }}</div>
+
+<div class="mag-panneau-form" style="max-width:520px;">
+    <form method="post" enctype="multipart/form-data">
+        {% csrf_token %}
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Nom</label>{{ formulaire.nom }}</div>
+            <div class="mag-field"><label>Prenom</label>{{ formulaire.prenom }}</div>
+        </div>
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Date de naissance</label>{{ formulaire.date_naissance }}</div>
+            <div class="mag-field"><label>Sexe</label>{{ formulaire.sexe }}</div>
+        </div>
+        <div class="mag-field"><label>Classe</label>{{ formulaire.classe }}</div>
+        <div class="mag-field"><label>Photo</label>{{ formulaire.photo }}</div>
+        <button type="submit" class="mag-btn-primary" style="width:auto;padding:0.6rem 1.8rem;">Enregistrer</button>
+        <a href="{% url 'scolarite:fiche_eleve' eleve.id %}" class="mag-btn-lien" style="margin-left:0.8rem;">Annuler</a>
+    </form>
+</div>
+
+<div class="mag-card" style="max-width:520px;margin-top:1.5rem;border-top-color:var(--red-600);">
+    <div class="mag-stat-label" style="color:var(--red-600);margin-bottom:0.7rem;">Zone dangereuse</div>
+    <p style="font-size:0.85rem;color:var(--ink-600);margin-bottom:1rem;">
+        Cette action est definitive et supprime aussi toutes les notes, absences et bulletins de cet eleve.
+    </p>
+    <form method="post" action="{% url 'scolarite:supprimer_eleve' eleve.id %}" onsubmit="return confirm('Supprimer definitivement {{ eleve.nom }} {{ eleve.prenom }} ? Cette action est irreversible.');">
+        {% csrf_token %}
+        <button type="submit" style="background:var(--red-600);color:#fff;border:none;padding:0.55rem 1.4rem;border-radius:6px;font-weight:600;cursor:pointer;">Supprimer cet eleve</button>
+    </form>
+</div>
+{% endblock %}

@@ -1,0 +1,40 @@
+{% extends "base.html" %}
+{% block titre %}Gestion des conges{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Administration</span> Demandes de conge du personnel</div>
+
+{% if messages %}
+  {% for message in messages %}
+    <div style="padding:0.7rem 0.9rem;margin-bottom:1rem;background:#E7F1EB;border:1px solid var(--green-600);color:var(--green-600);">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<table class="mag-table">
+    <thead><tr><th>Demandeur</th><th>Du</th><th>Au</th><th>Motif</th><th>Statut</th><th>Action</th></tr></thead>
+    <tbody>
+        {% for d in demandes %}
+        <tr>
+            <td>{{ d.demandeur.get_full_name|default:d.demandeur.username }}</td>
+            <td>{{ d.date_debut|date:"d/m/Y" }}</td>
+            <td>{{ d.date_fin|date:"d/m/Y" }}</td>
+            <td>{{ d.motif }}</td>
+            <td>{{ d.get_statut_display }}</td>
+            <td>
+                {% if d.statut == "en_attente" %}
+                <form method="post" style="display:inline;">
+                    {% csrf_token %}
+                    <input type="hidden" name="demande_id" value="{{ d.id }}">
+                    <button type="submit" name="action" value="approuver" class="btn-mag-outline" style="color:var(--green-600);border-color:var(--green-600);">Approuver</button>
+                    <button type="submit" name="action" value="refuser" class="btn-mag-outline" style="color:var(--red-600);border-color:var(--red-600);">Refuser</button>
+                </form>
+                {% else %}
+                <span style="color:var(--ink-600);">Traite par {{ d.traite_par.get_full_name|default:d.traite_par.username }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:var(--ink-600);">Aucune demande.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

@@ -1,0 +1,21 @@
+{% extends "base.html" %}
+{% block titre %}Modifier la matiere{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Configuration</span> Modifier {{ matiere.nom }}</div>
+
+<div class="mag-panneau-form" style="max-width:460px;">
+    <form method="post">
+        {% csrf_token %}
+        <div class="mag-field">
+            <label>Nom</label>
+            {{ formulaire.nom }}
+        </div>
+        <div class="mag-field">
+            <label>Coefficient</label>
+            {{ formulaire.coefficient }}
+        </div>
+        <button type="submit" class="mag-btn-primary" style="width:auto;padding:0.6rem 1.8rem;">Enregistrer</button>
+        <a href="{% url 'scolarite:liste_matieres' %}" class="mag-btn-lien" style="margin-left:0.8rem;">Annuler</a>
+    </form>
+</div>
+{% endblock %}

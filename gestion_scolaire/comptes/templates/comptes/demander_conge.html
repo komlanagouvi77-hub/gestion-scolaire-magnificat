@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+{% block titre %}Demander un conge{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Ressources humaines</span> Demander un conge</div>
+
+{% if messages %}
+  {% for message in messages %}
+    <div style="padding:0.7rem 0.9rem;margin-bottom:1.2rem;background:{% if message.tags == 'error' %}#F5EBD1;border:1px solid var(--red-600);color:var(--red-600){% else %}#E7F1EB;border:1px solid var(--green-600);color:var(--green-600){% endif %};border-radius:6px;">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<div class="mag-card" style="max-width:520px;margin-bottom:2rem;">
+    <div class="mag-stat-label" style="margin-bottom:0.9rem;">Nouvelle demande</div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mag-field">
+            <label for="id_date_debut">Date de debut</label>
+            <input type="date" name="date_debut" id="id_date_debut" required>
+        </div>
+        <div class="mag-field">
+            <label for="id_date_fin">Date de fin</label>
+            <input type="date" name="date_fin" id="id_date_fin" required>
+        </div>
+        <div class="mag-field">
+            <label for="id_motif">Motif</label>
+            <input type="text" name="motif" id="id_motif" placeholder="Ex: Conge maladie, evenement familial..." required>
+        </div>
+        <button type="submit" class="mag-btn-primary" style="width:auto;padding:0.65rem 1.8rem;">Envoyer la demande</button>
+    </form>
+</div>
+
+<div class="mag-page-title" style="font-size:1.3rem;margin-bottom:1rem;">Mes demandes</div>
+
+<div class="mag-table-wrap">
+<table class="mag-table">
+    <thead><tr><th>Du</th><th>Au</th><th>Motif</th><th>Statut</th><th>Traite par</th></tr></thead>
+    <tbody>
+        {% for d in mes_demandes %}
+        <tr>
+            <td>{{ d.date_debut|date:"d/m/Y" }}</td>
+            <td>{{ d.date_fin|date:"d/m/Y" }}</td>
+            <td>{{ d.motif }}</td>
+            <td>
+                {% if d.statut == "approuvee" %}
+                <span class="mag-badge" style="background:#E7F1EB;color:var(--green-600);border-color:var(--green-600);">Approuvee</span>
+                {% elif d.statut == "refusee" %}
+                <span class="mag-badge" style="background:#F5EBD1;color:var(--red-600);border-color:var(--red-600);">Refusee</span>
+                {% else %}
+                <span class="mag-badge">En attente</span>
+                {% endif %}
+            </td>
+            <td>{{ d.traite_par.get_full_name|default:d.traite_par.username|default:"—" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:var(--ink-600);padding:2rem;">Vous n'avez pas encore fait de demande de conge.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord - Parent{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Espace parent</span> Bonjour {{ parent.get_full_name|default:parent.username }}</div>
+<p style="margin-top:-1rem;margin-bottom:1.6rem;">
+    <a href="{% url 'communication:messagerie' %}" style="color:var(--indigo-950);font-weight:600;">Messagerie →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'communication:liste_evenements' %}" style="color:var(--indigo-950);font-weight:600;">Calendrier scolaire →</a>
+</p>
+
+<div class="mag-card" style="margin-bottom:1.5rem;">
+    <div class="mag-stat-label" style="margin-bottom:0.9rem;">Mes enfants</div>
+    <table class="mag-table" style="border:none;">
+        <tbody>
+            {% for eleve in eleves %}
+            <tr>
+                <td style="padding-left:0;">{{ eleve.nom }} {{ eleve.prenom }} — {{ eleve.classe }}</td>
+                <td style="text-align:right;padding-right:0;font-family:'IBM Plex Mono',monospace;font-size:0.8rem;color:var(--ink-600);">{{ eleve.matricule }}</td>
+            </tr>
+            {% empty %}
+            <tr><td style="padding-left:0;color:var(--ink-600);">Aucun enfant rattache a ce compte.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="mag-grid-2">
+    <div class="mag-card">
+        <div class="mag-stat-label" style="margin-bottom:0.9rem;">Absences recentes</div>
+        <table class="mag-table" style="border:none;">
+            <tbody>
+                {% for a in absences %}
+                <tr>
+                    <td style="padding-left:0;">{{ a.eleve.nom }} — {{ a.date|date:"d/m/Y" }}</td>
+                    <td style="text-align:right;padding-right:0;">{% if a.justifiee %}Justifiee{% else %}<span style="color:var(--red-600);">Non justifiee</span>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td style="padding-left:0;color:var(--ink-600);">Aucune absence enregistree.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mag-card">
+        <div class="mag-stat-label" style="margin-bottom:0.9rem;">Paiements recents</div>
+        <table class="mag-table" style="border:none;">
+            <tbody>
+                {% for p in paiements %}
+                <tr>
+                    <td style="padding-left:0;">{{ p.eleve.nom }} — {{ p.date_paiement|date:"d/m/Y" }}</td>
+                    <td style="text-align:right;padding-right:0;font-family:'IBM Plex Mono',monospace;">{{ p.montant }} FCFA</td>
+                </tr>
+                {% empty %}
+                <tr><td style="padding-left:0;color:var(--ink-600);">Aucun paiement enregistre.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,54 @@
+{% extends "base.html" %}
+{% block titre %}Bulletins{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Registre</span> Bulletins scolaires</div>
+
+{% if messages %}
+  {% for message in messages %}
+    <div style="padding:0.7rem 0.9rem;margin-bottom:1rem;font-size:0.88rem;
+        {% if message.tags == 'error' %}background:#F5EBD1;border:1px solid var(--red-600);color:var(--red-600);
+        {% else %}background:#E7F1EB;border:1px solid var(--green-600);color:var(--green-600);{% endif %}">
+        {{ message }}
+    </div>
+  {% endfor %}
+{% endif %}
+
+<div class="mag-table-wrap">
+<table class="mag-table">
+    <thead>
+        <tr>
+            <th>Eleve</th>
+            <th>Classe</th>
+            {% for valeur, libelle in trimestres %}
+            <th style="text-align:center;">{{ libelle }}</th>
+            {% endfor %}
+        </tr>
+    </thead>
+    <tbody>
+        {% for eleve in eleves %}
+        <tr>
+            <td>{{ eleve.nom }} {{ eleve.prenom }} <span style="font-family:'IBM Plex Mono',monospace;font-size:0.78rem;color:var(--ink-600);">({{ eleve.matricule }})</span></td>
+            <td>{{ eleve.classe|default:"-" }}</td>
+            {% for valeur, libelle in trimestres %}
+            <td style="text-align:center;">
+                {% for b in eleve.bulletins.all %}
+                    {% if b.trimestre == valeur %}
+                        <a href="{% url 'scolarite:telecharger_bulletin' b.id %}" class="btn-mag-outline" style="text-decoration:none;color:var(--indigo-950);border-color:var(--indigo-950);display:inline-block;">Telecharger</a>
+                    {% endif %}
+                {% endfor %}
+                {% if est_administrateur %}
+                <form method="post" action="{% url 'scolarite:generer_bulletin' eleve.id valeur %}" style="display:inline;">
+                    {% csrf_token %}
+                    <button type="submit" class="btn-mag-outline" style="margin-top:0.3rem;display:block;margin-left:auto;margin-right:auto;">Generer</button>
+                </form>
+                {% endif %}
+            </td>
+            {% endfor %}
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:var(--ink-600);">Aucun eleve.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

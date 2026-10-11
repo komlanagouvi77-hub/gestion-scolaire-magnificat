@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+{% block titre %}Calendrier scolaire{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Calendrier</span> Jours feries, vacances &amp; evenements</div>
+
+<table class="mag-table">
+    <thead>
+        <tr><th>Titre</th><th>Type</th><th>Debut</th><th>Fin</th><th>Description</th></tr>
+    </thead>
+    <tbody>
+        {% for evt in evenements %}
+        <tr>
+            <td>{{ evt.titre }}</td>
+            <td>{{ evt.get_type_evenement_display }}</td>
+            <td>{{ evt.date_debut }}</td>
+            <td>{{ evt.date_fin }}</td>
+            <td>{{ evt.description|default:"-" }}</td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:var(--ink-600);">Aucun evenement pour le moment.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

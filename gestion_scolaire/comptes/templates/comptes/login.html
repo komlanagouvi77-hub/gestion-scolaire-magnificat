@@ -1,0 +1,61 @@
+{% load static %}
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1">
+    <title>Connexion - Gestion Scolaire Magnificat</title>
+    <link href="{% static 'css/magnificat.css' %}" rel="stylesheet">
+
+    <link rel="manifest" href="{% static 'manifest.json' %}">
+    <meta name="theme-color" content="#131C33">
+    <link rel="apple-touch-icon" href="{% static 'icons/apple-touch-icon.png' %}">
+    <link rel="icon" href="{% static 'icons/favicon-32.png' %}">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="Magnificat">
+</head>
+<body>
+
+<div class="mag-login-wrap">
+    <div class="mag-login-card">
+        <div class="crest-big"><img src="{% static 'img/logo-ecole-defaut.png' %}" alt="Blason du Complexe Scolaire Magnificat"></div>
+        <h1>Complexe Scolaire Magnificat</h1>
+        <div class="sub">Systeme de gestion scolaire</div>
+
+        {% if form.errors %}
+        <div style="background:#F5EBD1;border:1px solid var(--red-600);color:var(--red-600);padding:0.7rem 0.9rem;font-size:0.85rem;margin-bottom:1.2rem;">
+            Nom d'utilisateur ou mot de passe incorrect.
+        </div>
+        {% endif %}
+
+        <form method="post">
+            {% csrf_token %}
+            <div class="mag-field">
+                <label for="id_username">Nom d'utilisateur</label>
+                <input type="text" name="username" id="id_username" required autofocus>
+            </div>
+            <div class="mag-field">
+                <label for="id_password">Mot de passe</label>
+                <input type="password" name="password" id="id_password" required>
+            </div>
+            <input type="hidden" name="next" value="{{ next }}">
+            <button type="submit" class="mag-btn-primary">Se connecter</button>
+        </form>
+        <p style="text-align:center;margin-top:1.2rem;font-size:0.85rem;">
+            Pas encore de compte ? <a href="{% url 'comptes:demande_acces' %}" style="color:var(--indigo-700);font-weight:600;">Demander un acces →</a>
+        </p>
+    </div>
+</div>
+
+<script>
+    if ("serviceWorker" in navigator) {
+        window.addEventListener("load", function () {
+            navigator.serviceWorker.register("{% static 'js/sw.js' %}").catch(function () {});
+        });
+    }
+</script>
+
+</body>
+</html>

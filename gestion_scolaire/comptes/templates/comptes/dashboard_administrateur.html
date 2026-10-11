@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block titre %}Tableau de bord - Administrateur{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Vue d'ensemble</span> Tableau de bord — Administration</div>
+
+<p style="margin-top:-1rem;margin-bottom:1.6rem;">
+    <a href="{% url 'scolarite:liste_classes' %}" style="color:var(--indigo-950);font-weight:600;">Classes →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'scolarite:liste_matieres' %}" style="color:var(--indigo-950);font-weight:600;">Matieres →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'comptes:liste_enseignants' %}" style="color:var(--indigo-950);font-weight:600;">Enseignants →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'comptes:liste_parents' %}" style="color:var(--indigo-950);font-weight:600;">Parents →</a>
+    &nbsp;·&nbsp;
+<a href="{% url 'scolarite:importer_eleves' %}" style="color:var(--indigo-950);font-weight:600;">Importer des eleves →</a>
+    &nbsp;·&nbsp;<a href="{% url 'comptes:modifier_parametres' %}" style="color:var(--indigo-950);font-weight:600;">Parametres ecole →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'comptes:gerer_demandes_acces' %}" style="color:var(--indigo-950);font-weight:600;">Demandes d'acces →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'scolarite:liste_cours' %}" style="color:var(--indigo-950);font-weight:600;">Emploi du temps →</a>
+    
+    <br style="margin-bottom:0.3rem;">
+    <a href="{% url 'comptes:gerer_conges' %}" style="color:var(--indigo-950);font-weight:600;">Gerer les conges →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'communication:liste_evenements' %}" style="color:var(--indigo-950);font-weight:600;">Calendrier scolaire →</a>
+    &nbsp;·&nbsp;
+    <a href="{% url 'comptes:demo_react' %}" target="_blank" style="color:var(--indigo-950);font-weight:600;">Demo React (API) →</a>
+</p>
+
+<div class="mag-grid-4">
+    <div class="mag-card">
+        <div class="mag-stat-label">Eleves inscrits</div>
+        <div class="mag-stat-value">{{ nb_eleves }}</div>
+    </div>
+    <div class="mag-card">
+        <div class="mag-stat-label">Classes</div>
+        <div class="mag-stat-value">{{ nb_classes }}</div>
+    </div>
+    <div class="mag-card">
+        <div class="mag-stat-label">Absences</div>
+        <div class="mag-stat-value">{{ nb_absences }}</div>
+    </div>
+    <div class="mag-card">
+        <div class="mag-stat-label">Paiements</div>
+        <div class="mag-stat-value">{{ nb_paiements }}</div>
+    </div>
+</div>
+
+<div style="margin-top:2rem;">
+    <a href="/admin/" class="btn-mag-outline" style="text-decoration:none;color:var(--indigo-950);border-color:var(--indigo-950);">Administration technique complete</a>
+</div>
+{% endblock %}

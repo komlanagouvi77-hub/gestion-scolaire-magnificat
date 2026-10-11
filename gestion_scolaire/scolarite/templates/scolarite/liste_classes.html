@@ -1,0 +1,70 @@
+{% extends "base.html" %}
+{% block titre %}Classes{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Configuration</span> Classes</div>
+
+{% if messages %}
+  {% for message in messages %}
+    <div style="padding:0.7rem 0.9rem;margin-bottom:1rem;background:#E7F1EB;border:1px solid var(--green-600);color:var(--green-600);border-radius:6px;">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<div class="mag-panneau-form" style="margin-bottom:1.8rem;max-width:680px;">
+    <div class="mag-stat-label" style="margin-bottom:0.9rem;">Creer une nouvelle classe</div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mag-grid-4">
+            <div class="mag-field" style="margin-bottom:0;">
+                <label>Nom</label>
+                {{ formulaire.nom }}
+            </div>
+            <div class="mag-field" style="margin-bottom:0;">
+                <label>Niveau</label>
+                {{ formulaire.niveau }}
+            </div>
+            <div class="mag-field" style="margin-bottom:0;">
+                <label>Annee scolaire</label>
+                {{ formulaire.annee_scolaire }}
+            </div>
+            <div style="display:flex;align-items:flex-end;">
+                <button type="submit" class="mag-btn-primary">Creer</button>
+            </div>
+        </div>
+        {% if formulaire.errors %}
+        <div style="color:var(--red-600);font-size:0.85rem;margin-top:0.6rem;">{{ formulaire.errors }}</div>
+        {% endif %}
+    </form>
+</div>
+
+<div class="mag-section-entete">
+    <div class="mag-stat-label">Liste des classes</div>
+    <span class="mag-compteur-pill">{{ classes|length }}</span>
+</div>
+
+<div class="mag-table-wrap">
+<table class="mag-table mag-table-pro">
+    <thead>
+        <tr><th>Nom</th><th>Niveau</th><th>Annee scolaire</th><th style="text-align:center;">Eleves</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for classe in classes %}
+        <tr>
+            <td style="font-weight:600;">{{ classe.nom }}</td>
+            <td><span class="mag-badge">{{ classe.niveau }}</span></td>
+            <td>{{ classe.annee_scolaire }}</td>
+            <td style="text-align:center;">{{ classe.nb_eleves }}</td>
+            <td>
+                <a href="{% url 'scolarite:modifier_classe' classe.id %}" class="mag-btn-lien">Modifier →</a>
+                <form method="post" action="{% url 'scolarite:supprimer_classe' classe.id %}" style="display:inline;" onsubmit="return confirm('Supprimer la classe {{ classe.nom }} ?');">
+                    {% csrf_token %}
+                    <button type="submit" style="background:none;border:none;color:var(--red-600);font-weight:600;font-size:0.83rem;cursor:pointer;padding:0.35rem 0.5rem;">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="5" style="text-align:center;color:var(--ink-600);padding:2rem;">Aucune classe creee.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

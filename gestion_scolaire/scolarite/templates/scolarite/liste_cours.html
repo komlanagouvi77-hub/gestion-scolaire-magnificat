@@ -1,0 +1,66 @@
+{% extends "base.html" %}
+{% block titre %}Emploi du temps{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Configuration</span> Emploi du temps</div>
+
+{% if messages %}
+  {% for message in messages %}
+    <div style="padding:0.7rem 0.9rem;margin-bottom:1rem;background:#E7F1EB;border:1px solid var(--green-600);color:var(--green-600);border-radius:6px;">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+<div class="mag-panneau-form" style="margin-bottom:1.8rem;max-width:760px;">
+    <div class="mag-stat-label" style="margin-bottom:0.9rem;">Ajouter un creneau</div>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Classe</label>{{ formulaire.classe }}</div>
+            <div class="mag-field"><label>Matiere</label>{{ formulaire.matiere }}</div>
+        </div>
+        <div class="mag-field"><label>Enseignant</label>{{ formulaire.enseignant }}</div>
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Jour</label>{{ formulaire.jour }}</div>
+            <div class="mag-field"><label>Salle</label>{{ formulaire.salle }}</div>
+        </div>
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Heure de debut</label>{{ formulaire.heure_debut }}</div>
+            <div class="mag-field"><label>Heure de fin</label>{{ formulaire.heure_fin }}</div>
+        </div>
+        {% if formulaire.errors %}
+        <div style="color:var(--red-600);font-size:0.85rem;margin-bottom:0.8rem;">{{ formulaire.errors }}</div>
+        {% endif %}
+        <button type="submit" class="mag-btn-primary" style="width:auto;padding:0.6rem 1.8rem;">Ajouter le creneau</button>
+    </form>
+</div>
+
+<div class="mag-section-entete">
+    <div class="mag-stat-label">Creneaux programmes</div>
+    <span class="mag-compteur-pill">{{ cours|length }}</span>
+</div>
+
+<div class="mag-table-wrap">
+<table class="mag-table mag-table-pro">
+    <thead><tr><th>Jour</th><th>Horaire</th><th>Classe</th><th>Matiere</th><th>Enseignant</th><th>Salle</th><th></th></tr></thead>
+    <tbody>
+        {% for c in cours %}
+        <tr>
+            <td style="font-weight:600;">{{ c.get_jour_display }}</td>
+            <td>{{ c.heure_debut|time:"H:i" }} — {{ c.heure_fin|time:"H:i" }}</td>
+            <td><span class="mag-badge">{{ c.classe }}</span></td>
+            <td>{{ c.matiere }}</td>
+            <td>{{ c.enseignant.get_full_name|default:c.enseignant.username }}</td>
+            <td>{{ c.salle|default:"-" }}</td>
+            <td>
+                <form method="post" action="{% url 'scolarite:supprimer_cours' c.id %}" style="display:inline;" onsubmit="return confirm('Supprimer ce creneau ?');">
+                    {% csrf_token %}
+                    <button type="submit" style="background:none;border:none;color:var(--red-600);font-weight:600;font-size:0.83rem;cursor:pointer;padding:0.35rem 0.5rem;">Supprimer</button>
+                </form>
+            </td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="7" style="text-align:center;color:var(--ink-600);padding:2rem;">Aucun creneau programme.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

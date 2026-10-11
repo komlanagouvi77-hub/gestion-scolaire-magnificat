@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block titre %}Gestion de classe{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Classroom management</span> {{ classe }}</div>
+
+{% if est_administrateur %}
+<p style="margin-top:-1rem;margin-bottom:1.5rem;">
+    <a href="{% url 'paiements:situation_financiere' classe.id %}" style="color:var(--indigo-950);font-weight:600;">Situation financiere de la classe →</a>
+</p>
+{% endif %}
+
+<div class="mag-table-wrap">
+<table class="mag-table">
+    <thead>
+        <tr><th>Matricule</th><th>Eleve</th><th style="text-align:center;">Derniere moyenne</th><th style="text-align:center;">Absences non justifiees</th><th style="text-align:center;">Observations negatives</th><th></th></tr>
+    </thead>
+    <tbody>
+        {% for eleve in eleves %}
+        <tr>
+            <td style="font-family:'IBM Plex Mono',monospace;font-size:0.8rem;">{{ eleve.matricule }}</td>
+            <td>{{ eleve.nom }} {{ eleve.prenom }}</td>
+            <td style="text-align:center;">
+                {% if eleve.derniere_moyenne %}{{ eleve.derniere_moyenne }}/20{% else %}-{% endif %}
+            </td>
+            <td style="text-align:center;">
+                {% if eleve.nb_absences_non_justifiees > 0 %}
+                    <span style="color:var(--red-600);font-weight:600;">{{ eleve.nb_absences_non_justifiees }}</span>
+                {% else %}0{% endif %}
+            </td>
+            <td style="text-align:center;">
+                {% if eleve.nb_observations_negatives > 0 %}
+                    <span style="color:var(--red-600);font-weight:600;">{{ eleve.nb_observations_negatives }}</span>
+                {% else %}0{% endif %}
+            </td>
+            <td><a href="{% url 'scolarite:fiche_eleve' eleve.id %}" class="btn-mag-outline" style="text-decoration:none;color:var(--indigo-950);border-color:var(--indigo-950);">Voir la fiche</a></td>
+        </tr>
+        {% empty %}
+        <tr><td colspan="6" style="text-align:center;color:var(--ink-600);">Aucun eleve dans cette classe.</td></tr>
+        {% endfor %}
+    </tbody>
+</table>
+</div>
+{% endblock %}

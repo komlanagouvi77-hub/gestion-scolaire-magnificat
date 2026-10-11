@@ -1,0 +1,113 @@
+{% extends "base.html" %}
+{% load static %}
+{% block titre %}Fiche eleve{% endblock %}
+{% block contenu %}
+<div style="display:flex;align-items:center;gap:1.2rem;margin-bottom:0.3rem;">
+    {% if eleve.photo %}
+    <img src="{{ eleve.photo.url }}" alt="Photo de {{ eleve.nom }}" style="width:64px;height:78px;object-fit:cover;border-radius:6px;border:1px solid var(--line);">
+    {% else %}
+    <div style="width:64px;height:78px;background:var(--paper-100);border:1px solid var(--line);border-radius:6px;display:flex;align-items:center;justify-content:center;color:var(--ink-600);font-size:0.7rem;text-align:center;">Pas de photo</div>
+    {% endif %}
+    <div class="mag-page-title" style="margin-bottom:0;border-bottom:none;padding-bottom:0;"><span class="eyebrow">Fiche eleve</span> {{ eleve.nom }} {{ eleve.prenom }}</div>
+</div>
+<p style="color:var(--ink-600);margin-top:0;margin-bottom:1.5rem;">
+    Matricule : {{ eleve.matricule }} &nbsp;·&nbsp; Classe : {{ eleve.classe }} &nbsp;·&nbsp; Sexe : {{ eleve.get_sexe_display }}
+    {% if est_administrateur %}
+    &nbsp;·&nbsp; <a href="{% url 'scolarite:modifier_eleve' eleve.id %}" class="mag-btn-lien">Modifier →</a>
+    {% endif %}
+</p>
+
+<div class="mag-card" style="margin-bottom:1.5rem;">
+    <div class="mag-stat-label" style="margin-bottom:0.9rem;">Notes</div>
+    <table class="mag-table" style="border:none;">
+        <thead><tr><th>Trimestre</th><th>Matiere</th><th>Type</th><th style="text-align:center;">Note</th></tr></thead>
+        <tbody>
+            {% for note in notes %}
+            <tr>
+                <td>{{ note.get_trimestre_display }}</td>
+                <td>{{ note.matiere }}</td>
+                <td>{{ note.get_type_evaluation_display }}</td>
+                <td style="text-align:center;">{{ note.valeur }}/20</td>
+            </tr>
+            {% empty %}
+            <tr><td colspan="4" style="text-align:center;color:var(--ink-600);">Aucune note enregistree.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<div class="mag-grid-2">
+    <div class="mag-card">
+        <div class="mag-stat-label" style="margin-bottom:0.9rem;">Absences</div>
+        <table class="mag-table" style="border:none;">
+            <tbody>
+                {% for a in absences %}
+                <tr>
+                    <td style="padding-left:0;">{{ a.date|date:"d/m/Y" }}</td>
+                    <td style="text-align:right;padding-right:0;">{% if a.justifiee %}Justifiee{% else %}<span style="color:var(--red-600);">Non justifiee</span>{% endif %}</td>
+                </tr>
+                {% empty %}
+                <tr><td style="padding-left:0;color:var(--ink-600);">Aucune absence.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <div class="mag-card">
+        <div class="mag-stat-label" style="margin-bottom:0.9rem;">Bulletins</div>
+        <table class="mag-table" style="border:none;">
+            <tbody>
+                {% for b in bulletins %}
+                <tr>
+                    <td style="padding-left:0;">{{ b.get_trimestre_display }}</td>
+                    <td style="text-align:right;padding-right:0;">
+                        {% if b.fichier_pdf %}<a href="{% url 'scolarite:telecharger_bulletin' b.id %}">{{ b.moyenne_generale }}/20 — Telecharger</a>{% else %}Non genere{% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td style="padding-left:0;color:var(--ink-600);">Aucun bulletin genere.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<div class="mag-card" style="margin-top:1.2rem;">
+    <div class="mag-stat-label" style="margin-bottom:0.9rem;">Observations comportementales</div>
+
+    {% if peut_ajouter_observation %}
+    <form method="post" style="margin-bottom:1.2rem;padding-bottom:1.2rem;border-bottom:1px solid var(--line);">
+        {% csrf_token %}
+        <div style="display:grid;grid-template-columns:1fr auto;gap:1rem;margin-bottom:0.7rem;">
+            <input type="text" name="contenu" placeholder="Observation..." required style="padding:0.5rem;border:1px solid var(--line);">
+            <select name="type_observation" style="padding:0.5rem;border:1px solid var(--line);">
+                {% for valeur, libelle in types_observation %}
+                <option value="{{ valeur }}">{{ libelle }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <label style="font-size:0.82rem;">
+            <input type="checkbox" name="visible_parent" checked> Visible par le parent
+        </label>
+        <button type="submit" class="mag-btn-primary" style="width:auto;padding:0.45rem 1.2rem;margin-left:1rem;">Ajouter</button>
+    </form>
+    {% endif %}
+
+    <table class="mag-table" style="border:none;">
+        <tbody>
+            {% for o in observations %}
+            <tr>
+                <td style="padding-left:0;">
+                    {% if o.type_observation == "positive" %}<span style="color:var(--green-600);">●</span>
+                    {% elif o.type_observation == "negative" %}<span style="color:var(--red-600);">●</span>
+                    {% else %}<span style="color:var(--ink-600);">●</span>{% endif %}
+                    {{ o.contenu }}
+                </td>
+                <td style="text-align:right;padding-right:0;font-size:0.8rem;color:var(--ink-600);">{{ o.date_observation|date:"d/m/Y" }}</td>
+            </tr>
+            {% empty %}
+            <tr><td style="padding-left:0;color:var(--ink-600);">Aucune observation.</td></tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

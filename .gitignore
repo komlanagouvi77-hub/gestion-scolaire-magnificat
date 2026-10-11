@@ -1,0 +1,17 @@
+# Documents personnels du memoire academique
+redaction/
+memoire_revision/
+
+# Environnements virtuels
+venv/
+.venv/
+env/
+
+# Secrets et logs locaux
+.env
+*.log
+*.sqlite3
+
+# Projet mobile
+mobile-android/
+

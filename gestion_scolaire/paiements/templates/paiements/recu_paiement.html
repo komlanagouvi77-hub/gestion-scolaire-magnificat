@@ -1,0 +1,124 @@
+{% extends "base.html" %}
+{% block titre %}Recu de paiement{% endblock %}
+{% block contenu %}
+<style>
+@media print {
+    .mag-navbar, .no-print { display: none !important; }
+    body { background: #fff; }
+}
+.recu-cadre {
+    max-width: 620px;
+    margin: 0 auto;
+    border: 2px solid var(--indigo-950);
+    border-radius: 10px;
+    padding: 2.2rem;
+    background: #fff;
+    box-shadow: 0 2px 10px rgba(15,23,42,0.06);
+}
+.recu-entete {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    border-bottom: 2px solid var(--gold-500);
+    padding-bottom: 1.2rem;
+    margin-bottom: 1.5rem;
+}
+.recu-crest {
+    width: 52px; height: 52px;
+    border-radius: 50%;
+    background: var(--indigo-950);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    flex-shrink: 0;
+}
+.recu-titre-ecole {
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.2rem;
+    color: var(--indigo-950);
+}
+.recu-sous-titre {
+    font-family: 'IBM Plex Mono', monospace;
+    font-size: 0.72rem;
+    color: var(--ink-600);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+.recu-titre-doc {
+    text-align: center;
+    font-family: 'Fraunces', serif;
+    font-weight: 600;
+    font-size: 1.4rem;
+    color: var(--indigo-950);
+    margin-bottom: 1.5rem;
+}
+.recu-ligne {
+    display: flex;
+    justify-content: space-between;
+    padding: 0.6rem 0;
+    border-bottom: 1px dashed var(--line);
+    font-size: 0.92rem;
+}
+.recu-ligne span:first-child { color: var(--ink-600); }
+.recu-ligne span:last-child { font-weight: 600; color: var(--ink-900); }
+.recu-montant {
+    text-align: center;
+    margin: 1.8rem 0;
+    padding: 1.2rem;
+    background: var(--paper-100);
+    border-radius: 8px;
+}
+.recu-montant-valeur {
+    font-family: 'Fraunces', serif;
+    font-weight: 700;
+    font-size: 2.2rem;
+    color: var(--indigo-950);
+}
+.recu-pied {
+    text-align: center;
+    margin-top: 2rem;
+    font-size: 0.78rem;
+    color: var(--ink-600);
+    font-family: 'IBM Plex Mono', monospace;
+}
+</style>
+
+<div class="no-print" style="max-width:620px;margin:0 auto 1rem;text-align:right;">
+    <button onclick="window.print()" class="mag-btn-primary" style="width:auto;padding:0.5rem 1.4rem;">Imprimer / Enregistrer en PDF</button>
+    <a href="{% url 'paiements:liste_paiements' %}" class="mag-btn-lien">Retour →</a>
+</div>
+
+<div class="recu-cadre">
+    <div class="recu-entete">
+        <div class="recu-crest">{{ parametres.nom_ecole|first|upper }}</div>
+        <div>
+            <div class="recu-titre-ecole">{{ parametres.nom_ecole }}</div>
+            <div class="recu-sous-titre">{{ parametres.adresse }}</div>
+        </div>
+    </div>
+
+    <div class="recu-titre-doc">Reçu de paiement N° {{ paiement.id }}</div>
+
+    <div class="recu-ligne"><span>Eleve</span><span>{{ paiement.eleve.nom }} {{ paiement.eleve.prenom }}</span></div>
+    <div class="recu-ligne"><span>Matricule</span><span>{{ paiement.eleve.matricule }}</span></div>
+    <div class="recu-ligne"><span>Classe</span><span>{{ paiement.eleve.classe|default:"-" }}</span></div>
+    <div class="recu-ligne"><span>Tranche</span><span>{% if paiement.tranche %}{{ paiement.get_tranche_display }}{% else %}-{% endif %}</span></div>
+    <div class="recu-ligne"><span>Mode de paiement</span><span>{{ paiement.get_mode_paiement_display }}</span></div>
+    {% if paiement.reference %}
+    <div class="recu-ligne"><span>Reference</span><span>{{ paiement.reference }}</span></div>
+    {% endif %}
+    <div class="recu-ligne"><span>Annee scolaire</span><span>{{ paiement.annee_scolaire }}</span></div>
+    <div class="recu-ligne"><span>Date</span><span>{{ paiement.date_paiement }}</span></div>
+    <div class="recu-ligne"><span>Enregistre par</span><span>{{ nom_enregistre_par }}</span></div>
+
+    <div class="recu-montant">
+        <div style="font-family:'IBM Plex Mono',monospace;font-size:0.72rem;color:var(--ink-600);text-transform:uppercase;letter-spacing:0.05em;">Montant paye</div>
+        <div class="recu-montant-valeur">{{ paiement.montant }} FCFA</div>
+    </div>
+
+    <div class="recu-pied">Document genere automatiquement — Complexe Scolaire Magnificat</div>
+</div>
+{% endblock %}

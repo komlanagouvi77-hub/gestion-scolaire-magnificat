@@ -1,0 +1,30 @@
+# Environnements virtuels
+venv/
+env/
+.venv/
+
+# Secrets (le vrai fichier ne doit jamais etre commite, seul .env.example l'est)
+.env
+.env.fixed_sqlite
+.env*.local
+
+
+# Django
+*.pyc
+__pycache__/
+*.log
+db.sqlite3
+staticfiles/
+
+# Build React genere automatiquement par build.sh a chaque deploiement
+# (ne pas committer un build fige : il serait desynchronise du code source)
+static/frontend/
+
+# Fichiers uploades par les utilisateurs (photos, logos, bulletins generes...)
+media/
+
+# IDE / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

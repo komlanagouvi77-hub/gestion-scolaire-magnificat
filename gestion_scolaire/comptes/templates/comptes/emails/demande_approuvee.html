@@ -1,0 +1,23 @@
+{% extends "comptes/emails/base_email.html" %}
+
+{% block titre %}Votre compte a ete cree{% endblock %}
+{% block statut %}✓ Demande approuvee{% endblock %}
+
+{% block contenu %}
+<p style="margin:0 0 16px;">Bonjour {{ prenom }},</p>
+<p style="margin:0 0 16px;">
+  Bonne nouvelle : votre demande d'acces a l'espace <strong>{{ type_compte_label }}</strong>
+  a ete approuvee par l'administration.
+</p>
+<p style="margin:0 0 20px;">
+  Votre compte est maintenant actif. Connectez-vous avec le nom d'utilisateur et le mot
+  de passe que vous avez choisis lors de votre demande.
+</p>
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; background-color:#F7F1DE; border-radius:8px; margin:0 0 4px;">
+  <tr>
+    <td style="padding:16px 20px; font-family: 'Courier New', Courier, monospace; font-size:14px; color:#0A2540;">
+      Nom d'utilisateur : <strong>{{ username }}</strong>
+    </td>
+  </tr>
+</table>
+{% endblock %}

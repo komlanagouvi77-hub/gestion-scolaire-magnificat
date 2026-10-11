@@ -1,0 +1,53 @@
+{% extends "base.html" %}
+{% block titre %}Demande d'acces{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Acces</span> Demande d'acces a la plateforme</div>
+
+{% if succes %}
+<div class="mag-card" style="max-width:560px;text-align:center;padding:2.2rem;border-top-color:var(--green-600);">
+    <div class="mag-stat-label" style="color:var(--green-600);margin-bottom:0.6rem;">Demande envoyee</div>
+    <p style="color:var(--ink-600);">
+        Votre demande a bien ete transmise a l'administration. Vous serez informe(e) une fois qu'elle aura ete examinee.
+        Vous pourrez alors vous connecter avec le nom d'utilisateur et le mot de passe que vous venez de choisir.
+    </p>
+    <a href="{% url 'comptes:login' %}" class="mag-btn-lien" style="margin-top:0.8rem;display:inline-block;">Retour a la connexion →</a>
+</div>
+{% else %}
+<div class="mag-panneau-form" style="max-width:600px;">
+    <p style="font-size:0.85rem;color:var(--ink-600);margin-bottom:1.2rem;">
+        Ce formulaire envoie une demande a l'administration de l'etablissement. Votre compte ne sera actif qu'apres validation.
+    </p>
+    <form method="post">
+        {% csrf_token %}
+        <div class="mag-field">
+            <label>{{ formulaire.type_compte.label }}</label>
+            {{ formulaire.type_compte }}
+        </div>
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Prenom</label>{{ formulaire.first_name }}</div>
+            <div class="mag-field"><label>Nom</label>{{ formulaire.last_name }}</div>
+        </div>
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Nom d'utilisateur souhaite</label>{{ formulaire.username_souhaite }}</div>
+            <div class="mag-field"><label>Mot de passe souhaite</label>{{ formulaire.password }}</div>
+        </div>
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Email</label>{{ formulaire.email }}</div>
+            <div class="mag-field"><label>Telephone</label>{{ formulaire.telephone }}</div>
+        </div>
+        <div class="mag-grid-2">
+            <div class="mag-field"><label>Specialite (si Enseignant)</label>{{ formulaire.specialite }}</div>
+            <div class="mag-field"><label>Profession (si Parent)</label>{{ formulaire.profession }}</div>
+        </div>
+        <div class="mag-field">
+            <label>{{ formulaire.matricules_enfants.label }}</label>
+            {{ formulaire.matricules_enfants }}
+        </div>
+        {% if formulaire.errors %}
+        <div style="color:var(--red-600);font-size:0.85rem;margin-bottom:0.8rem;">{{ formulaire.errors }}</div>
+        {% endif %}
+        <button type="submit" class="mag-btn-primary" style="width:auto;padding:0.6rem 1.8rem;">Envoyer la demande</button>
+    </form>
+</div>
+{% endif %}
+{% endblock %}

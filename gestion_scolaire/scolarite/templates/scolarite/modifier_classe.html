@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block titre %}Modifier la classe{% endblock %}
+{% block contenu %}
+<div class="mag-page-title"><span class="eyebrow">Configuration</span> Modifier {{ classe.nom }}</div>
+
+<div class="mag-panneau-form" style="max-width:520px;">
+    <form method="post">
+        {% csrf_token %}
+        <div class="mag-field">
+            <label>Nom</label>
+            {{ formulaire.nom }}
+        </div>
+        <div class="mag-field">
+            <label>Niveau</label>
+            {{ formulaire.niveau }}
+        </div>
+        <div class="mag-field">
+            <label>Annee scolaire</label>
+            {{ formulaire.annee_scolaire }}
+        </div>
+        <button type="submit" class="mag-btn-primary" style="width:auto;padding:0.6rem 1.8rem;">Enregistrer</button>
+        <a href="{% url 'scolarite:liste_classes' %}" class="mag-btn-lien" style="margin-left:0.8rem;">Annuler</a>
+    </form>
+</div>
+{% endblock %}
