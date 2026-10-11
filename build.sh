@@ -4,11 +4,15 @@
 # les fichiers statiques et applique les migrations de base de donnees.
 set -o errexit
 
-echo "--- Compilation du frontend React ---"
-cd frontend-react
-npm install
-npm run build
-cd ..
+if command -v npm > /dev/null 2>&1; then
+    echo "--- Compilation du frontend React ---"
+    cd frontend-react
+    npm install
+    npm run build
+    cd ..
+else
+    echo "--- Node/npm non present : utilisation des assets pre-compiles de static/frontend ---"
+fi
 
 echo "--- Installation des dependances Python ---"
 cd gestion_scolaire

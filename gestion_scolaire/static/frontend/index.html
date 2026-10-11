@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Magnificat — Espace numérique</title>
+  <meta name="description" content="Espace numerique du Complexe Scolaire Magnificat : notes, bulletins, absences, paiements et communication entre l'etablissement, les enseignants et les parents." />
+  <meta name="theme-color" content="#0C4A6E" />
+
+  <!--
+    /static/frontend/ et non des chemins absolus "/xxx" : Vite sert l'application
+    sous /static/frontend/ (voir vite.config.js), et Django ne sert rien a
+    la racine du domaine. Avec des chemins absolus, favicon/icones/manifest
+    repondaient 404 en production (bug corrige ici).
+  -->
+  <link rel="icon" type="image/x-icon" href="/static/frontend/favicon.ico" />
+  <link rel="icon" type="image/png" sizes="32x32" href="/static/frontend/favicon-32.png" />
+  <link rel="icon" type="image/png" sizes="192x192" href="/static/frontend/icon-192.png" />
+  <link rel="apple-touch-icon" sizes="180x180" href="/static/frontend/apple-touch-icon.png" />
+  <link rel="manifest" href="/static/frontend/site.webmanifest" />
+  <script type="module" crossorigin src="/static/frontend/assets/index-CAbZWQ5m.js"></script>
+  <link rel="stylesheet" crossorigin href="/static/frontend/assets/index-DsmmFRRZ.css">
+</head>
+<body>
+  <div id="racine-react"></div>
+  <script>
+    // Enregistre le service worker sous /app/ (et non /static/frontend/,
+    // ou vivent physiquement les fichiers compiles) afin que sa portee
+    // couvre la veritable URL de l'application que l'utilisateur installe
+    // et visite. Voir config/urls.py : servir_service_worker sert le
+    // meme fichier compile a cette URL, avec le bon type MIME.
+    if ("serviceWorker" in navigator && location.pathname.indexOf("/app/") === 0) {
+      window.addEventListener("load", function () {
+        navigator.serviceWorker.register("/app/sw.js", { scope: "/app/" }).catch(function () {});
+      });
+    }
+  </script>
+</body>
+</html>

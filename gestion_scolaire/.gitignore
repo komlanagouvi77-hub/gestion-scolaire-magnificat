@@ -16,9 +16,8 @@ __pycache__/
 db.sqlite3
 staticfiles/
 
-# Build React genere automatiquement par build.sh a chaque deploiement
-# (ne pas committer un build fige : il serait desynchronise du code source)
-static/frontend/
+# Build React pre-compile inclus pour garantir un deploiement cloud sans faille
+# static/frontend/
 
 # Fichiers uploades par les utilisateurs (photos, logos, bulletins generes...)
 media/
