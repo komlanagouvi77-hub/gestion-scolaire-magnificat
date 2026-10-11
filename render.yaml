@@ -13,6 +13,7 @@ services:
     region: frankfurt
     buildCommand: bash build.sh
     startCommand: cd gestion_scolaire && gunicorn config.wsgi --log-file -
+    autoDeploy: true
     envVars:
       - key: DATABASE_URL
         fromDatabase:
