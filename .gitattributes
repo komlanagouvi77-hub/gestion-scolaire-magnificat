@@ -1,0 +1,5 @@
+# Forcer les fins de ligne Unix (LF) pour les scripts executees sous Linux (Render / Docker)
+*.sh text eol=lf
+Procfile text eol=lf
+*.yaml text eol=lf
+*.yml text eol=lf
