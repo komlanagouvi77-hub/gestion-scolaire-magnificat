@@ -206,9 +206,11 @@ export async function soumettreDemandeAcces(donnees) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(donnees),
   });
-  const contenu = await resp.json();
+  const contenu = await resp.json().catch(function () { return {}; });
   if (!resp.ok) {
-    throw new Error(extraireMessageErreur(contenu, "Erreur lors de l'envoi de la demande."));
+    const err = new Error(extraireMessageErreur(contenu, "Erreur lors de l'envoi de la demande."));
+    err.detailsChamps = contenu;
+    throw err;
   }
   return contenu;
 }

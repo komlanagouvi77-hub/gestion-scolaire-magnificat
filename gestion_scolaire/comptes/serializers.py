@@ -1,6 +1,7 @@
+import re
 from rest_framework import serializers
 
-from .models import DemandeConge, DemandeInscription, Enseignant, Parametres, Parent
+from .models import DemandeConge, DemandeInscription, Enseignant, Parametres, Parent, Utilisateur
 
 
 class DemandeCongeSerializer(serializers.ModelSerializer):
@@ -48,9 +49,56 @@ class DemandeInscriptionSerializer(serializers.ModelSerializer):
     Serialiseur pour les demandes d'acces (API, utilisee par React).
     Le mot de passe est ecriture seule et hache immediatement dans
     create() ; jamais stocke en clair ni renvoye dans la reponse.
+    Validation avancee et securisee de tous les champs.
     """
 
-    password = serializers.CharField(write_only=True, min_length=8)
+    password = serializers.CharField(
+        write_only=True,
+        min_length=8,
+        error_messages={
+            "required": "Le mot de passe est obligatoire.",
+            "blank": "Le mot de passe ne peut pas être vide.",
+            "min_length": "Le mot de passe doit comporter au moins 8 caractères.",
+        },
+    )
+    first_name = serializers.CharField(
+        required=True,
+        min_length=2,
+        error_messages={
+            "required": "Le prénom est obligatoire.",
+            "blank": "Veuillez renseigner votre prénom.",
+            "min_length": "Le prénom doit comporter au moins 2 caractères.",
+        },
+    )
+    last_name = serializers.CharField(
+        required=True,
+        min_length=2,
+        error_messages={
+            "required": "Le nom de famille est obligatoire.",
+            "blank": "Veuillez renseigner votre nom de famille.",
+            "min_length": "Le nom doit comporter au moins 2 caractères.",
+        },
+    )
+    username_souhaite = serializers.CharField(
+        required=True,
+        min_length=3,
+        error_messages={
+            "required": "Le nom d'utilisateur est obligatoire.",
+            "blank": "Veuillez renseigner un nom d'utilisateur.",
+            "min_length": "Le nom d'utilisateur doit comporter au moins 3 caractères.",
+        },
+    )
+    email = serializers.EmailField(
+        required=False,
+        allow_blank=True,
+        error_messages={
+            "invalid": "Veuillez entrer une adresse email valide.",
+        },
+    )
+    telephone = serializers.CharField(
+        required=False,
+        allow_blank=True,
+    )
 
     class Meta:
         model = DemandeInscription
@@ -60,6 +108,58 @@ class DemandeInscriptionSerializer(serializers.ModelSerializer):
             "statut", "date_demande",
         ]
         read_only_fields = ["id", "statut", "date_demande"]
+
+    def validate_first_name(self, value):
+        val = value.strip()
+        if len(val) < 2:
+            raise serializers.ValidationError("Le prénom doit comporter au moins 2 caractères.")
+        if not re.search(r"[a-zA-ZÀ-ÿ]", val):
+            raise serializers.ValidationError("Le prénom doit contenir des lettres alphabétiques.")
+        if re.search(r"[0-9]", val):
+            raise serializers.ValidationError("Le prénom ne peut pas comporter de chiffres.")
+        return val.title()
+
+    def validate_last_name(self, value):
+        val = value.strip()
+        if len(val) < 2:
+            raise serializers.ValidationError("Le nom de famille doit comporter au moins 2 caractères.")
+        if not re.search(r"[a-zA-ZÀ-ÿ]", val):
+            raise serializers.ValidationError("Le nom de famille doit contenir des lettres alphabétiques.")
+        if re.search(r"[0-9]", val):
+            raise serializers.ValidationError("Le nom de famille ne peut pas comporter de chiffres.")
+        return val.upper()
+
+    def validate_telephone(self, value):
+        if not value:
+            return ""
+        val = value.strip()
+        if re.search(r"[a-zA-Z]", val):
+            raise serializers.ValidationError("Le numéro de téléphone ne doit contenir que des chiffres (ex: +228 90 12 34 56).")
+        chiffres = re.findall(r"\d", val)
+        if len(chiffres) < 8:
+            raise serializers.ValidationError("Le numéro de téléphone doit comporter au moins 8 chiffres.")
+        return val
+
+    def validate_username_souhaite(self, value):
+        val = value.strip().lower()
+        if len(val) < 3:
+            raise serializers.ValidationError("Le nom d'utilisateur doit comporter au moins 3 caractères.")
+        if not re.match(r"^[a-zA-Z0-9._-]+$", val):
+            raise serializers.ValidationError("L'identifiant ne peut comporter que des lettres, chiffres, points, tirets ou underscores.")
+        if Utilisateur.objects.filter(username__iexact=val).exists():
+            raise serializers.ValidationError("Ce nom d'utilisateur est déjà utilisé par un compte existant.")
+        if DemandeInscription.objects.filter(username_souhaite__iexact=val, statut=DemandeInscription.STATUT_EN_ATTENTE).exists():
+            raise serializers.ValidationError("Une demande avec ce nom d'utilisateur est déjà en attente d'approbation.")
+        return val
+
+    def validate_password(self, value):
+        if len(value) < 8:
+            raise serializers.ValidationError("Le mot de passe doit comporter au moins 8 caractères.")
+        has_letter = any(c.isalpha() for c in value)
+        has_digit = any(c.isdigit() for c in value)
+        if not (has_letter and has_digit):
+            raise serializers.ValidationError("Le mot de passe doit contenir au moins une lettre et un chiffre pour garantir sa sécurité.")
+        return value
 
     def create(self, validated_data):
         from django.contrib.auth.hashers import make_password
