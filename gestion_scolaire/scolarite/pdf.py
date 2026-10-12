@@ -146,7 +146,11 @@ def _resoudre_nom_prof(matiere, notes_matiere, classe=None):
 
     try:
         from comptes.models import Enseignant
-        prof = Enseignant.objects.filter(matieres=matiere).first()
+        prof = None
+        if classe:
+            prof = Enseignant.objects.filter(matieres=matiere, classes=classe).first()
+        if not prof:
+            prof = Enseignant.objects.filter(matieres=matiere).first()
         if prof:
             fn = prof.get_full_name()
             if fn:
