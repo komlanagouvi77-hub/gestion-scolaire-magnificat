@@ -57,18 +57,42 @@ def servir_service_worker(request):
 
 def bulletin_direct_bloque(request, chemin_fichier):
     """
-    Bloque l'acces direct aux PDF de bulletins via /media/bulletins/...
-    Les bulletins contiennent des notes d'eleves (donnee sensible) : ils
-    ne doivent etre accessibles qu'en passant par
-    scolarite.views.telecharger_bulletin_view, qui verifie que
-    l'utilisateur connecte a bien le droit de voir CE bulletin precis
-    (administrateur, enseignant de la classe, ou parent de l'eleve).
-    Sans ce blocage, Django servirait le fichier a QUICONQUE connait ou
-    devine l'URL, sans aucune verification de droits.
+    Securise l'acces direct aux PDF de bulletins via /media/bulletins/...
+    Si l'utilisateur est authentifie (par session Django ou via Token DRF) et autorise,
+    on sert directement le bulletin avec telecharger_bulletin_view.
+    Si la requete est anonyme ou non autorisee, l'acces est refuse (403 Forbidden).
     """
+    from scolarite.models import Bulletin
+    from scolarite.views import telecharger_bulletin_view
+    from rest_framework.authtoken.models import Token
+
+    utilisateur = request.user
+    if not (utilisateur and utilisateur.is_authenticated):
+        auth_header = request.headers.get("Authorization", "")
+        if auth_header.startswith("Token "):
+            cle_token = auth_header.split(" ", 1)[1].strip()
+            token_obj = Token.objects.select_related("user").filter(key=cle_token).first()
+            if token_obj:
+                utilisateur = token_obj.user
+                request.user = utilisateur
+
+    if not (utilisateur and utilisateur.is_authenticated):
+        return HttpResponseForbidden(
+            "Acces direct interdit. Veuillez vous connecter pour acceder a ce bulletin."
+        )
+
+    nom_fichier = Path(chemin_fichier).name
+    bulletin = Bulletin.objects.filter(fichier_pdf__endswith=nom_fichier).first()
+    if not bulletin:
+        bulletin = Bulletin.objects.filter(fichier_pdf__icontains=nom_fichier).first()
+
+    if bulletin:
+        return telecharger_bulletin_view(request, bulletin.id)
+
     return HttpResponseForbidden(
         "Acces direct interdit. Utilisez le bouton de telechargement depuis l'application."
     )
+
 
 
 urlpatterns = [

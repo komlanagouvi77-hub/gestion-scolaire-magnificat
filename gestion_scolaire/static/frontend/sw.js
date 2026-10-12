@@ -6,7 +6,7 @@
 // (JS, CSS, icones, page d'entree) est mise en cache, ce qui suffit a
 // rendre l'application installable et a afficher un ecran de demarrage
 // correct meme sans reseau.
-const CACHE_NOM = "magnificat-coquille-v1";
+const CACHE_NOM = "magnificat-coquille-v2";
 const BASE = self.location.pathname.replace(/sw\.js$/, "");
 
 self.addEventListener("install", function (evt) {
