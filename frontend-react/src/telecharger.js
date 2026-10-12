@@ -1,18 +1,6 @@
 // src/telecharger.js
-// Telecharge un fichier protege (bulletin PDF, etc.) de maniere fiable sur
-// le web ET dans l'application mobile native.
-//
-// Le mecanisme web classique (URL.createObjectURL + <a download>) ne
-// fonctionne QUE dans un vrai navigateur : la webview Android nue de
-// l'application mobile ne sait pas quoi faire d'un clic sur un tel lien -
-// rien ne se produit, sans la moindre erreur visible (verifie : le
-// dossier Telechargements du telephone restait vide apres un clic).
-//
-// Sur mobile natif, on ecrit donc le fichier recupere dans le stockage de
-// l'application (Filesystem), puis on ouvre la feuille de partage systeme
-// (Share) : l'utilisateur peut alors l'enregistrer dans ses fichiers,
-// l'envoyer par WhatsApp/email, etc. - le web garde son comportement
-// habituel de telechargement direct.
+// Télécharge un fichier protégé (bulletin PDF, etc.) de manière fiable sur
+// le web (desktop + mobile Safari / Chrome) ET dans l'application mobile native Capacitor.
 import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
@@ -30,29 +18,66 @@ function blobVersBase64(blob) {
 
 export async function telechargerBlob(blob, nomFichier) {
   if (Capacitor.isNativePlatform()) {
-    const base64 = await blobVersBase64(blob);
-    const resultat = await Filesystem.writeFile({
-      path: nomFichier,
-      data: base64,
-      directory: Directory.Cache,
-    });
-    await Share.share({ title: nomFichier, url: resultat.uri });
-    return;
+    try {
+      const base64 = await blobVersBase64(blob);
+      const resultat = await Filesystem.writeFile({
+        path: nomFichier,
+        data: base64,
+        directory: Directory.Cache,
+      });
+      await Share.share({ title: nomFichier, url: resultat.uri });
+      return;
+    } catch (errNatif) {
+      console.warn("Échec du partage natif Capacitor, repli sur le navigateur:", errNatif);
+    }
   }
 
+  // Comportement standard Web & Mobile Web
   const urlBlob = window.URL.createObjectURL(blob);
   const lien = document.createElement("a");
   lien.href = urlBlob;
   lien.download = nomFichier;
+  lien.rel = "noopener";
+  lien.style.display = "none";
   document.body.appendChild(lien);
   lien.click();
-  lien.remove();
-  window.URL.revokeObjectURL(urlBlob);
+
+  // Ne pas révoquer immédiatement l'URL Blob pour laisser le temps
+  // aux navigateurs mobiles (iOS Safari, Android Chrome) de finaliser le téléchargement
+  setTimeout(function () {
+    try {
+      lien.remove();
+      window.URL.revokeObjectURL(urlBlob);
+    } catch (_) {}
+  }, 5000);
 }
 
 export async function telechargerFichierProtege(url, token, nomFichier) {
-  const reponse = await fetch(url, { headers: { Authorization: "Token " + token } });
-  if (!reponse.ok) throw new Error("Telechargement impossible.");
+  if (!url) {
+    throw new Error("L'adresse de téléchargement est manquante.");
+  }
+
+  const entetes = {};
+  if (token) {
+    entetes["Authorization"] = "Token " + token;
+  }
+
+  const reponse = await fetch(url, { headers: entetes });
+  if (!reponse.ok) {
+    let msgErreur = "Erreur " + reponse.status;
+    try {
+      const json = await reponse.json();
+      if (json && json.detail) {
+        msgErreur = json.detail;
+      }
+    } catch (_) {}
+    throw new Error(msgErreur);
+  }
+
   const blob = await reponse.blob();
+  if (!blob || blob.size === 0) {
+    throw new Error("Le fichier reçu est vide.");
+  }
+
   await telechargerBlob(blob, nomFichier);
 }

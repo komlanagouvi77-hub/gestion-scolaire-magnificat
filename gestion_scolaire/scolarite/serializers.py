@@ -70,13 +70,9 @@ class BulletinSerializer(serializers.ModelSerializer):
 
     def get_fichier_pdf(self, bulletin) -> str | None:
         """
-        Renvoie l'URL de telechargement PROTEGEE (/api/bulletins/<id>/telecharger/),
-        jamais l'URL directe du fichier media (bloquee volontairement, voir
-        config/urls.py : un bulletin contient des notes d'eleve, donc son
-        acces doit toujours passer par une verification de droits).
+        Renvoie l'URL de telechargement PROTEGEE (/api/bulletins/<id>/telecharger/).
+        Le endpoint regenere le PDF a la volee si besoin.
         """
-        if not bulletin.fichier_pdf:
-            return None
         request = self.context.get("request")
         chemin = "/api/bulletins/{}/telecharger/".format(bulletin.pk)
         return request.build_absolute_uri(chemin) if request else chemin

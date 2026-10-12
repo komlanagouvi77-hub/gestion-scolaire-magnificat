@@ -66,7 +66,7 @@ def telecharger_bulletin_view(request, bulletin_id):
     utilisateur = request.user
 
     autorise = False
-    if hasattr(utilisateur, "administrateur"):
+    if hasattr(utilisateur, "administrateur") or utilisateur.is_superuser or utilisateur.is_staff or getattr(utilisateur, "role", "") == "administrateur":
         autorise = True
     elif hasattr(utilisateur, "enseignant"):
         autorise = bulletin.eleve.classe in utilisateur.enseignant.classes.all()
@@ -76,10 +76,38 @@ def telecharger_bulletin_view(request, bulletin_id):
     if not autorise:
         raise PermissionDenied("Vous n'avez pas acces a ce bulletin.")
 
+    import os
+    fichier_manquant = False
     if not bulletin.fichier_pdf:
-        raise Http404("Ce bulletin n'a pas encore ete genere.")
+        fichier_manquant = True
+    else:
+        try:
+            if not os.path.exists(bulletin.fichier_pdf.path):
+                fichier_manquant = True
+        except Exception:
+            fichier_manquant = True
 
-    return FileResponse(bulletin.fichier_pdf.open("rb"), as_attachment=True, filename=bulletin.fichier_pdf.name.split("/")[-1])
+    if fichier_manquant:
+        try:
+            generer_bulletin(bulletin.eleve, bulletin.trimestre)
+            bulletin.refresh_from_db()
+        except Exception as e:
+            raise Http404(f"Ce bulletin ne peut pas être généré : {e}")
+
+    if not bulletin.fichier_pdf:
+        raise Http404("Ce bulletin n'a pas pu être généré.")
+
+    try:
+        f = bulletin.fichier_pdf.open("rb")
+    except Exception:
+        generer_bulletin(bulletin.eleve, bulletin.trimestre)
+        bulletin.refresh_from_db()
+        f = bulletin.fichier_pdf.open("rb")
+
+    nom_fichier = f"bulletin_{bulletin.eleve.matricule}_T{bulletin.trimestre}.pdf"
+    reponse = FileResponse(f, as_attachment=True, filename=nom_fichier, content_type="application/pdf")
+    reponse["Content-Disposition"] = f'attachment; filename="{nom_fichier}"'
+    return reponse
 
 
 @login_required

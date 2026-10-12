@@ -302,16 +302,16 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
         f"{total_notes_definitive:.2f}",
         "Rang :",
         f"{rang_eleve_str}  (sur {total_classes} classés)",
-        f"Moy. la plus forte classe : {moy_forte_str}",
+        f"Moy. la plus forte : {moy_forte_str}",
         "",
     ]
     donnees_tableau.append(ligne_totaux)
 
-    # Ligne 2 de synthese (Moyenne du trimestre)
+    # Ligne 2 de synthese (Moyenne du trimestre & Statistiques)
     ligne_moyenne = [
         f"Moyenne du Trimestre : {moyenne_trimestre_str}", "", "", "", "",
         "", "", "", "",
-        f"Moyenne de la classe : {moy_classe_str}  |  Plus faible : {moy_faible_str}",
+        f"Moy. classe : {moy_classe_str}  |  Plus faible : {moy_faible_str}",
         "",
     ]
     donnees_tableau.append(ligne_moyenne)
@@ -326,15 +326,18 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
     idx_moyenne = nb_lignes_notes + 2
 
     style_tableau = [
-        # En-tete
+        # En-tete des colonnes avec cadre net
         ("BACKGROUND", (0, 0), (-1, 0), colors.HexColor("#0B2545")),
         ("TEXTCOLOR", (0, 0), (-1, 0), colors.white),
         ("FONTNAME", (0, 0), (-1, 0), "Helvetica-Bold"),
         ("FONTSIZE", (0, 0), (-1, 0), 6.5),
         ("ALIGN", (0, 0), (-1, 0), "CENTER"),
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),
-        ("GRID", (0, 0), (-1, nb_lignes_notes), 0.4, colors.HexColor("#94A3B8")),
-        # Corps
+
+        # Cadre complet sur l'integralite du tableau (lignes de cours et totaux)
+        ("GRID", (0, 0), (-1, -1), 0.5, colors.HexColor("#334155")),
+
+        # Lignes des matieres
         ("FONTSIZE", (0, 1), (-1, nb_lignes_notes), 7),
         ("ALIGN", (0, 1), (0, nb_lignes_notes), "LEFT"),
         ("ALIGN", (1, 1), (7, nb_lignes_notes), "CENTER"),
@@ -343,26 +346,33 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
         ("TOPPADDING", (0, 0), (-1, nb_lignes_notes), 2),
         ("BOTTOMPADDING", (0, 0), (-1, nb_lignes_notes), 2),
         ("ROWBACKGROUNDS", (0, 1), (-1, nb_lignes_notes), [colors.white, colors.HexColor("#F8FAFC")]),
-        # Ligne totaux
+
+        # Ligne TOTAL : fusion et mise en valeur
         ("FONTNAME", (0, idx_totaux), (-1, idx_totaux), "Helvetica-Bold"),
         ("FONTSIZE", (0, idx_totaux), (-1, idx_totaux), 7),
-        ("BACKGROUND", (4, idx_totaux), (6, idx_totaux), colors.HexColor("#E2E8F0")),
-        ("ALIGN", (4, idx_totaux), (6, idx_totaux), "CENTER"),
-        ("GRID", (4, idx_totaux), (6, idx_totaux), 0.5, colors.HexColor("#64748B")),
-        ("SPAN", (0, idx_totaux), (3, idx_totaux)),
-        ("ALIGN", (7, idx_totaux), (8, idx_totaux), "LEFT"),
+        ("SPAN", (0, idx_totaux), (4, idx_totaux)),
+        ("ALIGN", (0, idx_totaux), (4, idx_totaux), "RIGHT"),
+        ("BACKGROUND", (0, idx_totaux), (4, idx_totaux), colors.HexColor("#F1F5F9")),
+        ("BACKGROUND", (5, idx_totaux), (6, idx_totaux), colors.HexColor("#E2E8F0")),
+        ("ALIGN", (5, idx_totaux), (6, idx_totaux), "CENTER"),
+        ("ALIGN", (7, idx_totaux), (7, idx_totaux), "CENTER"),
+        ("ALIGN", (8, idx_totaux), (8, idx_totaux), "LEFT"),
         ("SPAN", (9, idx_totaux), (10, idx_totaux)),
+        ("BACKGROUND", (9, idx_totaux), (10, idx_totaux), colors.HexColor("#F1F5F9")),
         ("FONTSIZE", (9, idx_totaux), (10, idx_totaux), 6.5),
-        ("TEXTCOLOR", (9, idx_totaux), (10, idx_totaux), colors.HexColor("#1E293B")),
-        # Ligne moyenne
+
+        # Ligne Moyenne du Trimestre (encadre distinct)
         ("SPAN", (0, idx_moyenne), (4, idx_moyenne)),
         ("FONTNAME", (0, idx_moyenne), (0, idx_moyenne), "Helvetica-Bold"),
         ("FONTSIZE", (0, idx_moyenne), (0, idx_moyenne), 8),
         ("BACKGROUND", (0, idx_moyenne), (4, idx_moyenne), colors.HexColor("#E0F2FE")),
         ("TEXTCOLOR", (0, idx_moyenne), (0, idx_moyenne), colors.HexColor("#0369A1")),
         ("ALIGN", (0, idx_moyenne), (0, idx_moyenne), "CENTER"),
-        ("BOX", (0, idx_moyenne), (4, idx_moyenne), 0.7, colors.HexColor("#0284C7")),
+        ("BOX", (0, idx_moyenne), (4, idx_moyenne), 0.9, colors.HexColor("#0284C7")),
+        ("SPAN", (5, idx_moyenne), (8, idx_moyenne)),
+        ("BACKGROUND", (5, idx_moyenne), (8, idx_moyenne), colors.HexColor("#F8FAFC")),
         ("SPAN", (9, idx_moyenne), (10, idx_moyenne)),
+        ("BACKGROUND", (9, idx_moyenne), (10, idx_moyenne), colors.HexColor("#F1F5F9")),
         ("FONTSIZE", (9, idx_moyenne), (10, idx_moyenne), 6.5),
         ("TEXTCOLOR", (9, idx_moyenne), (10, idx_moyenne), colors.HexColor("#1E293B")),
         ("TOPPADDING", (0, idx_totaux), (-1, idx_moyenne), 2.5),

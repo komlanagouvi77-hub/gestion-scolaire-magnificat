@@ -36,12 +36,14 @@ function OngletGeneration({ token, role }) {
   const telechargerBulletin = async function (bulletin) {
     setEnCoursTelechargement(bulletin.id);
     try {
-      await telechargerFichierProtege(
-        bulletin.fichier_pdf, token,
-        "bulletin_" + bulletin.eleve + "_T" + bulletin.trimestre + ".pdf"
-      );
+      const urlTelechargement = bulletin.fichier_pdf || ("/api/bulletins/" + bulletin.id + "/telecharger/");
+      const nomEleve = (bulletin.eleve_nom || "eleve_" + bulletin.eleve).replace(/[^a-zA-Z0-9_-]/g, "_");
+      const nomFichier = "bulletin_" + nomEleve + "_T" + bulletin.trimestre + ".pdf";
+      await telechargerFichierProtege(urlTelechargement, token, nomFichier);
+      setMessage({ type: "succes", texte: "Bulletin telecharge avec succes." });
     } catch (err) {
-      setMessage({ type: "erreur", texte: "Impossible de telecharger ce bulletin." });
+      console.error("Erreur de telechargement bulletin:", err);
+      setMessage({ type: "erreur", texte: "Impossible de telecharger ce bulletin : " + (err.message || "") });
     }
     setEnCoursTelechargement(null);
   };
@@ -228,17 +230,15 @@ function OngletGeneration({ token, role }) {
                       <td style={{ fontWeight: 600 }}>{b.moyenne_generale}/20</td>
                       <td>{b.rang ? b.rang + "e / " + b.effectif_classe : "-"}</td>
                       <td>
-                        {b.fichier_pdf ? (
-                          <button
-                            type="button"
-                            className="mag-btn-lien"
-                            style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
-                            disabled={enCoursTelechargement === b.id}
-                            onClick={function () { telechargerBulletin(b); }}
-                          >
-                            {enCoursTelechargement === b.id ? "Telechargement..." : "Telecharger →"}
-                          </button>
-                        ) : "-"}
+                        <button
+                          type="button"
+                          className="mag-btn-lien"
+                          style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                          disabled={enCoursTelechargement === b.id}
+                          onClick={function () { telechargerBulletin(b); }}
+                        >
+                          {enCoursTelechargement === b.id ? "Telechargement..." : "Telecharger →"}
+                        </button>
                       </td>
                     </tr>
                   );

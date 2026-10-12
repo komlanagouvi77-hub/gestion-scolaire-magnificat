@@ -41,12 +41,13 @@ export default function FicheEleve({ eleveId, token, role }) {
   const telechargerBulletin = async function (bulletin) {
     setEnCoursTelechargement(bulletin.id);
     try {
-      await telechargerFichierProtege(
-        bulletin.fichier_pdf, token,
-        "bulletin_" + eleve.nom + "_" + eleve.prenom + "_T" + bulletin.trimestre + ".pdf"
-      );
+      const urlTelechargement = bulletin.fichier_pdf || ("/api/bulletins/" + bulletin.id + "/telecharger/");
+      const nomFichier = "bulletin_" + (eleve ? (eleve.nom + "_" + eleve.prenom).replace(/[^a-zA-Z0-9_-]/g, "_") : "eleve") + "_T" + bulletin.trimestre + ".pdf";
+      await telechargerFichierProtege(urlTelechargement, token, nomFichier);
+      setMessage({ type: "succes", texte: "Bulletin telecharge avec succes." });
     } catch (err) {
-      setMessage({ type: "erreur", texte: "Impossible de telecharger ce bulletin." });
+      console.error("Erreur de telechargement bulletin:", err);
+      setMessage({ type: "erreur", texte: "Impossible de telecharger ce bulletin : " + (err.message || "") });
     }
     setEnCoursTelechargement(null);
   };

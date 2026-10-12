@@ -245,7 +245,12 @@ class BulletinViewSet(viewsets.ModelViewSet):
 
     def get_queryset(self):
         utilisateur = self.request.user
-        if hasattr(utilisateur, "administrateur"):
+        if (
+            hasattr(utilisateur, "administrateur")
+            or utilisateur.is_superuser
+            or utilisateur.is_staff
+            or getattr(utilisateur, "role", "") == "administrateur"
+        ):
             return Bulletin.objects.all().order_by("-date_generation", "-pk")
         if hasattr(utilisateur, "enseignant"):
             return Bulletin.objects.filter(
@@ -319,28 +324,43 @@ class BulletinViewSet(viewsets.ModelViewSet):
     def telecharger(self, request, pk=None):
         """
         Telecharge le PDF d'un bulletin en passant par l'API (utilise par le
-        frontend React). Equivalent exact de scolarite.views.telecharger_bulletin_view.
-
-        Important : get_queryset() (ci-dessus) a deja filtre les bulletins
-        auxquels cet utilisateur a droit (ses classes pour un enseignant,
-        ses enfants pour un parent) - get_object_or_404 sur self.get_queryset()
-        renvoie donc naturellement une 404 si l'utilisateur n'a pas le droit
-        de voir ce bulletin precis, sans verification supplementaire a ecrire.
-
-        Avant ce correctif, le frontend React pointait directement vers
-        l'URL /media/bulletins/... du fichier, qui est volontairement
-        bloquee (voir config/urls.py) pour empecher l'acces direct aux
-        bulletins sans verification de droits : le bouton "Telecharger"
-        renvoyait donc une erreur 403.
+        frontend React). Regénère automatiquement à la volée si le fichier
+        physique est manquant (ex: redémarrage serveur ou conteneur éphémère).
         """
         bulletin = get_object_or_404(self.get_queryset(), pk=pk)
+
+        fichier_manquant = False
         if not bulletin.fichier_pdf:
-            raise Http404("Ce bulletin n'a pas encore ete genere.")
-        return FileResponse(
-            bulletin.fichier_pdf.open("rb"),
-            as_attachment=True,
-            filename=bulletin.fichier_pdf.name.split("/")[-1],
-        )
+            fichier_manquant = True
+        else:
+            try:
+                if not os.path.exists(bulletin.fichier_pdf.path):
+                    fichier_manquant = True
+            except Exception:
+                fichier_manquant = True
+
+        if fichier_manquant:
+            try:
+                generer_bulletin(bulletin.eleve, bulletin.trimestre)
+                bulletin.refresh_from_db()
+            except Exception as e:
+                raise Http404(f"Ce bulletin ne peut pas être généré : {e}")
+
+        if not bulletin.fichier_pdf:
+            raise Http404("Ce bulletin n'a pas pu être généré.")
+
+        try:
+            f = bulletin.fichier_pdf.open("rb")
+        except Exception:
+            generer_bulletin(bulletin.eleve, bulletin.trimestre)
+            bulletin.refresh_from_db()
+            f = bulletin.fichier_pdf.open("rb")
+
+        nom_fichier = f"bulletin_{bulletin.eleve.matricule}_T{bulletin.trimestre}.pdf"
+        reponse = FileResponse(f, as_attachment=True, filename=nom_fichier, content_type="application/pdf")
+        reponse["Content-Disposition"] = f'attachment; filename="{nom_fichier}"'
+        reponse["Access-Control-Expose-Headers"] = "Content-Disposition"
+        return reponse
 
 
 class CoursViewSet(viewsets.ModelViewSet):
