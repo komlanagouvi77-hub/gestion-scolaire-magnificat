@@ -214,7 +214,8 @@ class MoyennePondereeParTypeTests(TestCase):
         Note.objects.create(eleve=eleve, matiere=maths, valeur=10, trimestre=1, type_evaluation=Note.TYPE_DEVOIR)
         Note.objects.create(eleve=eleve, matiere=maths, valeur=16, trimestre=1, type_evaluation=Note.TYPE_COMPOSITION)
         bulletin = generer_bulletin(eleve, 1)
-        self.assertEqual(bulletin.moyenne_generale, Decimal("14.00"))
+        # Formule officielle Complexe Scolaire Magnificat : (M.Cla + Compo) / 2 = (10 + 16) / 2 = 13.00
+        self.assertEqual(bulletin.moyenne_generale, Decimal("13.00"))
 
     def test_plusieurs_interros_sont_moyennees(self):
         eleve = self.donnees["eleve"]
@@ -1042,3 +1043,45 @@ class ApiObservationTests(TestCase):
         token = self._obtenir_token("admin1", "Test2026!")
         resp = self.client.get("/api/observations/", HTTP_AUTHORIZATION="Token " + token)
         self.assertEqual(len(resp.json()["results"]), 1)
+
+
+class BulletinOfficielMagnificatTests(TestCase):
+    """
+    Tests de validation du modele officiel de bulletin du Complexe Scolaire Magnificat :
+    - Generation en format Paysage avec QR Code de securite
+    - Page de verification publique accessible sans authentification
+    - Exactitude des formules (M.Cla + Compo) / 2
+    - Rangs de matiere avec suffixe 'ex'
+    """
+
+    def setUp(self):
+        self.donnees = creer_jeu_de_donnees()
+        self.eleve = self.donnees["eleve"]
+        self.maths = self.donnees["maths"]
+        self.francais = self.donnees["francais"]
+
+    def test_page_verification_qr_code_publique(self):
+        Note.objects.create(eleve=self.eleve, matiere=self.maths, valeur=14, trimestre=1)
+        bulletin = generer_bulletin(self.eleve, 1)
+
+        # La page de verification doit etre publique (sans login)
+        reponse = self.client.get(f"/verifier/bulletin/{bulletin.id}/")
+        self.assertEqual(reponse.status_code, 200)
+        self.assertContains(reponse, "Complexe Scolaire Magnificat")
+        self.assertContains(reponse, self.eleve.nom)
+        self.assertContains(reponse, self.eleve.matricule)
+
+    def test_calcul_exact_francais_du_bulletin_modele(self):
+        from .calculs import calculer_detail_matiere
+        # Notes réelles de Français sur le modèle : Devoirs 07, 05, 10 et Compo 06
+        n1 = Note(eleve=self.eleve, matiere=self.francais, valeur=Decimal("7.0"), type_evaluation=Note.TYPE_DEVOIR)
+        n2 = Note(eleve=self.eleve, matiere=self.francais, valeur=Decimal("5.0"), type_evaluation=Note.TYPE_DEVOIR)
+        n3 = Note(eleve=self.eleve, matiere=self.francais, valeur=Decimal("10.0"), type_evaluation=Note.TYPE_DEVOIR)
+        n4 = Note(eleve=self.eleve, matiere=self.francais, valeur=Decimal("6.0"), type_evaluation=Note.TYPE_COMPOSITION)
+
+        detail = calculer_detail_matiere([n1, n2, n3, n4], coef=3)
+        self.assertEqual(detail["m_cla"], Decimal("7.33"))
+        self.assertEqual(detail["compo"], Decimal("6.00"))
+        self.assertEqual(detail["moy_sur_20"], Decimal("6.67"))
+        self.assertEqual(detail["note_definitive"], Decimal("20.01"))
+        self.assertEqual(detail["appreciation"], "Faible. Doit se mettre au travail")

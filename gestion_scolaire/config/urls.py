@@ -9,6 +9,7 @@ from django.contrib import admin
 from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, HttpResponseRedirect
 from django.urls import include, path, re_path
 from django.views.static import serve as servir_fichier_media
+from scolarite.views import verifier_bulletin_public_view
 
 
 def racine_view(request):
@@ -81,6 +82,7 @@ urlpatterns = [
     path('communication/', include('communication.urls')),
     path('paiements/', include('paiements.urls')),
     path('api/', include('config.api_urls')),
+    path('verifier/bulletin/<int:bulletin_id>/', verifier_bulletin_public_view, name='verifier_bulletin_racine'),
 
     # Doit rester AVANT le static(MEDIA_URL...) ci-dessous : Django essaie
     # les urlpatterns dans l'ordre, donc toute requete vers media/bulletins/...

@@ -503,3 +503,27 @@ def supprimer_cours_view(request, cours_id):
     creneau.delete()
     messages.success(request, "Creneau supprime.")
     return redirect("scolarite:liste_cours")
+
+
+def verifier_bulletin_public_view(request, bulletin_id):
+    """
+    Vue publique accessible sans connexion (via scan du QR Code sur le bulletin papier).
+    Permet de verifier l'authenticite et la conformite des notes de l'eleve
+    pour eviter toute falsification.
+    """
+    from comptes.models import Parametres
+    from .services import _recalculer_classement
+
+    bulletin = get_object_or_404(
+        Bulletin.objects.select_related("eleve", "eleve__classe"),
+        pk=bulletin_id,
+    )
+    parametres = Parametres.charger()
+    stats = _recalculer_classement(bulletin.eleve.classe, bulletin.trimestre)
+
+    contexte = {
+        "bulletin": bulletin,
+        "parametres": parametres,
+        "stats": stats,
+    }
+    return render(request, "scolarite/verifier_bulletin.html", contexte)

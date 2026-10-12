@@ -111,10 +111,10 @@ def _recalculer_classement(classe, trimestre):
     """
     Recalcule le rang de chaque bulletin de la classe pour ce trimestre
     (1 = meilleure moyenne), et renvoie des statistiques globales
-    (effectif classe, moyenne la plus forte/faible/de la classe).
+    (effectif classe, moyenne la plus forte/faible/de la classe, nombre d'eleves classes).
     """
     if classe is None:
-        return {"effectif": 0, "moy_forte": None, "moy_faible": None, "moy_classe": None}
+        return {"effectif": 0, "total_classes": 0, "moy_forte": None, "moy_faible": None, "moy_classe": None}
 
     bulletins = list(
         Bulletin.objects.filter(eleve__classe=classe, trimestre=trimestre).order_by("-moyenne_generale")
@@ -124,17 +124,65 @@ def _recalculer_classement(classe, trimestre):
             Bulletin.objects.filter(pk=b.pk).update(rang=rang)
 
     if not bulletins:
-        return {"effectif": 0, "moy_forte": None, "moy_faible": None, "moy_classe": None}
+        return {"effectif": 0, "total_classes": 0, "moy_forte": None, "moy_faible": None, "moy_classe": None}
 
     moyennes = [b.moyenne_generale for b in bulletins]
-    moy_classe = (sum(moyennes) / len(moyennes)).quantize(Decimal("0.01"))
+    moy_classe = (sum(moyennes) / Decimal(len(moyennes))).quantize(Decimal("0.01"))
 
     return {
         "effectif": classe.eleves.count(),
+        "total_classes": len(bulletins),
         "moy_forte": max(moyennes),
         "moy_faible": min(moyennes),
         "moy_classe": moy_classe,
     }
+
+
+def calculer_classement_par_matiere(classe, trimestre):
+    """
+    Calcule pour chaque matiere le rang de chaque eleve (avec gestion des ex-aequo 'ex'
+    fidele a l'exemple officiel : 1er, 6e, 11ex, 23ex...).
+    Retourne : dict {matiere_id: {eleve_id: '6e' | '23ex'}}
+    """
+    if classe is None:
+        return {}
+
+    notes = Note.objects.filter(eleve__classe=classe, trimestre=trimestre).select_related("matiere", "eleve")
+    notes_par_matiere_eleve = {}
+    for note in notes:
+        notes_par_matiere_eleve.setdefault(note.matiere_id, {}).setdefault(note.eleve_id, []).append(note)
+
+    rangs_resultat = {}
+    for matiere_id, eleves_dict in notes_par_matiere_eleve.items():
+        moyennes_eleves = []
+        for eleve_id, notes_list in eleves_dict.items():
+            moy = calculer_moyenne_matiere(notes_list)
+            if moy is not None:
+                moyennes_eleves.append((eleve_id, moy))
+
+        moyennes_eleves.sort(key=lambda item: item[1], reverse=True)
+
+        valeurs_counts = {}
+        for _, val in moyennes_eleves:
+            valeurs_counts[val] = valeurs_counts.get(val, 0) + 1
+
+        rangs_eleves = {}
+        for i, (eleve_id, val) in enumerate(moyennes_eleves):
+            if i > 0 and val == moyennes_eleves[i - 1][1]:
+                rangs_eleves[eleve_id] = rangs_eleves[moyennes_eleves[i - 1][0]]
+            else:
+                rang_num = i + 1
+                est_ex = valeurs_counts[val] > 1
+                if rang_num == 1:
+                    suffix = "ex" if est_ex else "er"
+                    rangs_eleves[eleve_id] = f"1{suffix}"
+                else:
+                    suffix = "ex" if est_ex else "e"
+                    rangs_eleves[eleve_id] = f"{rang_num}{suffix}"
+
+        rangs_resultat[matiere_id] = rangs_eleves
+
+    return rangs_resultat
 
 
 def _regenerer_pdfs_classe(classe, trimestre, stats_classe):
@@ -147,27 +195,40 @@ def _regenerer_pdfs_classe(classe, trimestre, stats_classe):
     if classe is None:
         return
 
-    bulletins = Bulletin.objects.filter(eleve__classe=classe, trimestre=trimestre).select_related("eleve")
+    rangs_matieres = calculer_classement_par_matiere(classe, trimestre)
+    from .models import Absence
+
+    bulletins = Bulletin.objects.filter(eleve__classe=classe, trimestre=trimestre).select_related("eleve", "eleve__classe")
     for bulletin in bulletins:
         bulletin.refresh_from_db()  # recupere le rang tout juste recalcule
         bulletin.effectif_classe = stats_classe.get("effectif")
 
-        notes = Note.objects.filter(eleve=bulletin.eleve, trimestre=trimestre).select_related("matiere")
+        notes = (
+            Note.objects.filter(eleve=bulletin.eleve, trimestre=trimestre)
+            .select_related("matiere", "enseignant")
+            .order_by("matiere__nom")
+        )
         notes_par_matiere = {}
         for note in notes:
             notes_par_matiere.setdefault(note.matiere, []).append(note)
 
-        contenu_pdf = generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, _appreciation)
+        nb_absences = Absence.objects.filter(eleve=bulletin.eleve).count()
+
+        rangs_eleve_matieres = {}
+        for mat in notes_par_matiere.keys():
+            rangs_eleve_matieres[mat.id] = rangs_matieres.get(mat.id, {}).get(bulletin.eleve_id, "-")
+
+        contenu_pdf = generer_pdf_bulletin(
+            bulletin=bulletin,
+            notes_par_matiere=notes_par_matiere,
+            stats_classe=stats_classe,
+            appreciation_fn=_appreciation,
+            rangs_matieres=rangs_eleve_matieres,
+            nb_absences=nb_absences,
+        )
         nom_fichier = f"bulletin_{bulletin.eleve.matricule}_T{trimestre}.pdf"
 
-        # Important : supprimer explicitement l'ancien fichier AVANT de
-        # sauvegarder le nouveau. Sans ce delete(), Django ne remplace pas
-        # le fichier existant : comme le nom est deja pris sur le disque, le
-        # stockage lui ajoute un suffixe aleatoire (bulletin_EL001_T1_xxxxx.pdf)
-        # et cree un nouveau fichier a chaque regeneration, en laissant les
-        # anciens orphelins. Comme le bulletin de toute la classe se
-        # regenere a chaque nouvelle note saisie, ca finit vite par des
-        # centaines de fichiers PDF inutiles (c'etait le cas ici).
+        # Supprimer explicitement l'ancien fichier AVANT de sauvegarder le nouveau
         if bulletin.fichier_pdf:
             bulletin.fichier_pdf.storage.delete(bulletin.fichier_pdf.name)
         bulletin.fichier_pdf.save(nom_fichier, ContentFile(contenu_pdf), save=True)
