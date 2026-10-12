@@ -78,18 +78,62 @@ class Command(BaseCommand):
                 sciences = Matiere.objects.create(nom="Sciences Physiques", coefficient=3)
                 anglais = Matiere.objects.create(nom="Anglais", coefficient=2)
 
-                # Enseignant
-                prof = Enseignant.objects.create_user(
-                    username="demo_prof",
-                    email="prof@magnificat-scolaire.tg",
+                # Enseignants officiels du Complexe Scolaire Magnificat
+                prof_math = Enseignant.objects.create_user(
+                    username="prof_math",
+                    email="prof.math@magnificat-scolaire.tg",
                     password="DemoMagnificat2026!",
-                    first_name="Kossi",
-                    last_name="KOUASSI",
+                    first_name="T. G",
+                    last_name="DATEY-AMOUSSOU",
                     specialite="Mathematiques",
                     telephone="+228 91 11 22 33",
                 )
-                prof.classes.add(cl3, cl6, cl_term)
-                prof.matieres.add(maths, francais, sciences, anglais)
+                prof_math.classes.add(cl3, cl6, cl_term)
+                prof_math.matieres.add(maths)
+
+                prof_fr = Enseignant.objects.create_user(
+                    username="prof_francais",
+                    email="prof.francais@magnificat-scolaire.tg",
+                    password="DemoMagnificat2026!",
+                    first_name="Atakuma Komi",
+                    last_name="MENSAH",
+                    specialite="Francais",
+                    telephone="+228 91 22 33 44",
+                )
+                prof_fr.classes.add(cl3, cl6)
+                prof_fr.matieres.add(francais)
+
+                prof_ang = Enseignant.objects.create_user(
+                    username="prof_anglais",
+                    email="prof.anglais@magnificat-scolaire.tg",
+                    password="DemoMagnificat2026!",
+                    first_name="Yawo Joseph",
+                    last_name="GBODZISI",
+                    specialite="Anglais",
+                    telephone="+228 91 33 44 55",
+                )
+                prof_ang.classes.add(cl3, cl6)
+                prof_ang.matieres.add(anglais)
+
+                prof_sc = Enseignant.objects.create_user(
+                    username="prof_sciences",
+                    email="prof.sciences@magnificat-scolaire.tg",
+                    password="DemoMagnificat2026!",
+                    first_name="Claude",
+                    last_name="ADJEODA",
+                    specialite="Sciences Physiques",
+                    telephone="+228 91 44 55 66",
+                )
+                prof_sc.classes.add(cl3, cl_term)
+                prof_sc.matieres.add(sciences)
+
+                profs_par_matiere = {
+                    maths.id: prof_math,
+                    francais.id: prof_fr,
+                    anglais.id: prof_ang,
+                    sciences.id: prof_sc,
+                }
+
 
                 # Eleves
                 e1 = Eleve.objects.create(
@@ -154,12 +198,14 @@ class Command(BaseCommand):
                 matieres_liste = [maths, francais, sciences, anglais]
                 for eleve_item, vals in notes_data:
                     for mat, val in zip(matieres_liste, vals):
+                        enseignant_attribue = profs_par_matiere.get(mat.id, prof_math)
                         Note.objects.create(
                             eleve=eleve_item,
                             matiere=mat,
                             valeur=Decimal(str(val)),
                             trimestre=1,
                             type_evaluation="composition",
+                            enseignant=enseignant_attribue,
                         )
                         Note.objects.create(
                             eleve=eleve_item,
@@ -167,6 +213,7 @@ class Command(BaseCommand):
                             valeur=Decimal(str(max(0, val - 1))),
                             trimestre=1,
                             type_evaluation="devoir",
+                            enseignant=enseignant_attribue,
                         )
 
                 for el, moy, rang in [(e1, "16.50", 1), (e2, "13.80", 2), (e3, "12.50", 3)]:
@@ -184,19 +231,27 @@ class Command(BaseCommand):
                     date=date(2026, 10, 5),
                     motif="Rendez-vous medical",
                     justifiee=True,
-                    enregistree_par=prof,
+                    enregistree_par=prof_math,
                 )
 
-                # Emploi du temps
-                Cours.objects.create(
-                    classe=cl3,
-                    matiere=maths,
-                    enseignant=prof,
-                    jour="lundi",
-                    heure_debut=time(8),
-                    heure_fin=time(10),
-                    salle="Salle 4",
-                )
+                # Emploi du temps complet de la 3e
+                cours_configs = [
+                    (maths, prof_math, "lundi", time(8), time(10), "Salle 4"),
+                    (francais, prof_fr, "mardi", time(8), time(10), "Salle 4"),
+                    (sciences, prof_sc, "mercredi", time(8), time(10), "Salle 4"),
+                    (anglais, prof_ang, "jeudi", time(10), time(12), "Salle 4"),
+                ]
+                for mat, prof_item, jr, hd, hf, sl in cours_configs:
+                    Cours.objects.create(
+                        classe=cl3,
+                        matiere=mat,
+                        enseignant=prof_item,
+                        jour=jr,
+                        heure_debut=hd,
+                        heure_fin=hf,
+                        salle=sl,
+                    )
+
 
                 # Frais de scolarite et paiements
                 frais1 = FraisScolarite.objects.create(
