@@ -1,13 +1,14 @@
 from decimal import Decimal
 
 from rest_framework import viewsets
-from rest_framework.decorators import api_view, permission_classes
+from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, inline_serializer
 from django.shortcuts import get_object_or_404
+from django.http import HttpResponse
 
 from scolarite.models import Classe, Eleve
 from .models import FraisScolarite, Paiement
@@ -49,6 +50,22 @@ class PaiementViewSet(viewsets.ModelViewSet):
     def perform_destroy(self, instance):
         self._verifier_administrateur()
         instance.delete()
+
+    @action(detail=True, methods=["get"], url_path="recu-pdf")
+    def recu_pdf(self, request, pk=None):
+        """
+        Telecharge le recu officiel du paiement genere par ReportLab au format PDF.
+        Accessible a l'Administrateur et au Parent concerne.
+        """
+        paiement = self.get_object()
+        from .pdf import generer_pdf_recu_paiement
+        pdf_bytes = generer_pdf_recu_paiement(paiement)
+        nom_eleve = (str(paiement.eleve.nom) if paiement.eleve else "recu").replace(" ", "_")
+        nom_fichier = f"recu_paiement_{nom_eleve}_{paiement.id}.pdf"
+        reponse = HttpResponse(pdf_bytes, content_type="application/pdf")
+        reponse["Content-Disposition"] = f'attachment; filename="{nom_fichier}"'
+        return reponse
+
 
 
 class FraisScolariteViewSet(viewsets.ModelViewSet):

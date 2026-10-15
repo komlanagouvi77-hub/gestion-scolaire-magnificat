@@ -23,7 +23,9 @@ from scolarite.views_api import (
     MatiereViewSet,
     NoteViewSet,
     ObservationViewSet,
+    exporter_classe_csv,
     importer_eleves_csv,
+    statistiques_globales_view,
     suivi_saisie_notes,
 )
 
@@ -63,6 +65,10 @@ urlpatterns = [
     path("messagerie/correspondants/", correspondants_messagerie, name="correspondants_messagerie"),
     # Situation financiere (du/paye/reste par eleve et par tranche) d'une classe
     path("paiements/situation/<int:classe_id>/", situation_financiere, name="situation_financiere"),
+    # Statistiques globales de l'etablissement (KPIs, effectifs, finances, absences)
+    path("statistiques/globales/", statistiques_globales_view, name="statistiques_globales"),
+    # Export CSV d'une classe (liste des eleves et contacts parents pour Excel)
+    path("classes/<int:classe_id>/exporter-csv/", exporter_classe_csv, name="exporter_classe_csv"),
     # Documentation interactive de l'API
     path("schema/", SpectacularAPIView.as_view(), name="schema"),
     path("docs/", SpectacularSwaggerView.as_view(url_name="schema"), name="swagger-ui"),

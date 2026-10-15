@@ -145,10 +145,10 @@ export default function GestionParents({ token }) {
       {statut === "ok" ? (
         <div className="mag-table-wrap react-fade-in">
           <table className="mag-table mag-table-pro">
-            <thead><tr><th>Parent</th><th>Enfant(s)</th><th></th></tr></thead>
+            <thead><tr><th>Parent</th><th>Contact</th><th>Enfant(s)</th><th></th></tr></thead>
             <tbody>
               {parents.length === 0 ? (
-                <tr><td colSpan={3} style={{ textAlign: "center", color: "var(--ink-600)", padding: "2rem" }}>Aucun parent pour le moment.</td></tr>
+                <tr><td colSpan={4} style={{ textAlign: "center", color: "var(--ink-600)", padding: "2rem" }}>Aucun parent pour le moment.</td></tr>
               ) : parents.map(function (p) {
                 const nomComplet = (p.first_name + " " + p.last_name).trim() || p.username;
                 const initiale = (p.first_name || p.username).charAt(0).toUpperCase();
@@ -162,6 +162,35 @@ export default function GestionParents({ token }) {
                           <div className="mag-personne-sous">{p.username}</div>
                         </div>
                       </div>
+                    </td>
+                    <td>
+                      {p.telephone ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <span style={{ fontSize: "0.85rem" }}>{p.telephone}</span>
+                          <a
+                            href={"https://wa.me/" + p.telephone.replace(/[^0-9]/g, "")}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-mag-outline"
+                            style={{
+                              fontSize: "0.75rem",
+                              padding: "0.15rem 0.5rem",
+                              color: "#16A34A",
+                              borderColor: "#16A34A",
+                              textDecoration: "none",
+                              borderRadius: "4px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.25rem",
+                            }}
+                            title="Ouvrir une discussion WhatsApp"
+                          >
+                            <span>💬</span> WhatsApp
+                          </a>
+                        </div>
+                      ) : (
+                        <span style={{ color: "var(--ink-400, #94a3b8)", fontSize: "0.85rem" }}>-</span>
+                      )}
                     </td>
                     <td>{p.eleves_noms && p.eleves_noms.length ? p.eleves_noms.map(function (n, i) { return <span className="mag-badge" key={i}>{n}</span>; }) : "-"}</td>
                     <td>

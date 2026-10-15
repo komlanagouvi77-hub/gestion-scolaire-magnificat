@@ -4,7 +4,7 @@
 // administrateur, cette page permet aussi de creer, modifier et
 // supprimer des eleves.
 import { useState, useEffect, useMemo } from "react";
-import { lister, creer, modifier, supprimer } from "../api.js";
+import { lister, creer, modifier, supprimer, telechargerClasseCsv } from "../api.js";
 import { Alerte } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
@@ -18,23 +18,56 @@ function rangNiveau(niveau) {
   return idx === -1 ? 999 : idx;
 }
 
-function BlocClasse({ classe, eleves, ouvertParDefaut, estAdmin, onModifier, onSupprimer }) {
+function BlocClasse({ classe, eleves, ouvertParDefaut, estAdmin, onModifier, onSupprimer, onExporterCsv }) {
   const [ouvert, setOuvert] = useState(ouvertParDefaut);
+  const [enCoursExport, setEnCoursExport] = useState(false);
 
   useEffect(function () {
     if (ouvertParDefaut) setOuvert(true);
   }, [ouvertParDefaut]);
 
+  const gererExport = async function (e) {
+    e.stopPropagation();
+    if (!onExporterCsv || !classe.id) return;
+    setEnCoursExport(true);
+    try {
+      await onExporterCsv(classe);
+    } finally {
+      setEnCoursExport(false);
+    }
+  };
+
   return (
     <div className="react-bloc-classe">
-      <button type="button" className="react-bloc-classe-entete" onClick={function () { setOuvert(!ouvert); }}>
+      <div
+        className="react-bloc-classe-entete"
+        role="button"
+        tabIndex={0}
+        onClick={function () { setOuvert(!ouvert); }}
+        onKeyDown={function (e) { if (e.key === "Enter" || e.key === " ") setOuvert(!ouvert); }}
+        style={{ cursor: "pointer", display: "flex", justifyContent: "space-between", alignItems: "center" }}
+      >
         <span className="react-bloc-classe-titre">
           <span className="react-bloc-classe-niveau">{classe.niveau}</span>
           {classe.nom}
         </span>
-        <span className="react-bloc-classe-compte">{eleves.length} eleve{eleves.length > 1 ? "s" : ""}</span>
-        <span className={"react-bloc-classe-chevron" + (ouvert ? " ouvert" : "")}>▾</span>
-      </button>
+        <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
+          {classe.id && onExporterCsv ? (
+            <button
+              type="button"
+              className="btn-mag-outline"
+              style={{ fontSize: "0.75rem", padding: "0.2rem 0.6rem", height: "auto", minHeight: "unset" }}
+              onClick={gererExport}
+              disabled={enCoursExport}
+              title="Exporter la liste nominative avec contacts au format CSV Excel"
+            >
+              {enCoursExport ? "Export..." : "📥 CSV"}
+            </button>
+          ) : null}
+          <span className="react-bloc-classe-compte">{eleves.length} eleve{eleves.length > 1 ? "s" : ""}</span>
+          <span className={"react-bloc-classe-chevron" + (ouvert ? " ouvert" : "")}>▾</span>
+        </div>
+      </div>
 
       {ouvert ? (
         <div className="react-table-wrap">
@@ -170,6 +203,14 @@ export default function ElevesParClasse({ token, role }) {
       chargerTout();
     } catch (err) {
       setMessage({ type: "erreur", texte: "Suppression impossible." });
+    }
+  };
+
+  const exporterCsv = async function (classe) {
+    try {
+      await telechargerClasseCsv(classe.id, token, classe.nom);
+    } catch (err) {
+      setMessage({ type: "erreur", texte: "Erreur lors de l'export CSV : " + (err.message || "") });
     }
   };
 
@@ -309,6 +350,7 @@ export default function ElevesParClasse({ token, role }) {
                   estAdmin={estAdmin}
                   onModifier={commencerEdition}
                   onSupprimer={supprimerEleve}
+                  onExporterCsv={exporterCsv}
                 />
               );
             })}

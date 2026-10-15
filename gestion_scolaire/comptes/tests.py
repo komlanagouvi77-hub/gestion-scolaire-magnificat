@@ -778,6 +778,31 @@ class ApiDemandeInscriptionTests(TestCase):
         self.assertEqual(resp.status_code, 400)
         self.assertIn("username_souhaite", resp.json())
 
+    def test_validation_rejet_username_reserve(self):
+        resp = self.client.post("/api/demandes-acces/", {
+            "type_compte": "enseignant", "username_souhaite": "admin",
+            "password": "Password2026!", "first_name": "Jean", "last_name": "Dupont",
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("username_souhaite", resp.json())
+
+    def test_validation_rejet_telephone_fictif(self):
+        resp = self.client.post("/api/demandes-acces/", {
+            "type_compte": "enseignant", "username_souhaite": "test.prof.tel",
+            "password": "Password2026!", "first_name": "Jean", "last_name": "Dupont",
+            "telephone": "12345678",
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("telephone", resp.json())
+
+    def test_validation_rejet_mot_de_passe_contenant_username(self):
+        resp = self.client.post("/api/demandes-acces/", {
+            "type_compte": "enseignant", "username_souhaite": "monpseudo",
+            "password": "Monpseudo2026!", "first_name": "Jean", "last_name": "Dupont",
+        })
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("password", resp.json())
+
 class ApiDemandeCongeTests(TestCase):
     """Verifie le circuit de demande de conge via l'API REST (utilisee par React)."""
 

@@ -113,20 +113,28 @@ class DemandeInscriptionSerializer(serializers.ModelSerializer):
         val = value.strip()
         if len(val) < 2:
             raise serializers.ValidationError("Le prénom doit comporter au moins 2 caractères.")
-        if not re.search(r"[a-zA-ZÀ-ÿ]", val):
-            raise serializers.ValidationError("Le prénom doit contenir des lettres alphabétiques.")
+        if len(val) > 50:
+            raise serializers.ValidationError("Le prénom ne peut pas dépasser 50 caractères.")
+        if not re.search(r"^[a-zA-ZÀ-ÿ\s'-]+$", val):
+            raise serializers.ValidationError("Le prénom ne peut contenir que des lettres alphabétiques, espaces ou tirets.")
         if re.search(r"[0-9]", val):
             raise serializers.ValidationError("Le prénom ne peut pas comporter de chiffres.")
+        if re.search(r"(.)\1\1", val):
+            raise serializers.ValidationError("Le prénom contient des lettres répétées de manière anormale.")
         return val.title()
 
     def validate_last_name(self, value):
         val = value.strip()
         if len(val) < 2:
             raise serializers.ValidationError("Le nom de famille doit comporter au moins 2 caractères.")
-        if not re.search(r"[a-zA-ZÀ-ÿ]", val):
-            raise serializers.ValidationError("Le nom de famille doit contenir des lettres alphabétiques.")
+        if len(val) > 50:
+            raise serializers.ValidationError("Le nom de famille ne peut pas dépasser 50 caractères.")
+        if not re.search(r"^[a-zA-ZÀ-ÿ\s'-]+$", val):
+            raise serializers.ValidationError("Le nom de famille ne peut contenir que des lettres alphabétiques, espaces ou tirets.")
         if re.search(r"[0-9]", val):
             raise serializers.ValidationError("Le nom de famille ne peut pas comporter de chiffres.")
+        if re.search(r"(.)\1\1", val):
+            raise serializers.ValidationError("Le nom de famille contient des lettres répétées de manière anormale.")
         return val.upper()
 
     def validate_telephone(self, value):
@@ -136,16 +144,32 @@ class DemandeInscriptionSerializer(serializers.ModelSerializer):
         if re.search(r"[a-zA-Z]", val):
             raise serializers.ValidationError("Le numéro de téléphone ne doit contenir que des chiffres (ex: +228 90 12 34 56).")
         chiffres = re.findall(r"\d", val)
-        if len(chiffres) < 8:
-            raise serializers.ValidationError("Le numéro de téléphone doit comporter au moins 8 chiffres.")
+        if len(chiffres) < 8 or len(chiffres) > 15:
+            raise serializers.ValidationError("Le numéro de téléphone doit comporter entre 8 et 15 chiffres.")
+        chiffres_str = "".join(chiffres)
+        if len(set(chiffres_str)) == 1:
+            raise serializers.ValidationError("Ce numéro de téléphone est invalide (chiffres identiques répétés).")
+        if chiffres_str in ("12345678", "87654321", "01234567", "98765432", "123456789", "987654321"):
+            raise serializers.ValidationError("Ce numéro de téléphone semble fictif. Veuillez entrer un numéro réel.")
         return val
 
     def validate_username_souhaite(self, value):
         val = value.strip().lower()
         if len(val) < 3:
             raise serializers.ValidationError("Le nom d'utilisateur doit comporter au moins 3 caractères.")
-        if not re.match(r"^[a-zA-Z0-9._-]+$", val):
-            raise serializers.ValidationError("L'identifiant ne peut comporter que des lettres, chiffres, points, tirets ou underscores.")
+        if len(val) > 25:
+            raise serializers.ValidationError("Le nom d'utilisateur ne peut pas dépasser 25 caractères.")
+        if not re.match(r"^[a-z0-9][a-z0-9._-]{1,23}[a-z0-9]$", val):
+            raise serializers.ValidationError("L'identifiant doit commencer et finir par une lettre ou un chiffre, et ne contenir que des minuscules, chiffres, points, tirets ou underscores.")
+        if ".." in val or "--" in val or "__" in val:
+            raise serializers.ValidationError("Les symboles consécutifs (comme .. ou --) ne sont pas autorisés.")
+        identifiants_reserves = {
+            "admin", "administrator", "root", "directeur", "direction",
+            "magnificat", "superadmin", "support", "secretariat", "ecole",
+            "system", "moderator", "guest"
+        }
+        if val in identifiants_reserves:
+            raise serializers.ValidationError("Cet identifiant est réservé à l'administration du système.")
         if Utilisateur.objects.filter(username__iexact=val).exists():
             raise serializers.ValidationError("Ce nom d'utilisateur est déjà utilisé par un compte existant.")
         if DemandeInscription.objects.filter(username_souhaite__iexact=val, statut=DemandeInscription.STATUT_EN_ATTENTE).exists():
@@ -159,7 +183,23 @@ class DemandeInscriptionSerializer(serializers.ModelSerializer):
         has_digit = any(c.isdigit() for c in value)
         if not (has_letter and has_digit):
             raise serializers.ValidationError("Le mot de passe doit contenir au moins une lettre et un chiffre pour garantir sa sécurité.")
+        mots_bannis = ["password", "12345678", "azerty123", "motdepasse", "qwerty123", "admin123", "ecole123", "passer123", "bienvenue"]
+        if value.lower() in mots_bannis:
+            raise serializers.ValidationError("Ce mot de passe est trop simple et facile à deviner. Choisissez un mot de passe plus robuste.")
         return value
+
+    def validate(self, attrs):
+        password = attrs.get("password")
+        username = attrs.get("username_souhaite")
+        first_name = attrs.get("first_name", "")
+        last_name = attrs.get("last_name", "")
+        if password and username and username.lower() in password.lower():
+            raise serializers.ValidationError({"password": "Le mot de passe ne doit pas contenir votre nom d'utilisateur."})
+        if password and first_name and len(first_name) >= 3 and first_name.lower() in password.lower():
+            raise serializers.ValidationError({"password": "Le mot de passe ne doit pas contenir votre prénom."})
+        if password and last_name and len(last_name) >= 3 and last_name.lower() in password.lower():
+            raise serializers.ValidationError({"password": "Le mot de passe ne doit pas contenir votre nom de famille."})
+        return attrs
 
     def create(self, validated_data):
         from django.contrib.auth.hashers import make_password

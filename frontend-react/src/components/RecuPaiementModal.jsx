@@ -4,8 +4,9 @@
 // ne perdre aucune information deja utile a l'etablissement, avec
 // l'entete officielle (logo + nom de l'ecole) et une mise en page pensee
 // pour l'impression.
-import { useEffect } from "react";
+import { useState, useEffect } from "react";
 import { traduireTexte, localeActive } from "../localisation.js";
+import { telechargerRecuPaiementPdf, obtenirTokenStocke } from "../api.js";
 
 const LABEL_MODE = {
   especes: "Especes",
@@ -15,6 +16,8 @@ const LABEL_MODE = {
 };
 
 export default function RecuPaiementModal({ paiement, parametres, onFermer }) {
+  const [enCoursPdf, setEnCoursPdf] = useState(false);
+
   useEffect(function () {
     const gererEchap = function (e) { if (e.key === "Escape") onFermer(); };
     document.addEventListener("keydown", gererEchap);
@@ -27,6 +30,20 @@ export default function RecuPaiementModal({ paiement, parametres, onFermer }) {
 
   const nomEcole = parametres ? parametres.nom_ecole : "Etablissement";
   const initiale = (nomEcole || "?").charAt(0).toUpperCase();
+
+  const telechargerPdfOfficiel = async function () {
+    try {
+      setEnCoursPdf(true);
+      const token = obtenirTokenStocke();
+      const nomEleve = (paiement.eleve_nom || "eleve").replace(/\s+/g, "_");
+      const nomFichier = "recu_officiel_" + nomEleve + "_" + paiement.id + ".pdf";
+      await telechargerRecuPaiementPdf(paiement.id, token, nomFichier);
+    } catch (err) {
+      alert("Erreur lors du telechargement du recu PDF : " + (err.message || "Erreur inconnue"));
+    } finally {
+      setEnCoursPdf(false);
+    }
+  };
 
   // window.print() ouvre un vrai dialogue d'impression dans un navigateur
   // (web ou PWA), mais ne fait rien dans l'application mobile native : la
@@ -52,16 +69,26 @@ export default function RecuPaiementModal({ paiement, parametres, onFermer }) {
   return (
     <div className="react-modal-overlay" role="dialog" aria-modal="true" aria-labelledby="recu-titre" onClick={onFermer}>
       <div className="react-recu-conteneur" onClick={function (e) { e.stopPropagation(); }}>
-        <div className="react-recu-barre no-print">
-          <button type="button" className="mag-btn-primary" style={{ width: "auto", padding: "0.5rem 1.4rem" }} onClick={function () { window.print(); }}>
-            Imprimer / Enregistrer en PDF
+        <div className="react-recu-barre no-print" style={{ display: "flex", flexWrap: "wrap", gap: "0.5rem", alignItems: "center" }}>
+          <button
+            type="button"
+            className="mag-btn-primary"
+            style={{ width: "auto", padding: "0.5rem 1.2rem", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+            onClick={telechargerPdfOfficiel}
+            disabled={enCoursPdf}
+          >
+            {enCoursPdf ? <span className="react-spinner" style={{ width: 14, height: 14 }}></span> : <span>📄</span>}
+            {enCoursPdf ? "Telechargement..." : "Recu Officiel (PDF ReportLab)"}
+          </button>
+          <button type="button" className="btn-mag-outline" style={{ width: "auto", padding: "0.5rem 1.2rem" }} onClick={function () { window.print(); }}>
+            Imprimer
           </button>
           {typeof navigator !== "undefined" && navigator.share ? (
-            <button type="button" className="btn-mag-outline" style={{ width: "auto", padding: "0.5rem 1.4rem" }} onClick={partagerRecu}>
+            <button type="button" className="btn-mag-outline" style={{ width: "auto", padding: "0.5rem 1.2rem" }} onClick={partagerRecu}>
               Partager
             </button>
           ) : null}
-          <button type="button" className="mag-btn-lien" onClick={onFermer}>Fermer ✕</button>
+          <button type="button" className="mag-btn-lien" style={{ marginLeft: "auto" }} onClick={onFermer}>Fermer ✕</button>
         </div>
 
         <div className="react-recu-cadre">

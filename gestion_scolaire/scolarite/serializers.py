@@ -26,13 +26,22 @@ class EleveSerializer(serializers.ModelSerializer):
     # remontait tel quel jusque dans l'interface (ex: graphique de
     # repartition par classe du tableau de bord).
     classe_nom = serializers.SerializerMethodField()
+    parents_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Eleve
-        fields = ["id", "matricule", "nom", "prenom", "date_naissance", "sexe", "classe", "classe_nom"]
+        fields = ["id", "matricule", "nom", "prenom", "date_naissance", "sexe", "classe", "classe_nom", "parents_details"]
 
     def get_classe_nom(self, eleve) -> str | None:
         return str(eleve.classe) if eleve.classe else None
+
+    def get_parents_details(self, eleve) -> list[dict]:
+        details = []
+        for p in eleve.parents.all():
+            nom = (f"{p.first_name} {p.last_name}").strip() or p.username
+            tel = p.telephone or ""
+            details.append({"id": p.id, "nom": nom, "telephone": tel, "email": p.email or ""})
+        return details
 
 
 class NoteSerializer(serializers.ModelSerializer):

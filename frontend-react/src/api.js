@@ -6,6 +6,7 @@
 // et utilise la concatenation de chaines (+), pour eviter tout probleme
 // de copier-coller ou les backticks pourraient etre corrompus.
 import { traduireTexte } from "./localisation.js";
+import { telechargerFichierProtege } from "./telecharger.js";
 
 const API_BASE = "/api";
 const CLE_TOKEN = "magnificat_token";
@@ -243,4 +244,18 @@ export function refuserConge(token, id) {
 
 export function obtenirSituationFinanciere(token, classeId) {
   return requete("paiements/situation/" + classeId + "/", token);
+}
+
+export function obtenirStatistiquesGlobales(token) {
+  return requete("statistiques/globales/", token);
+}
+
+export function telechargerRecuPaiementPdf(paiementId, token, nomFichier) {
+  const nom = nomFichier || ("recu_paiement_" + paiementId + ".pdf");
+  return telechargerFichierProtege(API_BASE + "/paiements/" + paiementId + "/recu-pdf/", token, nom);
+}
+
+export function telechargerClasseCsv(classeId, token, nomClasse) {
+  const nom = "eleves_" + (nomClasse || classeId).toString().replace(/\s+/g, "_") + ".csv";
+  return telechargerFichierProtege(API_BASE + "/classes/" + classeId + "/exporter-csv/", token, nom);
 }

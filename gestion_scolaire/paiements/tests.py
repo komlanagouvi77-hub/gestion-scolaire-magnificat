@@ -4,7 +4,7 @@ from django.core.exceptions import ValidationError
 from django.test import TestCase
 from django.urls import reverse
 
-from comptes.models import Administrateur, Enseignant
+from comptes.models import Administrateur, Enseignant, Parent
 from scolarite.models import Classe, Eleve
 from .models import FraisScolarite, Paiement
 
@@ -230,3 +230,53 @@ class ApiFraisScolariteEtSituationTests(TestCase):
             HTTP_AUTHORIZATION="Token " + token,
         )
         self.assertEqual(resp.status_code, 403)
+
+
+class RecuPaiementPdfApiTests(TestCase):
+    """Verifie le telechargement securise du recu officiel genere par ReportLab au format PDF."""
+
+    def setUp(self):
+        self.donnees = _creer_jeu_de_donnees()
+        self.parent = Parent.objects.create_user(username="parent_eleve", password="Test2026!")
+        self.parent.eleves.add(self.donnees["eleve"])
+        self.autre_parent = Parent.objects.create_user(username="autre_parent", password="Test2026!")
+
+        self.paiement = Paiement.objects.create(
+            eleve=self.donnees["eleve"], tranche=1, montant=Decimal("25000"),
+            mode_paiement="mobile_money", reference="TMONEY-999", annee_scolaire="2026-2027",
+            enregistre_par=self.donnees["admin"],
+        )
+
+    def _obtenir_token(self, username, password):
+        resp = self.client.post(reverse("api_token_auth"), {"username": username, "password": password})
+        return resp.json()["token"]
+
+    def test_administrateur_peut_telecharger_recu_pdf(self):
+        token = self._obtenir_token("admin1", "Test2026!")
+        resp = self.client.get(
+            f"/api/paiements/{self.paiement.id}/recu-pdf/",
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/pdf")
+        self.assertTrue(resp.content.startswith(b"%PDF"))
+        self.assertIn("attachment; filename=", resp["Content-Disposition"])
+
+    def test_parent_de_l_eleve_peut_telecharger_recu_pdf(self):
+        token = self._obtenir_token("parent_eleve", "Test2026!")
+        resp = self.client.get(
+            f"/api/paiements/{self.paiement.id}/recu-pdf/",
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertEqual(resp["Content-Type"], "application/pdf")
+        self.assertTrue(resp.content.startswith(b"%PDF"))
+
+    def test_autre_parent_ne_peut_pas_acceder_au_recu(self):
+        token = self._obtenir_token("autre_parent", "Test2026!")
+        resp = self.client.get(
+            f"/api/paiements/{self.paiement.id}/recu-pdf/",
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        # DRF get_object filtre sur get_queryset qui ne renvoie pas les paiements d'autres eleves -> 404
+        self.assertIn(resp.status_code, [403, 404])

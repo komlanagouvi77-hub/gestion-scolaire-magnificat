@@ -112,6 +112,50 @@ export default function FicheEleve({ eleveId, token, role }) {
         </div>
       </div>
 
+      {eleve.parents_details && eleve.parents_details.length > 0 ? (
+        <div className="mag-card react-fade-in" style={{ marginBottom: "1.8rem" }}>
+          <div className="mag-stat-label" style={{ marginBottom: "0.8rem" }}>Parents / Contacts d'urgence</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+            {eleve.parents_details.map(function (p) {
+              return (
+                <div key={p.id} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.6rem 1rem", border: "1px solid var(--line)", borderRadius: "8px", background: "var(--card-bg, #fff)" }}>
+                  <span className="mag-avatar" style={{ width: "32px", height: "32px", fontSize: "0.85rem" }}>
+                    {(p.nom || "?").charAt(0).toUpperCase()}
+                  </span>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{p.nom}</div>
+                    <div style={{ fontSize: "0.8rem", color: "var(--ink-600)" }}>{p.telephone || "Aucun numero"}</div>
+                  </div>
+                  {p.telephone ? (
+                    <a
+                      href={"https://wa.me/" + p.telephone.replace(/[^0-9]/g, "")}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="btn-mag-outline"
+                      style={{
+                        fontSize: "0.75rem",
+                        padding: "0.2rem 0.6rem",
+                        color: "#16A34A",
+                        borderColor: "#16A34A",
+                        textDecoration: "none",
+                        borderRadius: "4px",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.25rem",
+                        marginLeft: "0.5rem",
+                      }}
+                      title="Contacter sur WhatsApp"
+                    >
+                      <span>💬</span> WhatsApp
+                    </a>
+                  ) : null}
+                </div>
+              );
+            })}
+          </div>
+        </div>
+      ) : null}
+
       <div className="mag-section-entete"><div className="mag-stat-label">Notes</div><span className="mag-compteur-pill">{notes.length}</span></div>
       <div className="mag-table-wrap" style={{ marginBottom: "2rem" }}>
         <table className="mag-table mag-table-pro">

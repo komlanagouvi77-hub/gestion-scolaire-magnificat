@@ -4,7 +4,7 @@
 // bloquee pour tout role autre qu'Administrateur (voir PaiementViewSet
 // cote Django) : un Parent ne peut donc jamais se declarer "a jour" lui-meme.
 import { useState, useEffect } from "react";
-import { lister, creer, modifier, supprimer, obtenirParametres } from "../api.js";
+import { lister, creer, modifier, supprimer, obtenirParametres, telechargerRecuPaiementPdf } from "../api.js";
 import { Alerte } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
@@ -32,6 +32,7 @@ export default function GestionPaiements({ token }) {
   const [statut, setStatut] = useState("chargement");
   const [message, setMessage] = useState(null);
   const [enCours, setEnCours] = useState(false);
+  const [enCoursPdfId, setEnCoursPdfId] = useState(null);
   const [idEnEdition, setIdEnEdition] = useState(null);
   const [parametres, setParametres] = useState(null);
   const [paiementPourRecu, setPaiementPourRecu] = useState(null);
@@ -115,6 +116,19 @@ export default function GestionPaiements({ token }) {
     }
   };
 
+  const telechargerDirectPdf = async function (p) {
+    try {
+      setEnCoursPdfId(p.id);
+      const nomEleve = (p.eleve_nom || "eleve").replace(/\s+/g, "_");
+      const nomFichier = "recu_officiel_" + nomEleve + "_" + p.id + ".pdf";
+      await telechargerRecuPaiementPdf(p.id, token, nomFichier);
+    } catch (err) {
+      setMessage({ type: "erreur", texte: "Erreur telechargement PDF : " + (err.message || "") });
+    } finally {
+      setEnCoursPdfId(null);
+    }
+  };
+
   return (
     <>
       <div className="mag-page-title"><span className="eyebrow">Finances</span> Paiements</div>
@@ -189,6 +203,16 @@ export default function GestionPaiements({ token }) {
                     <td>{p.reference || "-"}</td>
                     <td style={{ whiteSpace: "nowrap" }}>
                       <button type="button" className="mag-btn-lien" onClick={function () { setPaiementPourRecu(p); }}>Recu</button>
+                      <button
+                        type="button"
+                        className="mag-btn-lien"
+                        style={{ fontWeight: 600, color: "var(--brand-blue, #1D4E89)" }}
+                        onClick={function () { telechargerDirectPdf(p); }}
+                        disabled={enCoursPdfId === p.id}
+                        title="Telecharger le recu officiel PDF certifie ReportLab"
+                      >
+                        {enCoursPdfId === p.id ? "PDF..." : "PDF"}
+                      </button>
                       <button type="button" className="mag-btn-lien" onClick={function () { commencerEdition(p); }}>Modifier →</button>
                       <BoutonSupprimer onClick={function () { supprimerPaiement(p); }} />
                     </td>

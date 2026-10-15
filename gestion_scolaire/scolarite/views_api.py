@@ -543,3 +543,119 @@ def importer_eleves_csv(request):
         "total_traite": crees + mis_a_jour,
         "total_erreurs": len(erreurs),
     })
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def statistiques_globales_view(request):
+    """
+    Indicateurs cles et KPIs de l'etablissement (reserve a l'Administrateur).
+    Fournit les effectifs consolides, la parite filles/garcons, le taux d'assiduite,
+    le taux de recouvrement financier et la synthese academique.
+    """
+    if not hasattr(request.user, "administrateur"):
+        raise PermissionDenied("Seul un administrateur peut acceder aux statistiques globales.")
+
+    from decimal import Decimal
+    from paiements.models import FraisScolarite, Paiement
+
+    total_eleves = Eleve.objects.count()
+    filles = Eleve.objects.filter(sexe="F").count()
+    garcons = Eleve.objects.filter(sexe="M").count()
+
+    total_classes = Classe.objects.count()
+    repartition_classes = []
+    for c in Classe.objects.all().order_by("niveau", "nom"):
+        repartition_classes.append({
+            "id": c.id,
+            "nom": c.nom,
+            "niveau": c.niveau,
+            "effectif": c.eleves.count(),
+        })
+
+    total_absences = Absence.objects.count()
+    absences_justifiees = Absence.objects.filter(justifiee=True).count()
+    absences_non_justifiees = Absence.objects.filter(justifiee=False).count()
+
+    # Calcul financier global
+    total_du = Decimal("0")
+    for f in FraisScolarite.objects.select_related("classe"):
+        nb_eleves_classe = f.classe.eleves.count()
+        total_du += f.montant_du * nb_eleves_classe
+
+    total_encaisse = sum((p.montant for p in Paiement.objects.all()), Decimal("0"))
+    solde_restant = max(Decimal("0"), total_du - total_encaisse)
+    taux_recouvrement = round((float(total_encaisse) / float(total_du) * 100), 1) if total_du > 0 else 0.0
+
+    return Response({
+        "eleves": {
+            "total": total_eleves,
+            "filles": filles,
+            "garcons": garcons,
+            "pct_filles": round(filles / total_eleves * 100, 1) if total_eleves > 0 else 0,
+            "pct_garcons": round(garcons / total_eleves * 100, 1) if total_eleves > 0 else 0,
+        },
+        "classes": {
+            "total": total_classes,
+            "details": repartition_classes,
+        },
+        "absences": {
+            "total": total_absences,
+            "justifiees": absences_justifiees,
+            "non_justifiees": absences_non_justifiees,
+            "taux_justification_pct": round(absences_justifiees / total_absences * 100, 1) if total_absences > 0 else 100.0,
+        },
+        "finances": {
+            "total_prevu": str(total_du),
+            "total_encaisse": str(total_encaisse),
+            "solde_restant": str(solde_restant),
+            "taux_recouvrement_pct": taux_recouvrement,
+        },
+        "academique": {
+            "total_notes": Note.objects.count(),
+            "total_bulletins": Bulletin.objects.count(),
+        },
+    })
+
+
+@api_view(["GET"])
+@permission_classes([IsAuthenticated])
+def exporter_classe_csv(request, classe_id):
+    """
+    Exporte la liste nominative des eleves d'une classe au format CSV UTF-8 (compatible Excel).
+    Accessible a l'Administrateur et aux Enseignants affectes a cette classe.
+    """
+    classe = get_object_or_404(Classe, pk=classe_id)
+    utilisateur = request.user
+    if hasattr(utilisateur, "enseignant"):
+        if not utilisateur.enseignant.classes.filter(pk=classe.pk).exists():
+            raise PermissionDenied("Vous n'etes pas assigne a cette classe.")
+    elif not hasattr(utilisateur, "administrateur"):
+        raise PermissionDenied("Acces refuse.")
+
+    from django.http import HttpResponse
+    reponse = HttpResponse(content_type="text/csv; charset=utf-8")
+    reponse["Content-Disposition"] = f'attachment; filename="eleves_{classe.nom.replace(" ", "_")}.csv"'
+    reponse.write('\ufeff')  # BOM UTF-8 pour Excel
+
+    redacteur = csv.writer(reponse, delimiter=';')
+    redacteur.writerow(["Matricule", "Nom", "Prenom", "Sexe", "Date de naissance", "Classe", "Parents / Contacts"])
+
+    for e in classe.eleves.all().order_by("nom", "prenom"):
+        parents_liste = []
+        for p in e.parents.all():
+            nom_p = p.get_full_name() or p.username
+            tel_p = p.telephone or ""
+            parents_liste.append(f"{nom_p} ({tel_p})" if tel_p else nom_p)
+        
+        redacteur.writerow([
+            e.matricule,
+            e.nom,
+            e.prenom,
+            e.sexe,
+            e.date_naissance.strftime("%d/%m/%Y") if e.date_naissance else "",
+            classe.nom,
+            ", ".join(parents_liste) if parents_liste else "-",
+        ])
+    return reponse
+

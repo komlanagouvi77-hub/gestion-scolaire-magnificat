@@ -1085,3 +1085,67 @@ class BulletinOfficielMagnificatTests(TestCase):
         self.assertEqual(detail["moy_sur_20"], Decimal("6.67"))
         self.assertEqual(detail["note_definitive"], Decimal("20.01"))
         self.assertEqual(detail["appreciation"], "Faible. Doit se mettre au travail")
+
+
+class StatistiquesGlobalesApiTests(TestCase):
+    """Verifie le calcul des KPIs et statistiques globales via l'API REST."""
+
+    def setUp(self):
+        self.donnees = creer_jeu_de_donnees()
+
+    def _obtenir_token(self, username, password):
+        resp = self.client.post(reverse("api_token_auth"), {"username": username, "password": password})
+        return resp.json()["token"]
+
+    def test_administrateur_peut_obtenir_statistiques_globales(self):
+        token = self._obtenir_token("admin1", "Test2026!")
+        resp = self.client.get("/api/statistiques/globales/", HTTP_AUTHORIZATION="Token " + token)
+        self.assertEqual(resp.status_code, 200)
+        data = resp.json()
+        self.assertIn("eleves", data)
+        self.assertIn("classes", data)
+        self.assertIn("absences", data)
+        self.assertIn("finances", data)
+        self.assertIn("academique", data)
+        self.assertEqual(data["eleves"]["total"], 1)
+        self.assertEqual(data["eleves"]["filles"], 1)
+        self.assertEqual(data["eleves"]["garcons"], 0)
+
+    def test_enseignant_ne_peut_pas_obtenir_statistiques_globales(self):
+        token = self._obtenir_token("prof1", "Test2026!")
+        resp = self.client.get("/api/statistiques/globales/", HTTP_AUTHORIZATION="Token " + token)
+        self.assertEqual(resp.status_code, 403)
+
+
+class ExporterClasseCsvApiTests(TestCase):
+    """Verifie l'export CSV UTF-8 d'une classe pour Excel."""
+
+    def setUp(self):
+        self.donnees = creer_jeu_de_donnees()
+        self.autre_prof = Enseignant.objects.create_user(username="prof_autre", password="Test2026!")
+
+    def _obtenir_token(self, username, password):
+        resp = self.client.post(reverse("api_token_auth"), {"username": username, "password": password})
+        return resp.json()["token"]
+
+    def test_administrateur_peut_exporter_csv(self):
+        token = self._obtenir_token("admin1", "Test2026!")
+        classe_id = self.donnees["classe"].id
+        resp = self.client.get(f"/api/classes/{classe_id}/exporter-csv/", HTTP_AUTHORIZATION="Token " + token)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("text/csv", resp["Content-Type"])
+        self.assertIn(self.donnees["eleve"].matricule.encode("utf-8"), resp.content)
+        self.assertIn(self.donnees["eleve"].nom.encode("utf-8"), resp.content)
+
+    def test_enseignant_assigne_peut_exporter_csv(self):
+        token = self._obtenir_token("prof1", "Test2026!")
+        classe_id = self.donnees["classe"].id
+        resp = self.client.get(f"/api/classes/{classe_id}/exporter-csv/", HTTP_AUTHORIZATION="Token " + token)
+        self.assertEqual(resp.status_code, 200)
+        self.assertIn("text/csv", resp["Content-Type"])
+
+    def test_enseignant_non_assigne_est_refuse(self):
+        token = self._obtenir_token("prof_autre", "Test2026!")
+        classe_id = self.donnees["classe"].id
+        resp = self.client.get(f"/api/classes/{classe_id}/exporter-csv/", HTTP_AUTHORIZATION="Token " + token)
+        self.assertEqual(resp.status_code, 403)

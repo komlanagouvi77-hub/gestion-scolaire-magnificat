@@ -1,6 +1,5 @@
-// src/pages/Dashboard.jsx
 import { useState, useEffect, useMemo } from "react";
-import { lister } from "../api.js";
+import { lister, obtenirStatistiquesGlobales } from "../api.js";
 import { CarteStat, GraphiqueBarres } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import { traduireTexte, localeActive } from "../localisation.js";
@@ -199,6 +198,15 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
   const absences = useListe("absences", token);
   const paiements = useListe(affichePaiements ? "paiements" : null, token);
   const cours = useListe((estEnseignant || estParent) ? "cours" : null, token);
+  const [statsGlobales, setStatsGlobales] = useState(null);
+
+  useEffect(function () {
+    if (estAdmin && token) {
+      obtenirStatistiquesGlobales(token)
+        .then(function (data) { setStatsGlobales(data); })
+        .catch(function () {});
+    }
+  }, [estAdmin, token]);
 
   const chargementGlobal = eleves.chargement || classes.chargement || absences.chargement || paiements.chargement || cours.chargement;
 
@@ -381,22 +389,62 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
                   tabIndex={0}
                   onClick={function () { window.location.hash = "/situation-financiere"; }}
                 >
-                  <div className="mag-stat-label" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.9rem" }}>
-                    <span>Recouvrement</span>
-                    <span style={{ opacity: 0.5, fontSize: "0.85rem" }}>→</span>
+                  <div className="mag-stat-label" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
+                    <span>Recouvrement financier</span>
+                    {statsGlobales && statsGlobales.finances ? (
+                      <span className="mag-badge" style={{ background: "rgba(22, 163, 74, 0.12)", color: "#16A34A", fontWeight: 700 }}>
+                        {statsGlobales.finances.taux_recouvrement_pct}% recouvres
+                      </span>
+                    ) : <span style={{ opacity: 0.5, fontSize: "0.85rem" }}>→</span>}
                   </div>
-                  <div className="mag-stat-value" style={{ fontSize: "2rem", color: "var(--green-600)" }}>{totalRecouvre.toLocaleString(localeActive())} FCFA</div>
-                  <p style={{ fontSize: "0.8rem", color: "var(--ink-600)", marginTop: "0.4rem" }}>Total percu, toutes tranches et classes confondues ({paiements.donnees.length} paiement{paiements.donnees.length > 1 ? "s" : ""}).</p>
+                  <div className="mag-stat-value" style={{ fontSize: "1.8rem", color: "var(--green-600)" }}>
+                    {totalRecouvre.toLocaleString(localeActive())} FCFA
+                  </div>
+                  {statsGlobales && statsGlobales.finances ? (
+                    <div style={{ marginTop: "0.6rem" }}>
+                      <div className="react-parite-piste" style={{ height: "8px", borderRadius: "4px", background: "var(--line, #e2e8f0)" }}>
+                        <div
+                          className="react-parite-remplissage"
+                          style={{
+                            width: Math.min(100, statsGlobales.finances.taux_recouvrement_pct) + "%",
+                            background: "var(--green-600, #16A34A)",
+                            height: "100%",
+                            borderRadius: "4px",
+                          }}
+                        ></div>
+                      </div>
+                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--ink-600)", marginTop: "0.3rem" }}>
+                        <span>Prevu : {Number(statsGlobales.finances.total_prevu).toLocaleString(localeActive())} FCFA</span>
+                        <span>Reste : {Number(statsGlobales.finances.solde_restant).toLocaleString(localeActive())} FCFA</span>
+                      </div>
+                    </div>
+                  ) : (
+                    <p style={{ fontSize: "0.8rem", color: "var(--ink-600)", marginTop: "0.4rem" }}>
+                      Total percu, toutes tranches et classes confondues ({paiements.donnees.length} paiement{paiements.donnees.length > 1 ? "s" : ""}).
+                    </p>
+                  )}
                 </div>
               </div>
 
-              <div className="mag-card" style={{ marginTop: "1rem" }}>
-                <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Fiche d'identite technique</div>
-                <div className="react-fiche-identite">
-                  <div><span>Nom de l'etablissement</span><strong>{parametres ? parametres.nom_ecole : "-"}</strong></div>
-                  <div><span>Annee scolaire active</span><strong>{parametres ? parametres.annee_scolaire_active : "-"}</strong></div>
-                  <div><span>Systeme academique</span><strong>{parametres ? (parametres.systeme_periodes === "semestre" ? "Semestres" : "Trimestres") : "-"}</strong></div>
-                  <div><span>Devise</span><strong>FCFA</strong></div>
+              <div className="mag-grid-2" style={{ marginTop: "1rem" }}>
+                <div className="mag-card">
+                  <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Activite academique &amp; Assiduite</div>
+                  <div className="react-fiche-identite">
+                    <div><span>Notes saisies</span><strong>{statsGlobales && statsGlobales.academique ? statsGlobales.academique.total_notes : "-"}</strong></div>
+                    <div><span>Bulletins generes</span><strong>{statsGlobales && statsGlobales.academique ? statsGlobales.academique.total_bulletins : "-"}</strong></div>
+                    <div><span>Assiduite justifiee</span><strong>{statsGlobales && statsGlobales.absences ? statsGlobales.absences.taux_justification_pct + "%" : "-"}</strong></div>
+                    <div><span>Classes actives</span><strong>{classes.donnees.length}</strong></div>
+                  </div>
+                </div>
+
+                <div className="mag-card">
+                  <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Fiche d'identite technique</div>
+                  <div className="react-fiche-identite">
+                    <div><span>Nom de l'etablissement</span><strong>{parametres ? parametres.nom_ecole : "-"}</strong></div>
+                    <div><span>Annee scolaire active</span><strong>{parametres ? parametres.annee_scolaire_active : "-"}</strong></div>
+                    <div><span>Systeme academique</span><strong>{parametres ? (parametres.systeme_periodes === "semestre" ? "Semestres" : "Trimestres") : "-"}</strong></div>
+                    <div><span>Devise monetaire</span><strong>FCFA</strong></div>
+                  </div>
                 </div>
               </div>
             </>
