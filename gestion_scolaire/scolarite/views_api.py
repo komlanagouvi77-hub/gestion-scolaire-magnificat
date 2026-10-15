@@ -10,7 +10,7 @@ from rest_framework.parsers import MultiPartParser
 from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import serializers
-from drf_spectacular.utils import extend_schema, inline_serializer
+from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiTypes
 
 from django.shortcuts import get_object_or_404
 
@@ -545,6 +545,20 @@ def importer_eleves_csv(request):
     })
 
 
+@extend_schema(
+    summary="Indicateurs cles et KPIs de l'etablissement",
+    description="Fournit les effectifs consolides, la parite, le taux d'assiduite, le taux de recouvrement et la synthese academique.",
+    responses={200: inline_serializer(
+        name="StatistiquesGlobalesResponse",
+        fields={
+            "eleves": serializers.DictField(),
+            "classes": serializers.DictField(),
+            "absences": serializers.DictField(),
+            "finances": serializers.DictField(),
+            "academique": serializers.DictField(),
+        }
+    )}
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def statistiques_globales_view(request):
@@ -618,6 +632,11 @@ def statistiques_globales_view(request):
     })
 
 
+@extend_schema(
+    summary="Exporter la liste d'une classe en CSV",
+    description="Telechargement du fichier CSV compatible Excel listant les eleves et les contacts parents de la classe.",
+    responses={200: OpenApiTypes.BINARY}
+)
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def exporter_classe_csv(request, classe_id):
