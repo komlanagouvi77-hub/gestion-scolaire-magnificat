@@ -156,10 +156,10 @@ export default function GestionEnseignants({ token }) {
       {statut === "ok" ? (
         <div className="mag-table-wrap react-fade-in">
           <table className="mag-table mag-table-pro">
-            <thead><tr><th>Enseignant</th><th>Specialite</th><th>Matieres</th><th>Classes</th><th></th></tr></thead>
+            <thead><tr><th>Enseignant</th><th>Contact</th><th>Specialite</th><th>Matieres</th><th>Classes</th><th></th></tr></thead>
             <tbody>
               {enseignants.length === 0 ? (
-                <tr><td colSpan={5} style={{ textAlign: "center", color: "var(--ink-600)", padding: "2rem" }}>Aucun enseignant pour le moment.</td></tr>
+                <tr><td colSpan={6} style={{ textAlign: "center", color: "var(--ink-600)", padding: "2rem" }}>Aucun enseignant pour le moment.</td></tr>
               ) : enseignants.map(function (e) {
                 const nomComplet = (e.first_name + " " + e.last_name).trim() || e.username;
                 const initiale = (e.first_name || e.username).charAt(0).toUpperCase();
@@ -173,6 +173,35 @@ export default function GestionEnseignants({ token }) {
                           <div className="mag-personne-sous">{e.username}</div>
                         </div>
                       </div>
+                    </td>
+                    <td>
+                      {e.telephone ? (
+                        <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                          <span style={{ fontSize: "0.85rem" }}>{e.telephone}</span>
+                          <a
+                            href={"https://wa.me/" + e.telephone.replace(/[^0-9]/g, "")}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="btn-mag-outline"
+                            style={{
+                              fontSize: "0.75rem",
+                              padding: "0.15rem 0.5rem",
+                              color: "#16A34A",
+                              borderColor: "#16A34A",
+                              textDecoration: "none",
+                              borderRadius: "4px",
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.25rem",
+                            }}
+                            title="Ouvrir une discussion WhatsApp avec l'enseignant"
+                          >
+                            <span>💬</span> WhatsApp
+                          </a>
+                        </div>
+                      ) : (
+                        <span style={{ color: "var(--ink-400, #94a3b8)", fontSize: "0.85rem" }}>{e.email || "-"}</span>
+                      )}
                     </td>
                     <td>{e.specialite || "-"}</td>
                     <td>{e.matieres_noms && e.matieres_noms.length ? e.matieres_noms.map(function (n, i) { return <span className="mag-badge" key={i}>{n}</span>; }) : "-"}</td>

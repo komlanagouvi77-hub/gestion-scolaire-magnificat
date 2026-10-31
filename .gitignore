@@ -15,3 +15,5 @@ env/
 # Projet mobile
 mobile-android/
 
+
+.vscode/

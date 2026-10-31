@@ -280,3 +280,40 @@ class RecuPaiementPdfApiTests(TestCase):
         )
         # DRF get_object filtre sur get_queryset qui ne renvoie pas les paiements d'autres eleves -> 404
         self.assertIn(resp.status_code, [403, 404])
+
+    def test_parent_ne_peut_pas_creer_de_paiement_via_api(self):
+        token = self._obtenir_token("parent_eleve", "Test2026!")
+        resp = self.client.post(
+            "/api/paiements/",
+            {"eleve": self.donnees["eleve"].id, "montant": "10000", "mode_paiement": "especes", "tranche": 1, "annee_scolaire": "2026-2027"},
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_mode_paiement_mobile_money_flooz_ou_tmoney_valide(self):
+        paiement_mobile = Paiement(
+            eleve=self.donnees["eleve"], montant=Decimal("5000"),
+            mode_paiement="mobile_money", reference="FLOOZ-TG-7788",
+            annee_scolaire="2026-2027",
+        )
+        paiement_mobile.full_clean()
+        paiement_mobile.save()
+        self.assertEqual(paiement_mobile.mode_paiement, "mobile_money")
+
+    def test_paiement_avec_montant_decimal_arrondi_exact(self):
+        paiement = Paiement.objects.create(
+            eleve=self.donnees["eleve"], montant=Decimal("12500.50"),
+            mode_paiement="especes", reference="RECU-DEC-01", annee_scolaire="2026-2027",
+        )
+        self.assertEqual(paiement.montant, Decimal("12500.50"))
+
+    def test_situation_financiere_avec_solde_restant_nul(self):
+        FraisScolarite.objects.create(classe=self.donnees["classe"], tranche=2, montant_du=Decimal("20000"))
+        Paiement.objects.create(
+            eleve=self.donnees["eleve"], tranche=2, montant=Decimal("20000"),
+            mode_paiement="virement", annee_scolaire="2026-2027",
+        )
+        total_du = sum(f.montant_du for f in FraisScolarite.objects.filter(classe=self.donnees["classe"], tranche=2))
+        total_paye = sum(p.montant for p in Paiement.objects.filter(eleve=self.donnees["eleve"], tranche=2))
+        self.assertEqual(total_du - total_paye, Decimal("0.00"))
+

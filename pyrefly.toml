@@ -1,0 +1,10 @@
+# Configuration Pyrefly pour projet Django Gestion Scolaire Magnificat
+# En Django, ModelAdmin et UserAdmin utilisent la surcharge d'attributs de classe
+# (list_display, list_filter, fieldsets, filter_horizontal), ce qui est le pattern officiel Django.
+
+preset = "legacy"
+
+[errors]
+bad-override-mutable-attribute = "ignore"
+bad-override-param-name = "ignore"
+unbound-name = "ignore"

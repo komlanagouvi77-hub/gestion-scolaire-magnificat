@@ -1149,3 +1149,23 @@ class ExporterClasseCsvApiTests(TestCase):
         classe_id = self.donnees["classe"].id
         resp = self.client.get(f"/api/classes/{classe_id}/exporter-csv/", HTTP_AUTHORIZATION="Token " + token)
         self.assertEqual(resp.status_code, 403)
+
+    def test_eleve_matricule_unique_en_base(self):
+        from django.db import IntegrityError
+        with self.assertRaises(IntegrityError):
+            Eleve.objects.create(
+                matricule="EL001", nom="Autre", prenom="Test",
+                date_naissance="2012-01-01", sexe="M", classe=self.donnees["classe"],
+            )
+
+    def test_matiere_coefficient_positif_par_defaut(self):
+        matiere = Matiere.objects.create(nom="Histoire-Geo")
+        self.assertEqual(matiere.coefficient, 1)
+
+    def test_absence_motif_et_statut_justifiee_sont_corrects(self):
+        absence = Absence.objects.create(
+            eleve=self.donnees["eleve"], date="2026-10-15", justifiee=True, motif="Maladie avec certificat",
+        )
+        self.assertTrue(absence.justifiee)
+        self.assertEqual(absence.motif, "Maladie avec certificat")
+

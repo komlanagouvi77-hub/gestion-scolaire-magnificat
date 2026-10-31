@@ -1,0 +1,7 @@
+# Configuration Pyrefly pour gestion_scolaire
+preset = "legacy"
+
+[errors]
+bad-override-mutable-attribute = "ignore"
+bad-override-param-name = "ignore"
+unbound-name = "ignore"

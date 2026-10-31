@@ -170,3 +170,30 @@ class ApiMessagerieTests(TestCase):
         )
         self.assertEqual(resp.status_code, 403)
         self.assertEqual(Message.objects.count(), 0)
+
+    def test_anonyme_ne_peut_pas_consulter_les_messages_api(self):
+        resp = self.client.get("/api/messages/")
+        self.assertEqual(resp.status_code, 401)
+
+    def test_parent_ne_peut_pas_supprimer_les_annonces_administrateur(self):
+        admin = Administrateur.objects.create_user(username="admin_comm", password="Test2026!")
+        annonce = Annonce.objects.create(titre="Avis important", contenu="Texte", auteur=admin, destinataires="tous")
+        token = self._obtenir_token("parent1")
+        resp = self.client.delete(f"/api/annonces/{annonce.id}/", HTTP_AUTHORIZATION=f"Token {token}")
+        self.assertEqual(resp.status_code, 403)
+
+    def test_evenement_champs_titre_et_type_sont_enregistres(self):
+        evt = Evenement.objects.create(
+            titre="Examen Blanc", type_evenement=Evenement.TYPE_EVENEMENT,
+            date_debut="2027-02-10", date_fin="2027-02-15",
+        )
+        self.assertEqual(evt.type_evenement, Evenement.TYPE_EVENEMENT)
+        self.assertEqual(evt.titre, "Examen Blanc")
+
+    def test_message_association_avec_eleve_est_persiste(self):
+        msg = Message.objects.create(
+            expediteur=self.prof, destinataire=self.parent, eleve=self.eleve,
+            contenu="Suivi des devoirs",
+        )
+        self.assertEqual(msg.eleve.matricule, "EL001")
+        self.assertFalse(msg.lu)

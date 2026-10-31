@@ -1,5 +1,7 @@
 // src/components/Widgets.jsx
 import { traduireTexte } from "../localisation.js";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
+import { BarChart3, UserPlus, UploadCloud, ArrowRight } from "lucide-react";
 
 export function CarteStat({ label, valeur, lien, onClick }) {
   const estCliquable = !!(lien || onClick);
@@ -17,7 +19,7 @@ export function CarteStat({ label, valeur, lien, onClick }) {
     >
       <div className="mag-stat-label" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <span>{typeof label === "string" ? traduireTexte(label) : label}</span>
-        {estCliquable ? <span className="mag-stat-fleche" style={{ opacity: 0.5, fontSize: "0.85rem" }}>→</span> : null}
+        {estCliquable ? <ArrowRight className="w-4 h-4 ml-1 opacity-60 inline" /> : null}
       </div>
       <div className="mag-stat-value">{valeur}</div>
     </div>
@@ -70,11 +72,6 @@ function traduireValeur(valeur) {
 
 export function GraphiqueBarres({ titre, donnees }) {
   const aDesDonnees = Array.isArray(donnees) && donnees.length > 0;
-  const maxValeur = Math.max(1, ...(aDesDonnees ? donnees.map((d) => d.valeur) : [1]));
-  const largeurBarre = 46;
-  const espace = 22;
-  const hauteur = 160;
-  const largeurTotale = aDesDonnees ? donnees.length * (largeurBarre + espace) + espace : 300;
 
   return (
     <div className="mag-card react-fade-in react-carte-dataviz">
@@ -105,11 +102,7 @@ export function GraphiqueBarres({ titre, donnees }) {
 
           <div className="react-dataviz-empty-contenu">
             <div className="react-dataviz-empty-icone" aria-hidden="true">
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="18" y1="20" x2="18" y2="10"></line>
-                <line x1="12" y1="20" x2="12" y2="4"></line>
-                <line x1="6" y1="20" x2="6" y2="14"></line>
-              </svg>
+              <BarChart3 className="w-6 h-6 text-[#B08A2E]" />
             </div>
             <div className="react-dataviz-empty-titre">
               {traduireTexte("Visualisation comparative des effectifs")}
@@ -120,57 +113,37 @@ export function GraphiqueBarres({ titre, donnees }) {
             <div className="react-dataviz-empty-actions">
               <button
                 type="button"
-                className="mag-btn-primary react-dataviz-btn-cta"
+                className="mag-btn-primary react-dataviz-btn-cta inline-flex items-center gap-1.5"
                 onClick={function () { window.location.hash = "/eleves"; }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M16 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"></path>
-                  <circle cx="8.5" cy="7" r="4"></circle>
-                  <line x1="20" y1="8" x2="20" y2="14"></line>
-                  <line x1="23" y1="11" x2="17" y2="11"></line>
-                </svg>
+                <UserPlus className="w-4 h-4" aria-hidden="true" />
                 <span>{traduireTexte("Inscrire un élève")}</span>
               </button>
               <button
                 type="button"
-                className="btn-mag-outline react-dataviz-btn-sec"
+                className="btn-mag-outline react-dataviz-btn-sec inline-flex items-center gap-1.5"
                 onClick={function () { window.location.hash = "/import"; }}
               >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-                  <polyline points="17 8 12 3 7 8"></polyline>
-                  <line x1="12" y1="3" x2="12" y2="15"></line>
-                </svg>
+                <UploadCloud className="w-4 h-4" aria-hidden="true" />
                 <span>{traduireTexte("Importer via CSV")}</span>
               </button>
             </div>
           </div>
         </div>
       ) : (
-        <div className="react-dataviz-svg-wrap">
-          <svg viewBox={"0 0 " + largeurTotale + " " + (hauteur + 30)} style={{ width: "100%", height: "220px" }}>
-            {donnees.map((d, i) => {
-              const barreH = (d.valeur / maxValeur) * hauteur;
-              const x = espace + i * (largeurBarre + espace);
-              const y = hauteur - barreH;
-              return (
-                <g key={d.label}>
-                  <rect
-                    x={x} y={y} width={largeurBarre} height={barreH}
-                    fill="#B08A2E" rx={4} className="react-barre-animee"
-                    style={{ transformOrigin: (x + largeurBarre / 2) + "px " + hauteur + "px" }}
-                  />
-                  <text x={x + largeurBarre / 2} y={y - 6} textAnchor="middle" fontSize="12" fill="#0A2540" fontWeight="600">
-                    {d.valeur}
-                  </text>
-                  <text x={x + largeurBarre / 2} y={hauteur + 18} textAnchor="middle" fontSize="10" fill="#64748B">
-                    {traduireTexte(d.label.length > 10 ? d.label.slice(0, 9) + "…" : d.label)}
-                    {d.label.length > 10 ? <title>{traduireTexte(d.label)}</title> : null}
-                  </text>
-                </g>
-              );
-            })}
-          </svg>
+        <div className="react-dataviz-recharts-wrap w-full" style={{ height: "230px", marginTop: "10px" }}>
+          <ResponsiveContainer width="100%" height={230}>
+            <BarChart data={donnees} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
+              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
+              <XAxis dataKey="label" stroke="#64748B" fontSize={11} tickLine={false} />
+              <YAxis stroke="#64748B" fontSize={11} tickLine={false} allowDecimals={false} />
+              <Tooltip 
+                cursor={{ fill: "rgba(176, 138, 46, 0.08)" }}
+                contentStyle={{ backgroundColor: "#0A2540", color: "#FFFFFF", borderRadius: "8px", border: "none", fontSize: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+              />
+              <Bar dataKey="valeur" fill="#B08A2E" radius={[4, 4, 0, 0]} name={traduireTexte("Effectif")} />
+            </BarChart>
+          </ResponsiveContainer>
         </div>
       )}
     </div>

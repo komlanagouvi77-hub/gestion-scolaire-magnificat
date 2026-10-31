@@ -875,3 +875,15 @@ class ApiDemandeCongeTests(TestCase):
         self.assertEqual(resp.status_code, 403)
         demande.refresh_from_db()
         self.assertEqual(demande.statut, DemandeConge.STATUT_EN_ATTENTE)
+
+    def test_hachage_mot_de_passe_pbkdf2_securise(self):
+        self.assertTrue(self.admin.password.startswith("pbkdf2_sha256$"))
+
+    def test_authentification_sans_identifiants_rejete(self):
+        resp = self.client.post(reverse("api_token_auth"), {})
+        self.assertEqual(resp.status_code, 400)
+
+    def test_utilisateur_actif_par_defaut(self):
+        self.assertTrue(self.prof.is_active)
+        self.assertTrue(self.admin.is_active)
+

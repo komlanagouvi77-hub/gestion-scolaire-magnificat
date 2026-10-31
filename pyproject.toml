@@ -1,0 +1,7 @@
+[tool.pyrefly]
+preset = "legacy"
+
+[tool.pyrefly.errors]
+bad-override-mutable-attribute = "ignore"
+bad-override-param-name = "ignore"
+unbound-name = "ignore"

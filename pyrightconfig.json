@@ -1,0 +1,13 @@
+{
+  "include": [
+    ".",
+    "memoire_revision",
+    "gestion_scolaire"
+  ],
+  "extraPaths": [
+    "memoire_revision/python_tools",
+    "gestion_scolaire",
+    "C:/Users/AGOUVI/AppData/Local/Programs/Python/Python314/Lib/site-packages"
+  ],
+  "reportMissingImports": "none"
+}

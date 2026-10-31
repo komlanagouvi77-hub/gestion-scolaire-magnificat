@@ -46,7 +46,7 @@
 
 <div class="mag-table-wrap">
 <table class="mag-table mag-table-pro">
-    <thead><tr><th>Enseignant</th><th>Specialite</th><th>Matieres</th><th>Classes</th><th></th></tr></thead>
+    <thead><tr><th>Enseignant</th><th>Contact</th><th>Specialite</th><th>Matieres</th><th>Classes</th><th></th></tr></thead>
     <tbody>
         {% for enseignant in enseignants %}
         <tr>
@@ -58,6 +58,18 @@
                         <div class="mag-personne-sous">{{ enseignant.username }}</div>
                     </div>
                 </div>
+            </td>
+            <td>
+                {% if enseignant.telephone %}
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                    <span style="font-size:0.85rem;">{{ enseignant.telephone }}</span>
+                    <a href="https://wa.me/{{ enseignant.telephone|cut:' '|cut:'+'|cut:'-'|cut:'.' }}" target="_blank" rel="noopener noreferrer" class="btn-mag-outline" style="font-size:0.75rem;padding:0.15rem 0.45rem;color:#16A34A;border-color:#16A34A;text-decoration:none;border-radius:4px;display:inline-flex;align-items:center;gap:0.2rem;" title="Discuter sur WhatsApp">💬 WhatsApp</a>
+                </div>
+                {% elif enseignant.email %}
+                <span style="font-size:0.85rem;color:var(--ink-600);">{{ enseignant.email }}</span>
+                {% else %}
+                <span style="color:var(--ink-400);font-size:0.85rem;">-</span>
+                {% endif %}
             </td>
             <td>{{ enseignant.specialite|default:"-" }}</td>
             <td>{% for m in enseignant.matieres.all %}<span class="mag-badge">{{ m.nom }}</span>{% empty %}-{% endfor %}</td>
@@ -71,7 +83,7 @@
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="5" style="text-align:center;color:var(--ink-600);padding:2rem;">Aucun enseignant pour le moment.</td></tr>
+        <tr><td colspan="6" style="text-align:center;color:var(--ink-600);padding:2rem;">Aucun enseignant pour le moment.</td></tr>
         {% endfor %}
     </tbody>
 </table>

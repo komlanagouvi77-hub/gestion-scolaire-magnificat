@@ -42,7 +42,7 @@
 
 <div class="mag-table-wrap">
 <table class="mag-table mag-table-pro">
-    <thead><tr><th>Parent</th><th>Enfant(s)</th><th></th></tr></thead>
+    <thead><tr><th>Parent</th><th>Contact</th><th>Enfant(s)</th><th></th></tr></thead>
     <tbody>
         {% for parent in parents %}
         <tr>
@@ -55,6 +55,18 @@
                     </div>
                 </div>
             </td>
+            <td>
+                {% if parent.telephone %}
+                <div style="display:flex;align-items:center;gap:0.4rem;">
+                    <span style="font-size:0.85rem;">{{ parent.telephone }}</span>
+                    <a href="https://wa.me/{{ parent.telephone|cut:' '|cut:'+'|cut:'-'|cut:'.' }}" target="_blank" rel="noopener noreferrer" class="btn-mag-outline" style="font-size:0.75rem;padding:0.15rem 0.45rem;color:#16A34A;border-color:#16A34A;text-decoration:none;border-radius:4px;display:inline-flex;align-items:center;gap:0.2rem;" title="Discuter sur WhatsApp">💬 WhatsApp</a>
+                </div>
+                {% elif parent.email %}
+                <span style="font-size:0.85rem;color:var(--ink-600);">{{ parent.email }}</span>
+                {% else %}
+                <span style="color:var(--ink-400);font-size:0.85rem;">-</span>
+                {% endif %}
+            </td>
             <td>{% for e in parent.eleves.all %}<span class="mag-badge">{{ e.nom }} {{ e.prenom }}</span>{% empty %}-{% endfor %}</td>
             <td>
                 <a href="{% url 'comptes:modifier_parent' parent.id %}" class="mag-btn-lien">Modifier →</a>
@@ -65,7 +77,7 @@
             </td>
         </tr>
         {% empty %}
-        <tr><td colspan="3" style="text-align:center;color:var(--ink-600);padding:2rem;">Aucun parent pour le moment.</td></tr>
+        <tr><td colspan="4" style="text-align:center;color:var(--ink-600);padding:2rem;">Aucun parent pour le moment.</td></tr>
         {% endfor %}
     </tbody>
 </table>
