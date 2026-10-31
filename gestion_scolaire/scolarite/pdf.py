@@ -688,7 +688,7 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
     date_generation_str = bulletin.date_generation.strftime("%d/%m/%Y à %H:%M") if bulletin.date_generation else datetime.now().strftime("%d/%m/%Y à %H:%M")
     elements.append(
         Paragraph(
-            f"Bulletin de notes généré le {date_generation_str} par Educes | www.educes.com  •  Vérification en ligne : {url_verification}",
+            f"Bulletin de notes officiel généré le {date_generation_str} par Plateforme Magnificat  •  Vérification en ligne : {url_verification}",
             ParagraphStyle("PiedPage", alignment=TA_LEFT, fontSize=5.5, leading=7, textColor=colors.HexColor("#64748B"))
         )
     )
