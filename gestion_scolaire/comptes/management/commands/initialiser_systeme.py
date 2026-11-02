@@ -35,32 +35,26 @@ class Command(BaseCommand):
         parametres.save()
         self.stdout.write(self.style.SUCCESS("Parametres de l'etablissement configures."))
 
-        # 2. Compte Administrateur principal
-        admin_existant = Administrateur.objects.first()
-        if not admin_existant:
-            username = os.environ.get("ADMIN_USERNAME", "admin")
-            email = os.environ.get("ADMIN_EMAIL", "direction@magnificat-scolaire.tg")
-            password = os.environ.get("ADMIN_PASSWORD", "AdminMagnificat2026!")
-
-            admin_user = Administrateur.objects.create_superuser(
-                username=username,
-                email=email,
-                password=password,
-                first_name="Georges",
-                last_name="AGOUVI",
-                service="Direction Generale",
-                telephone="+228 90 00 00 00",
-            )
-            self.stdout.write(
-                self.style.SUCCESS(
-                    f"Compte administrateur cree : {username} / {password}"
+        # 2. Comptes Administrateurs garantis
+        admin_user = None
+        for nom_admin in ["admin", "demo_admin"]:
+            admin_obj = Administrateur.objects.filter(username=nom_admin).first()
+            if not admin_obj:
+                admin_obj = Administrateur.objects.create_superuser(
+                    username=nom_admin,
+                    email=f"{nom_admin}@magnificat-scolaire.tg",
+                    password="DemoMagnificat2026!",
+                    first_name="Georges",
+                    last_name="AGOUVI",
+                    service="Direction Generale",
+                    telephone="+228 90 00 00 00",
                 )
-            )
-        else:
-            admin_user = admin_existant
-            self.stdout.write(
-                self.style.NOTICE(f"Compte administrateur deja present : {admin_user.username}")
-            )
+                self.stdout.write(self.style.SUCCESS(f"Compte administrateur cree : {nom_admin}"))
+            else:
+                admin_obj.set_password("DemoMagnificat2026!")
+                admin_obj.save()
+            if not admin_user:
+                admin_user = admin_obj
 
         # 3. Donnees de demonstration si demandees
         avec_demo = options.get("avec_demo") or os.environ.get("DEMO_DATA", "False") == "True"
@@ -90,6 +84,23 @@ class Command(BaseCommand):
                 )
                 prof_math.classes.add(cl3, cl6, cl_term)
                 prof_math.matieres.add(maths)
+
+                demo_prof = Enseignant.objects.filter(username="demo_prof").first()
+                if not demo_prof:
+                    demo_prof = Enseignant.objects.create_user(
+                        username="demo_prof",
+                        email="demo_prof@magnificat-scolaire.tg",
+                        password="DemoMagnificat2026!",
+                        first_name="T. G.",
+                        last_name="DATEY-AMOUSSOU",
+                        specialite="Mathematiques",
+                        telephone="+228 91 11 22 33",
+                    )
+                else:
+                    demo_prof.set_password("DemoMagnificat2026!")
+                    demo_prof.save()
+                demo_prof.classes.add(cl3, cl6, cl_term)
+                demo_prof.matieres.add(maths)
 
                 prof_fr = Enseignant.objects.create_user(
                     username="prof_francais",
@@ -293,7 +304,7 @@ class Command(BaseCommand):
                     cree_par=admin_user,
                 )
                 Message.objects.create(
-                    expediteur=prof,
+                    expediteur=prof_math,
                     destinataire=parent,
                     eleve=e1,
                     contenu="Bonjour Mme Mensah, les resultats du premier devoir de mathematiques d'Afi sont tres satisfaisants.",

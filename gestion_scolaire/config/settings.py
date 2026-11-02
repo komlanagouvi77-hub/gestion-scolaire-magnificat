@@ -134,7 +134,13 @@ if config('DATABASE_URL', default=''):
     # Fourni automatiquement par Render (et la plupart des hebergeurs cloud) :
     # une seule variable au lieu de DB_NAME/DB_USER/... separes.
     import dj_database_url
-    DATABASES = {'default': dj_database_url.config(default=config('DATABASE_URL'), conn_max_age=600)}
+    DATABASES = {
+        'default': dj_database_url.config(
+            default=config('DATABASE_URL'),
+            conn_max_age=600,
+            conn_health_checks=True,
+        )
+    }
 elif config('DB_NAME', default=''):
     DATABASES = {
         'default': {

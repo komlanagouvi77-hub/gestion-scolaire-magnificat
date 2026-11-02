@@ -6,10 +6,28 @@ from pathlib import Path
 from django.conf import settings
 from django.conf.urls.static import static
 from django.contrib import admin
-from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, HttpResponseRedirect
+from django.http import HttpResponse, HttpResponseForbidden, HttpResponseNotFound, HttpResponseRedirect, JsonResponse
 from django.urls import include, path, re_path
 from django.views.static import serve as servir_fichier_media
 from scolarite.views import verifier_bulletin_public_view
+
+
+def diagnostic_status_view(request):
+    import traceback
+    from django.db import connection
+    from comptes.models import Utilisateur
+    info = {}
+    try:
+        connection.ensure_connection()
+        info["db_connection"] = "OK"
+        info["db_vendor"] = connection.vendor
+        info["users_count"] = Utilisateur.objects.count()
+        info["users"] = list(Utilisateur.objects.values_list("username", flat=True))
+    except Exception as e:
+        info["db_connection"] = "ERROR"
+        info["error"] = str(e)
+        info["traceback"] = traceback.format_exc()
+    return JsonResponse(info)
 
 
 def racine_view(request):
@@ -97,6 +115,7 @@ def bulletin_direct_bloque(request, chemin_fichier):
 
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('diagnostic-status/', diagnostic_status_view, name='diagnostic_status'),
     path('', racine_view, name='racine'),
     path('app/', application_react_view, name='application_react'),
     path('app/sw.js', servir_service_worker, name='service_worker'),  # avant le catch-all ci-dessous
