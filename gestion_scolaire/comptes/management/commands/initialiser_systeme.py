@@ -56,6 +56,14 @@ class Command(BaseCommand):
             if not admin_user:
                 admin_user = admin_obj
 
+        # Garantir le mot de passe pour les comptes de demonstration Enseignant et Parent
+        for prof_demo in Enseignant.objects.filter(username__in=["demo_prof", "prof_math"]):
+            prof_demo.set_password("DemoMagnificat2026!")
+            prof_demo.save()
+        for parent_demo in Parent.objects.filter(username__in=["demo_parent", "parent1"]):
+            parent_demo.set_password("DemoMagnificat2026!")
+            parent_demo.save()
+
         # 3. Donnees de demonstration si demandees
         avec_demo = options.get("avec_demo") or os.environ.get("DEMO_DATA", "False") == "True"
         if avec_demo and not Eleve.objects.exists():

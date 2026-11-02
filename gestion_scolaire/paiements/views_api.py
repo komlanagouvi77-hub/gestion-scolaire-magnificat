@@ -39,6 +39,22 @@ class PaiementViewSet(viewsets.ModelViewSet):
         if not hasattr(self.request.user, "administrateur"):
             raise PermissionDenied("Seul un administrateur peut enregistrer ou modifier un paiement.")
 
+    def create(self, request, *args, **kwargs):
+        self._verifier_administrateur()
+        return super().create(request, *args, **kwargs)
+
+    def update(self, request, *args, **kwargs):
+        self._verifier_administrateur()
+        return super().update(request, *args, **kwargs)
+
+    def partial_update(self, request, *args, **kwargs):
+        self._verifier_administrateur()
+        return super().partial_update(request, *args, **kwargs)
+
+    def destroy(self, request, *args, **kwargs):
+        self._verifier_administrateur()
+        return super().destroy(request, *args, **kwargs)
+
     def perform_create(self, serializer):
         self._verifier_administrateur()
         serializer.save(enregistre_par=self.request.user)
