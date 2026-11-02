@@ -25,3 +25,17 @@ services:
         value: "False"
       - key: DJANGO_SECURE_SSL_REDIRECT
         value: "True"
+      - key: EMAIL_HOST
+        value: "smtp.gmail.com"
+      - key: EMAIL_PORT
+        value: "587"
+      - key: EMAIL_USE_TLS
+        value: "True"
+      - key: PLATFORM_URL
+        value: "https://gestion-scolaire-magnificat.onrender.com/app/"
+      - key: EMAIL_HOST_USER
+        sync: false
+      - key: EMAIL_HOST_PASSWORD
+        sync: false
+      - key: DEFAULT_FROM_EMAIL
+        sync: false

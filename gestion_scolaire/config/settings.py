@@ -189,8 +189,11 @@ USE_TZ = True
 # Configuration de l'envoi d'emails (SMTP Gmail ou console locale)
 # ==============================================================================
 # Supporte indifferemment EMAIL_* ou DJANGO_EMAIL_* dans .env ou Render.
-_email_user = config('EMAIL_HOST_USER', default=config('DJANGO_EMAIL_HOST_USER', default=''))
-_email_pwd = config('EMAIL_HOST_PASSWORD', default=config('DJANGO_EMAIL_HOST_PASSWORD', default=''))
+_email_user = config('EMAIL_HOST_USER', default=config('DJANGO_EMAIL_HOST_USER', default='')).strip()
+_raw_pwd = config('EMAIL_HOST_PASSWORD', default=config('DJANGO_EMAIL_HOST_PASSWORD', default=''))
+# Les mots de passe d'application Google comportent souvent 16 lettres séparées par des espaces.
+# Enlever les espaces garantit que Google SMTP valide l'authentification sans erreur 535.
+_email_pwd = _raw_pwd.replace(' ', '').strip() if _raw_pwd else ''
 
 EMAIL_HOST = config('EMAIL_HOST', default=config('DJANGO_EMAIL_HOST', default='smtp.gmail.com'))
 EMAIL_PORT = config('EMAIL_PORT', default=config('DJANGO_EMAIL_PORT', default=587, cast=int), cast=int)

@@ -32,6 +32,20 @@ class Command(BaseCommand):
         parametres.telephone = parametres.telephone or "(+228) 92 19 02 56 / 92 63 55 85 / 99 48 88 21"
         parametres.email = parametres.email or "collegemagnificat2024@gmail.com"
         parametres.annee_scolaire_active = parametres.annee_scolaire_active or "2026-2027"
+
+        # Garantir la presence du logo officiel
+        if not parametres.logo:
+            chemin_media_logo = settings.BASE_DIR / "media" / "logo_ecole" / "logo_magnificat.png"
+            if chemin_media_logo.exists():
+                parametres.logo = "logo_ecole/logo_magnificat.png"
+            else:
+                chemin_defaut = settings.BASE_DIR / "static" / "frontend" / "logo-ecole-defaut.png"
+                if chemin_defaut.exists():
+                    import shutil
+                    chemin_media_logo.parent.mkdir(parents=True, exist_ok=True)
+                    shutil.copy2(chemin_defaut, chemin_media_logo)
+                    parametres.logo = "logo_ecole/logo_magnificat.png"
+
         parametres.save()
         self.stdout.write(self.style.SUCCESS("Parametres de l'etablissement configures."))
 
