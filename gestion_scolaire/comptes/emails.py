@@ -85,18 +85,37 @@ def _logo_embarque(parametres):
 def _envoyer_email_html(gabarit, contexte, sujet, texte_brut, destinataire):
     if not destinataire:
         return
+    import datetime
     from .models import Parametres
 
     parametres = Parametres.charger()
     logo_cid, image_logo = _logo_embarque(parametres)
 
-    contexte = dict(contexte)
-    contexte["nom_ecole"] = parametres.nom_ecole
-    contexte["adresse"] = parametres.adresse
-    contexte["logo_cid"] = logo_cid
+    nom_ecole = parametres.nom_ecole or "Complexe Scolaire Magnificat"
+    adresse = parametres.adresse or "Adidogomé - Cacaveli, 08 BP 80213 Lomé 08, Togo"
+    telephone = parametres.telephone or "(+228) 92 19 02 56 / 92 63 55 85 / 99 48 88 21"
+    email_ecole = parametres.email or "collegemagnificat2024@gmail.com"
+    platform_url = getattr(settings, "PLATFORM_URL", "https://gestion-scolaire-magnificat.onrender.com/app/")
+
+    contexte_enrichi = {
+        "nom_ecole": nom_ecole,
+        "devise": "Discipline • Travail • Succès",
+        "cycles": "Maternelle • Primaire • Collège • Lycée",
+        "description_ecole": (
+            "Établissement d'enseignement général d'excellence dédié à la formation intégrale, "
+            "à la réussite scolaire et à l'innovation pédagogique moderne au Togo."
+        ),
+        "adresse": adresse,
+        "telephone": telephone,
+        "email_ecole": email_ecole,
+        "platform_url": platform_url,
+        "logo_cid": logo_cid,
+        "annee_en_cours": datetime.datetime.now().year,
+    }
+    contexte_enrichi.update(contexte)
 
     try:
-        html = render_to_string(gabarit, contexte)
+        html = render_to_string(gabarit, contexte_enrichi)
         email = EmailAvecImagesIncorporees(sujet, texte_brut, settings.DEFAULT_FROM_EMAIL, [destinataire])
         email.attach_alternative(html, "text/html")
         if image_logo is not None:
@@ -109,12 +128,16 @@ def _envoyer_email_html(gabarit, contexte, sujet, texte_brut, destinataire):
 def envoyer_email_demande_approuvee(demande):
     prenom = demande.first_name or demande.username_souhaite
     type_compte_label = demande.get_type_compte_display()
+    platform_url = getattr(settings, "PLATFORM_URL", "https://gestion-scolaire-magnificat.onrender.com/app/")
     texte_brut = (
         f"Bonjour {prenom},\n\n"
-        f"Votre demande d'acces a l'espace {type_compte_label} a ete approuvee par l'administration.\n"
-        f"Votre compte est maintenant actif. Connectez-vous avec le nom d'utilisateur et le "
+        f"Votre demande d'acces a l'espace {type_compte_label} du Complexe Scolaire Magnificat a ete approuvee par l'administration.\n"
+        f"Votre compte est desormais actif. Connectez-vous avec le nom d'utilisateur et le "
         f"mot de passe que vous avez choisis lors de votre demande.\n\n"
-        f"Nom d'utilisateur : {demande.username_souhaite}\n\n"
+        f"Nom d'utilisateur : {demande.username_souhaite}\n"
+        f"Acceder a la plateforme : {platform_url}\n\n"
+        f"Contacts : (+228) 92 19 02 56 / 92 63 55 85 / 99 48 88 21\n"
+        f"Email : collegemagnificat2024@gmail.com\n\n"
         f"Cordialement,\nComplexe Scolaire Magnificat"
     )
     _envoyer_email_html(
@@ -134,7 +157,9 @@ def envoyer_email_demande_refusee(demande):
         f"Bonjour {prenom},\n\n"
         f"Nous vous informons que votre demande d'acces a l'espace {type_compte_label} "
         f"n'a pas ete retenue par l'administration.{motif_ligne}\n\n"
-        f"Pour toute question, veuillez contacter directement l'etablissement.\n\n"
+        f"Pour toute question, veuillez contacter directement l'etablissement :\n"
+        f"Telephone : (+228) 92 19 02 56 / 92 63 55 85 / 99 48 88 21\n"
+        f"Email : collegemagnificat2024@gmail.com\n\n"
         f"Cordialement,\nComplexe Scolaire Magnificat"
     )
     _envoyer_email_html(

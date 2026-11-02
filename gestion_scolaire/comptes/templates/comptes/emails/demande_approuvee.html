@@ -1,23 +1,34 @@
 {% extends "comptes/emails/base_email.html" %}
 
-{% block titre %}Votre compte a ete cree{% endblock %}
-{% block statut %}✓ Demande approuvee{% endblock %}
+{% block titre %}Votre compte est actif - {{ nom_ecole }}{% endblock %}
+{% block statut %}✓ Demande d'accès approuvée{% endblock %}
 
 {% block contenu %}
-<p style="margin:0 0 16px;">Bonjour {{ prenom }},</p>
-<p style="margin:0 0 16px;">
-  Bonne nouvelle : votre demande d'acces a l'espace <strong>{{ type_compte_label }}</strong>
-  a ete approuvee par l'administration.
+<p style="margin:0 0 16px; font-size:16px;">Bonjour <strong>{{ prenom }}</strong>,</p>
+
+<p style="margin:0 0 18px;">
+  Nous avons le plaisir de vous informer que votre demande d'accès à l'espace <strong>{{ type_compte_label }}</strong>
+  du <strong>{{ nom_ecole }}</strong> a été <strong>approuvée avec succès</strong> par la direction.
 </p>
-<p style="margin:0 0 20px;">
-  Votre compte est maintenant actif. Connectez-vous avec le nom d'utilisateur et le mot
-  de passe que vous avez choisis lors de votre demande.
-</p>
-<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; background-color:#F7F1DE; border-radius:8px; margin:0 0 4px;">
+
+<!-- Encadré identifiants -->
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; background-color:#F0FDF4; border:1px solid #86EFAC; border-radius:10px; margin:22px 0;">
   <tr>
-    <td style="padding:16px 20px; font-family: 'Courier New', Courier, monospace; font-size:14px; color:#0A2540;">
-      Nom d'utilisateur : <strong>{{ username }}</strong>
+    <td style="padding:18px 22px;">
+      <div style="font-size:12px; font-weight:700; color:#15803D; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+        Vos paramètres de connexion
+      </div>
+      <div style="font-family:'Courier New', monospace; font-size:15px; color:#0A2540; margin-bottom:6px;">
+        Nom d'utilisateur : <strong>{{ username }}</strong>
+      </div>
+      <div style="font-size:13px; color:#166534;">
+        Mot de passe : <em>(celui que vous avez choisi lors de votre demande)</em>
+      </div>
     </td>
   </tr>
 </table>
+
+<p style="margin:0 0 12px;">
+  Votre compte est immédiatement opérationnel. Vous pouvez dès à présent cliquer sur le bouton ci-dessous pour accéder directement à la plateforme de l'école et vous connecter à votre espace personnalisé :
+</p>
 {% endblock %}

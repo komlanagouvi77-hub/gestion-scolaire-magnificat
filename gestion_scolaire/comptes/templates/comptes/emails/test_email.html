@@ -1,35 +1,63 @@
 {% extends "comptes/emails/base_email.html" %}
 
-{% block titre %}Test de configuration Email - {{ nom_ecole }}{% endblock %}
+{% block titre %}Service Numérique Officiel - {{ nom_ecole }}{% endblock %}
 
-{% block statut %}Configuration Email Active{% endblock %}
+{% block statut %}✦ Plateforme Numérique Connectée & Opérationnelle ✦{% endblock %}
 
 {% block contenu %}
-<p style="font-size:16px; font-weight:bold; color:#0A2540; margin-top:0;">Bonjour Georges AGOUVI,</p>
+<p style="font-size:18px; font-weight:800; color:#0A2540; margin:0 0 16px;">
+  Bonjour Georges AGOUVI,
+</p>
 
-<p>Félicitations ! Le service d'envoi d'emails officiel du <strong>{{ nom_ecole }}</strong> est désormais <strong>entièrement configuré et opérationnel</strong>.</p>
+<p style="margin:0 0 18px; font-size:15px; line-height:1.65;">
+  Félicitations ! Le service officiel de messagerie et de notifications numériques du 
+  <strong>{{ nom_ecole }}</strong> est désormais <strong>entièrement configuré, sécurisé et opérationnel</strong>.
+</p>
 
-<div style="background-color:#F0FDF4; border:1px solid #BBF7D0; border-radius:8px; padding:16px 20px; margin:22px 0;">
-  <p style="margin:0 0 6px 0; color:#166534; font-weight:bold; font-size:15px;">✔ Connexion SMTP Gmail sécurisée</p>
-  <p style="margin:0; font-size:13px; color:#15803D; line-height:1.5;">
-    Le serveur d'envoi est validé. Tous les emails d'approbation d'accès, notifications et documents sont délivrés avec le logo officiel et la charte graphique de l'école.
-  </p>
+<!-- Bloc de confirmation de connectivite -->
+<div style="background-color:#F0FDF4; border:1px solid #BBF7D0; border-radius:12px; padding:20px 22px; margin:22px 0;">
+  <div style="color:#166534; font-weight:bold; font-size:15px; margin-bottom:10px;">
+    ✔ Infrastructure Numérique Validée avec Succès
+  </div>
+  <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="font-size:13px; color:#15803D; line-height:1.7;">
+    <tr>
+      <td style="padding:3px 0;">🔒 <strong>SMTP Gmail Authentifié</strong> : Transmission sécurisée et haute délivrabilité</td>
+    </tr>
+    <tr>
+      <td style="padding:3px 0;">🎓 <strong>Identité Visuelle Officielle</strong> : Blason et charte institutionnelle du Complexe Magnificat</td>
+    </tr>
+    <tr>
+      <td style="padding:3px 0;">⚡ <strong>Interconnexion Temps Réel</strong> : Accès direct vers les espaces Parents, Enseignants et Administration</td>
+    </tr>
+  </table>
 </div>
 
-<table style="width:100%; border-collapse:collapse; margin:20px 0; font-size:13px;">
-  <tr>
-    <td style="padding:6px 0; color:#64748B;">Établissement :</td>
-    <td style="padding:6px 0; font-weight:bold; color:#0A2540;">{{ nom_ecole }}</td>
+<!-- Tableau recapitulatif institutionnel -->
+<table role="presentation" cellpadding="0" cellspacing="0" style="width:100%; border-collapse:collapse; margin:24px 0; font-size:13px; border:1px solid #E2E8F0; border-radius:8px; overflow:hidden;">
+  <tr style="background-color:#F8FAFC;">
+    <td style="padding:10px 14px; color:#64748B; border-bottom:1px solid #E2E8F0; width:35%;">Établissement :</td>
+    <td style="padding:10px 14px; font-weight:bold; color:#0A2540; border-bottom:1px solid #E2E8F0;">{{ nom_ecole }}</td>
   </tr>
   <tr>
-    <td style="padding:6px 0; color:#64748B;">Expéditeur certifié :</td>
-    <td style="padding:6px 0; font-weight:bold; color:#0A2540;">{{ expediteur }}</td>
+    <td style="padding:10px 14px; color:#64748B; border-bottom:1px solid #E2E8F0;">Devise officielle :</td>
+    <td style="padding:10px 14px; font-weight:bold; color:#B08A2E; border-bottom:1px solid #E2E8F0;">{{ devise }}</td>
+  </tr>
+  <tr style="background-color:#F8FAFC;">
+    <td style="padding:10px 14px; color:#64748B; border-bottom:1px solid #E2E8F0;">Expéditeur certifié :</td>
+    <td style="padding:10px 14px; font-weight:bold; color:#0A2540; border-bottom:1px solid #E2E8F0;">{{ expediteur }}</td>
   </tr>
   <tr>
-    <td style="padding:6px 0; color:#64748B;">Date & Heure :</td>
-    <td style="padding:6px 0; color:#0A2540;">{{ date_envoi }}</td>
+    <td style="padding:10px 14px; color:#64748B; border-bottom:1px solid #E2E8F0;">Date & Heure :</td>
+    <td style="padding:10px 14px; color:#0A2540; border-bottom:1px solid #E2E8F0;">{{ date_envoi }}</td>
+  </tr>
+  <tr style="background-color:#F8FAFC;">
+    <td style="padding:10px 14px; color:#64748B;">Portail Web Cloud :</td>
+    <td style="padding:10px 14px; font-weight:bold; color:#2563EB;">{{ platform_url }}</td>
   </tr>
 </table>
 
-<p style="margin-top:24px;">Cordialement,<br><strong style="color:#0A2540;">La Direction du {{ nom_ecole }}</strong></p>
+<p style="margin:20px 0 12px; font-size:15px; color:#1E293B;">
+  Cliquez sur le bouton ci-dessous pour être redirigé directement vers la plateforme interactive du 
+  <strong>{{ nom_ecole }}</strong> et profiter de toutes ses fonctionnalités de pointe :
+</p>
 {% endblock %}

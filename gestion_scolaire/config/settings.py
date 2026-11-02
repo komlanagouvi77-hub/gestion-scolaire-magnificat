@@ -212,6 +212,15 @@ DEFAULT_FROM_EMAIL = config(
     )
 )
 
+# URL publique de la plateforme scolaire (utilisee dans les emails, notifications, QR codes)
+PLATFORM_URL = config(
+    'PLATFORM_URL',
+    default=config(
+        'DJANGO_PLATFORM_URL',
+        default='https://gestion-scolaire-magnificat.onrender.com/app/'
+    )
+)
+
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']

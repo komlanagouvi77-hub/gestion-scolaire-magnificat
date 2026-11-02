@@ -28,9 +28,9 @@ class Command(BaseCommand):
         parametres = Parametres.charger()
         if not parametres.nom_ecole:
             parametres.nom_ecole = "Complexe Scolaire Magnificat"
-        parametres.adresse = parametres.adresse or "Adidogome, Lome, Togo"
-        parametres.telephone = parametres.telephone or "+228 90 00 00 00"
-        parametres.email = parametres.email or "contact@magnificat-scolaire.tg"
+        parametres.adresse = parametres.adresse or "Adidogomé - Cacaveli, 08 BP 80213 Lomé 08, Togo"
+        parametres.telephone = parametres.telephone or "(+228) 92 19 02 56 / 92 63 55 85 / 99 48 88 21"
+        parametres.email = parametres.email or "collegemagnificat2024@gmail.com"
         parametres.annee_scolaire_active = parametres.annee_scolaire_active or "2026-2027"
         parametres.save()
         self.stdout.write(self.style.SUCCESS("Parametres de l'etablissement configures."))

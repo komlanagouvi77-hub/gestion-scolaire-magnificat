@@ -31,14 +31,21 @@ class Command(BaseCommand):
         self.stdout.write(f"  DEFAULT_FROM_EMAIL  : {settings.DEFAULT_FROM_EMAIL}")
         self.stdout.write(self.style.NOTICE(f"\nEnvoi de l'email officiel HTML avec logo a {destinataire}..."))
 
-        sujet = "Authentification & Configuration Email - Complexe Scolaire Magnificat"
+        sujet = "Notification Officielle - Plateforme Numérique Opérationnelle - Complexe Scolaire Magnificat"
+        platform_url = getattr(settings, "PLATFORM_URL", "https://gestion-scolaire-magnificat.onrender.com/app/")
         texte_brut = (
             "Bonjour Georges AGOUVI,\n\n"
-            "Felicitations ! Le service d'envoi d'emails officiel du Complexe Scolaire Magnificat "
+            "Felicitations ! Le service d'envoi d'emails et de messagerie officielle du Complexe Scolaire Magnificat "
             "est desormais entierement configure et operationnel.\n\n"
-            "Vos identifiants SMTP Gmail fonctionnent parfaitement !\n\n"
+            f"Acceder directement a la plateforme : {platform_url}\n\n"
+            "Etablissement : Complexe Scolaire Magnificat\n"
+            "Devise : Discipline - Travail - Succes\n"
+            "Cycles : Maternelle, Primaire, College & Lycee\n"
+            "Adresse : Adidogome - Cacaveli, 08 BP 80213 Lome 08, Togo\n"
+            "Contacts : (+228) 92 19 02 56 / 92 63 55 85 / 99 48 88 21\n"
+            "Email : collegemagnificat2024@gmail.com\n\n"
             "Cordialement,\n"
-            "L'Administration du Complexe Scolaire Magnificat\n"
+            "La Direction du Complexe Scolaire Magnificat\n"
         )
         maintenant = datetime.datetime.now().strftime("%d/%m/%Y a %H:%M:%S")
         contexte = {

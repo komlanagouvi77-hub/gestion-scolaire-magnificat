@@ -5,41 +5,123 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>{% block titre %}Complexe Scolaire Magnificat{% endblock %}</title>
 </head>
-<body style="margin:0; padding:0; background-color:#F7F1DE;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F7F1DE; padding:32px 16px;">
+<body style="margin:0; padding:0; background-color:#F1F5F9; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;">
+  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background-color:#F1F5F9; padding:36px 12px;">
     <tr>
       <td align="center">
-        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px; background-color:#ffffff; border-radius:12px; overflow:hidden; box-shadow:0 4px 20px rgba(10,37,64,0.12);">
+        <!-- Conteneur principal (carte e-mail) -->
+        <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:600px; background-color:#ffffff; border-radius:16px; overflow:hidden; box-shadow:0 10px 25px -5px rgba(10,37,64,0.1), 0 8px 10px -6px rgba(10,37,64,0.05); border:1px solid #E2E8F0;">
 
-          <!-- En-tete : logo + nom de l'ecole -->
+          <!-- En-tête officiel : Blason + Titre + Devise -->
           <tr>
-            <td style="background-color:#0A2540; padding:32px 24px; text-align:center;">
+            <td style="background-color:#0A2540; background-image:linear-gradient(135deg, #0A2540 0%, #1E3A8A 100%); border-top:4px solid #D4AF37; padding:36px 24px 28px; text-align:center;">
               {% if logo_cid %}
-              <img src="cid:{{ logo_cid }}" alt="{{ nom_ecole }}" width="64" height="64" style="border-radius:50%; border:2px solid #B08A2E; background-color:#ffffff; display:block; margin:0 auto 14px;">
+              <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:0 auto 16px;">
+                <tr>
+                  <td style="background-color:#FFFFFF; border:3px solid #D4AF37; border-radius:50%; padding:3px; box-shadow:0 4px 14px rgba(0,0,0,0.3); width:76px; height:76px; text-align:center; vertical-align:middle;">
+                    <img src="cid:{{ logo_cid }}" alt="{{ nom_ecole }}" width="70" height="70" style="display:block; border-radius:50%; margin:0 auto; object-fit:contain;">
+                  </td>
+                </tr>
+              </table>
               {% endif %}
-              <div style="font-family: Georgia, 'Times New Roman', serif; font-size:20px; font-weight:bold; color:#ffffff;">{{ nom_ecole }}</div>
+
+              <div style="font-family:'Trebuchet MS', 'Segoe UI', Arial, sans-serif; font-size:22px; font-weight:800; color:#FFFFFF; letter-spacing:0.04em; text-transform:uppercase; margin-bottom:8px;">
+                {{ nom_ecole }}
+              </div>
+
+              <div style="margin-bottom:8px;">
+                <span style="display:inline-block; font-family:'Segoe UI', Arial, sans-serif; font-size:12px; font-weight:700; color:#FCD34D; letter-spacing:0.12em; text-transform:uppercase; background-color:rgba(212,175,55,0.18); border:1px solid rgba(212,175,55,0.45); padding:4px 16px; border-radius:999px;">
+                  ✦ {{ devise }} ✦
+                </span>
+              </div>
+
+              <div style="font-family:'Segoe UI', Arial, sans-serif; font-size:12px; color:#BFDBFE; letter-spacing:0.04em;">
+                {{ cycles }}
+              </div>
             </td>
           </tr>
 
-          <!-- Bandeau de statut -->
+          <!-- Bandeau dynamique de statut -->
           <tr>
-            <td style="background-color:{{ couleur_bandeau }}; padding:12px 24px; text-align:center;">
-              <span style="font-family: Arial, Helvetica, sans-serif; font-size:12px; font-weight:bold; letter-spacing:0.06em; text-transform:uppercase; color:#ffffff;">{% block statut %}{% endblock %}</span>
+            <td style="background-color:{{ couleur_bandeau|default:'#1E3A8A' }}; padding:12px 24px; text-align:center;">
+              <span style="font-family:'Segoe UI', Arial, sans-serif; font-size:12px; font-weight:700; letter-spacing:0.08em; text-transform:uppercase; color:#FFFFFF;">
+                {% block statut %}Notification Officielle{% endblock %}
+              </span>
             </td>
           </tr>
 
-          <!-- Contenu -->
+          <!-- Corps du message -->
           <tr>
-            <td style="padding:32px 28px; font-family: Arial, Helvetica, sans-serif; font-size:15px; line-height:1.65; color:#0F172A;">
+            <td style="padding:36px 32px 28px; font-family:-apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif; font-size:15px; line-height:1.65; color:#1E293B;">
               {% block contenu %}{% endblock %}
+
+              <!-- Bouton d'action direct vers la plateforme de l'école -->
+              {% block cta %}
+              <table role="presentation" cellpadding="0" cellspacing="0" align="center" style="margin:28px auto 20px;">
+                <tr>
+                  <td align="center" style="border-radius:10px; background-color:#0A2540; background-image:linear-gradient(135deg, #0A2540 0%, #1E3A8A 100%); box-shadow:0 6px 16px rgba(10,37,64,0.35);">
+                    <a href="{{ platform_url }}" target="_blank" style="display:inline-block; padding:15px 34px; font-family:'Segoe UI', Arial, sans-serif; font-size:15px; font-weight:bold; color:#FFFFFF; text-decoration:none; border-radius:10px; border:1px solid #3B82F6; letter-spacing:0.02em;">
+                      🚀 Accéder à la Plateforme de l'École &rarr;
+                    </a>
+                  </td>
+                </tr>
+                <tr>
+                  <td align="center" style="padding-top:10px;">
+                    <a href="{{ platform_url }}" target="_blank" style="font-family:'Segoe UI', Arial, sans-serif; font-size:12px; color:#2563EB; text-decoration:underline; word-break:break-all;">
+                      {{ platform_url }}
+                    </a>
+                  </td>
+                </tr>
+              </table>
+              {% endblock %}
+
+              <!-- Présentation & Services de l'établissement -->
+              <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="background-color:#F8FAFC; border:1px solid #E2E8F0; border-radius:10px; margin:26px 0 10px;">
+                <tr>
+                  <td style="padding:18px 20px;">
+                    <div style="font-family:'Segoe UI', Arial, sans-serif; font-size:12px; font-weight:700; color:#0A2540; text-transform:uppercase; letter-spacing:0.06em; margin-bottom:8px;">
+                      🏫 À propos du Complexe Scolaire Magnificat
+                    </div>
+                    <p style="margin:0 0 12px; font-size:13px; color:#475569; line-height:1.6;">
+                      {{ description_ecole }}
+                    </p>
+                    <table role="presentation" cellpadding="0" cellspacing="0" width="100%" style="font-size:12px; color:#334155; line-height:1.7;">
+                      <tr>
+                        <td style="padding:3px 0;">📊 <strong>Bulletins numériques sécurisés</strong> certifiés par QR Code officiel</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:3px 0;">💳 <strong>Gestion financière intégrée</strong> : reçus instantanés et traçabilité</td>
+                      </tr>
+                      <tr>
+                        <td style="padding:3px 0;">👨‍👩‍👧 <strong>Espace Familles & Enseignants</strong> en temps réel sur le web et mobile</td>
+                      </tr>
+                    </table>
+                  </td>
+                </tr>
+              </table>
+
             </td>
           </tr>
 
-          <!-- Pied de page -->
+          <!-- Pied de page officiel complet -->
           <tr>
-            <td style="background-color:#F7F1DE; padding:18px 24px; text-align:center; font-family: Arial, Helvetica, sans-serif; font-size:12px; color:#55627A;">
-              {{ nom_ecole }}{% if adresse %} — {{ adresse }}{% endif %}<br>
-              Cet email est envoye automatiquement, merci de ne pas y repondre directement.
+            <td style="background-color:#0F172A; padding:28px 24px; text-align:center; font-family:'Segoe UI', Arial, sans-serif;">
+              <div style="color:#FFFFFF; font-size:14px; font-weight:bold; letter-spacing:0.04em; margin-bottom:4px;">
+                {{ nom_ecole }}
+              </div>
+              <div style="color:#D4AF37; font-size:11px; font-weight:700; text-transform:uppercase; letter-spacing:0.1em; margin-bottom:14px;">
+                ✦ {{ devise }} ✦
+              </div>
+              <div style="color:#94A3B8; font-size:12px; line-height:1.8; margin-bottom:16px;">
+                📍 {{ adresse }}<br>
+                📞 Contacts : {{ telephone }}<br>
+                ✉️ Email : <a href="mailto:{{ email_ecole }}" style="color:#60A5FA; text-decoration:none;">{{ email_ecole }}</a><br>
+                🌐 Portail Web : <a href="{{ platform_url }}" target="_blank" style="color:#60A5FA; text-decoration:none;">{{ platform_url }}</a>
+              </div>
+              <div style="border-top:1px solid #334155; padding-top:14px; color:#64748B; font-size:11px; line-height:1.5;">
+                Cet email est généré automatiquement par le Système Intégré de Gestion Scolaire.<br>
+                © {{ annee_en_cours }} {{ nom_ecole }}. Tous droits réservés.
+              </div>
             </td>
           </tr>
 
