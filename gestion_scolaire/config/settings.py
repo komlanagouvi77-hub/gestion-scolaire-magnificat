@@ -185,23 +185,31 @@ USE_I18N = True
 USE_TZ = True
 
 
-# Envoi d'emails (confirmation de compte approuve/refuse aux demandeurs
-# d'acces - voir comptes/emails.py). Par defaut, en developpement (DEBUG),
-# les emails sont simplement affiches dans la console du serveur (aucun
-# reglage SMTP requis pour tester en local) ; en production, on utilise un
-# vrai serveur SMTP configure via les variables d'environnement ci-dessous.
-EMAIL_BACKEND = config(
-    'DJANGO_EMAIL_BACKEND',
-    default='django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend',
+# ==============================================================================
+# Configuration de l'envoi d'emails (SMTP Gmail ou console locale)
+# ==============================================================================
+# Supporte indifferemment EMAIL_* ou DJANGO_EMAIL_* dans .env ou Render.
+_email_user = config('EMAIL_HOST_USER', default=config('DJANGO_EMAIL_HOST_USER', default=''))
+_email_pwd = config('EMAIL_HOST_PASSWORD', default=config('DJANGO_EMAIL_HOST_PASSWORD', default=''))
+
+EMAIL_HOST = config('EMAIL_HOST', default=config('DJANGO_EMAIL_HOST', default='smtp.gmail.com'))
+EMAIL_PORT = config('EMAIL_PORT', default=config('DJANGO_EMAIL_PORT', default=587, cast=int), cast=int)
+EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=config('DJANGO_EMAIL_USE_TLS', default=True, cast=bool), cast=bool)
+EMAIL_HOST_USER = _email_user
+EMAIL_HOST_PASSWORD = _email_pwd
+
+# Par defaut : si identifiants fournis, utilise SMTP ; sinon console en DEBUG
+_default_backend = 'django.core.mail.backends.smtp.EmailBackend' if (_email_user and _email_pwd) else (
+    'django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
 )
-EMAIL_HOST = config('DJANGO_EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('DJANGO_EMAIL_PORT', default=587, cast=int)
-EMAIL_HOST_USER = config('DJANGO_EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('DJANGO_EMAIL_HOST_PASSWORD', default='')
-EMAIL_USE_TLS = config('DJANGO_EMAIL_USE_TLS', default='True') == 'True'
+EMAIL_BACKEND = config('EMAIL_BACKEND', default=config('DJANGO_EMAIL_BACKEND', default=_default_backend))
+
 DEFAULT_FROM_EMAIL = config(
-    'DJANGO_DEFAULT_FROM_EMAIL',
-    default='Complexe Scolaire Magnificat <no-reply@magnificat-scolaire.local>',
+    'DEFAULT_FROM_EMAIL',
+    default=config(
+        'DJANGO_DEFAULT_FROM_EMAIL',
+        default=f'Complexe Scolaire Magnificat <{_email_user}>' if _email_user else 'Complexe Scolaire Magnificat <no-reply@magnificat-scolaire.tg>'
+    )
 )
 
 
@@ -254,17 +262,6 @@ SPECTACULAR_SETTINGS = {
     'SERVE_INCLUDE_SCHEMA': False,
 }
 
-# Configuration Email (Console en mode developpement, SMTP securise en production)
-EMAIL_BACKEND = config(
-    'EMAIL_BACKEND',
-    default='django.core.mail.backends.console.EmailBackend' if DEBUG else 'django.core.mail.backends.smtp.EmailBackend'
-)
-DEFAULT_FROM_EMAIL = config('DEFAULT_FROM_EMAIL', default='Complexe Scolaire Magnificat <no-reply@magnificat-scolaire.local>')
-EMAIL_HOST = config('EMAIL_HOST', default='smtp.gmail.com')
-EMAIL_PORT = config('EMAIL_PORT', default=587, cast=int)
-EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=True, cast=bool)
-EMAIL_HOST_USER = config('EMAIL_HOST_USER', default='')
-EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD', default='')
 
 
 LOGGING = {
