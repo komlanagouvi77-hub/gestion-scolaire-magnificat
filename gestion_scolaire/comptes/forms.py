@@ -40,7 +40,7 @@ class EnseignantCreationForm(forms.ModelForm):
 
     class Meta:
         model = Enseignant
-        fields = ["username", "first_name", "last_name", "email", "telephone", "specialite", "matieres", "classes"]
+        fields = ["username", "first_name", "last_name", "email", "telephone", "specialite", "signature", "matieres", "classes"]
         labels = {
             "username": "Nom d'utilisateur",
             "first_name": "Prenom",
@@ -48,6 +48,7 @@ class EnseignantCreationForm(forms.ModelForm):
             "email": "Email",
             "telephone": "Telephone",
             "specialite": "Specialite",
+            "signature": "Signature ou paraphe numérisé",
         }
         widgets = {
             "matieres": forms.CheckboxSelectMultiple(),
@@ -78,13 +79,14 @@ class EnseignantModificationForm(forms.ModelForm):
 
     class Meta:
         model = Enseignant
-        fields = ["first_name", "last_name", "email", "telephone", "specialite", "matieres", "classes"]
+        fields = ["first_name", "last_name", "email", "telephone", "specialite", "signature", "matieres", "classes"]
         labels = {
             "first_name": "Prenom",
             "last_name": "Nom",
             "email": "Email",
             "telephone": "Telephone",
             "specialite": "Specialite",
+            "signature": "Signature ou paraphe numérisé",
         }
         widgets = {
             "matieres": forms.CheckboxSelectMultiple(),

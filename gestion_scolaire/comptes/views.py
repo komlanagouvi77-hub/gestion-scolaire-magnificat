@@ -142,7 +142,7 @@ def liste_enseignants_view(request):
     from .models import Enseignant
 
     if request.method == "POST":
-        formulaire = EnseignantCreationForm(request.POST)
+        formulaire = EnseignantCreationForm(request.POST, request.FILES)
         if formulaire.is_valid():
             formulaire.save()
             messages.success(request, "Compte enseignant cree avec succes.")
@@ -163,7 +163,7 @@ def modifier_enseignant_view(request, enseignant_id):
 
     enseignant = get_object_or_404(Enseignant, pk=enseignant_id)
     if request.method == "POST":
-        formulaire = EnseignantModificationForm(request.POST, instance=enseignant)
+        formulaire = EnseignantModificationForm(request.POST, request.FILES, instance=enseignant)
         if formulaire.is_valid():
             formulaire.save()
             messages.success(request, "Enseignant mis a jour.")

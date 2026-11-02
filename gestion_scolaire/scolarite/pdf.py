@@ -169,6 +169,52 @@ def _resoudre_nom_prof(matiere, notes_matiere, classe=None):
     return "DATEY-AMOUSSOU T. G"
 
 
+def _resoudre_enseignant_info(matiere, notes_matiere, classe=None):
+    """
+    Determine avec certitude le nom reel et le chemin de signature du professeur.
+    """
+    nom_prof = _resoudre_nom_prof(matiere, notes_matiere, classe=classe)
+    chemin_signature = None
+
+    try:
+        from comptes.models import Enseignant
+        prof_obj = None
+        for n in sorted(notes_matiere, key=lambda x: x.date_saisie, reverse=True):
+            if n.enseignant is not None:
+                if hasattr(n.enseignant, "enseignant"):
+                    prof_obj = n.enseignant.enseignant
+                    break
+                elif isinstance(n.enseignant, Enseignant):
+                    prof_obj = n.enseignant
+                    break
+
+        if not prof_obj and classe:
+            from .models import Cours
+            cours = Cours.objects.filter(classe=classe, matiere=matiere).select_related("enseignant").first()
+            if cours and cours.enseignant:
+                if hasattr(cours.enseignant, "enseignant"):
+                    prof_obj = cours.enseignant.enseignant
+                elif isinstance(cours.enseignant, Enseignant):
+                    prof_obj = cours.enseignant
+
+        if not prof_obj:
+            if classe:
+                prof_obj = Enseignant.objects.filter(matieres=matiere, classes=classe).first()
+            if not prof_obj:
+                prof_obj = Enseignant.objects.filter(matieres=matiere).first()
+
+        if prof_obj and getattr(prof_obj, "signature", None):
+            try:
+                if os.path.exists(prof_obj.signature.path):
+                    chemin_signature = prof_obj.signature.path
+            except Exception:
+                chemin_signature = None
+    except Exception:
+        chemin_signature = None
+
+    return nom_prof, chemin_signature
+
+
 def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation_fn, rangs_matieres=None, nb_absences=0):
     """
     Construit le bulletin scolaire officiel du Complexe Scolaire Magnificat
@@ -397,8 +443,8 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
         dev2 = formater_note(notes_devoirs[1].valeur) if len(notes_devoirs) > 1 else ""
         dev3 = formater_note(notes_devoirs[2].valeur) if len(notes_devoirs) > 2 else ""
 
-        # Enseignant
-        nom_prof = _resoudre_nom_prof(matiere, notes_matiere, classe=classe)
+        # Enseignant & signature
+        nom_prof, sig_path = _resoudre_enseignant_info(matiere, notes_matiere, classe=classe)
 
         # Rang de la matiere
         rang_matiere_str = rangs_matieres.get(matiere.id, "-")
@@ -408,8 +454,14 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
         if detail["note_definitive"] is not None:
             total_notes_definitive += detail["note_definitive"]
 
-        # Signature : paraphe stylise discret
-        signature_symbole = "✔"
+        # Signature : image numerisee si disponible, sinon paraphe stylise discret
+        if sig_path:
+            try:
+                signature_cell = Image(sig_path, width=1.4 * cm, height=0.55 * cm)
+            except Exception:
+                signature_cell = "✔"
+        else:
+            signature_cell = "✔"
 
         ligne = [
             f"{idx:02d}. {matiere.nom}",
@@ -422,7 +474,7 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
             rang_matiere_str,
             nom_prof,
             detail["appreciation"],
-            signature_symbole,
+            signature_cell,
         ]
         donnees_tableau.append(ligne)
 
@@ -595,6 +647,7 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
     lieu_date = f"Lomé, le {date_jour}"
 
     titulaire_nom = "DATEY-AMOUSSOU T. G"
+    titulaire_sig_flowable = ""
     if classe:
         try:
             from .models import Cours
@@ -603,6 +656,10 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
                 fn = c_tit.enseignant.get_full_name()
                 if fn:
                     titulaire_nom = fn
+                ens_obj = getattr(c_tit.enseignant, "enseignant", c_tit.enseignant)
+                if getattr(ens_obj, "signature", None):
+                    if os.path.exists(ens_obj.signature.path):
+                        titulaire_sig_flowable = Image(ens_obj.signature.path, width=2.4 * cm, height=1.2 * cm)
         except Exception:
             pass
 
@@ -629,7 +686,7 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
                 Paragraph(f"{lieu_date}<br/><b>{infos_ecole['titre_signataire']}</b>", ParagraphStyle("Dir", fontSize=7, leading=8.5, alignment=TA_CENTER)),
             ],
             [
-                "",  # Paraphe Titulaire
+                titulaire_sig_flowable,
                 signature_flowable if signature_flowable else cachet_flowable,
             ],
             [

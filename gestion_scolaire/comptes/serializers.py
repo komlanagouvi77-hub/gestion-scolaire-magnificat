@@ -225,7 +225,7 @@ class EnseignantSerializer(serializers.ModelSerializer):
         model = Enseignant
         fields = [
             "id", "username", "password", "first_name", "last_name", "email",
-            "telephone", "specialite", "matieres", "classes",
+            "telephone", "specialite", "signature", "matieres", "classes",
             "matieres_noms", "classes_noms",
         ]
 

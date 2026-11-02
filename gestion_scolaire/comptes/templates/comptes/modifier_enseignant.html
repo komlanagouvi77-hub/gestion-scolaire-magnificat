@@ -4,7 +4,7 @@
 <div class="mag-page-title"><span class="eyebrow">Utilisateurs</span> Modifier {{ enseignant.get_full_name|default:enseignant.username }}</div>
 
 <div class="mag-panneau-form" style="max-width:680px;">
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mag-grid-2">
             <div class="mag-field"><label>Prenom</label>{{ formulaire.first_name }}</div>
@@ -13,6 +13,13 @@
             <div class="mag-field"><label>Telephone</label>{{ formulaire.telephone }}</div>
         </div>
         <div class="mag-field"><label>Specialite</label>{{ formulaire.specialite }}</div>
+        <div class="mag-field">
+            <label>Signature ou paraphe numérisé (pour les bulletins)</label>
+            {% if enseignant.signature %}
+            <div style="margin-bottom:0.5rem;"><img src="{{ enseignant.signature.url }}" alt="Signature actuelle" style="max-height:48px;border:1px solid #ddd;padding:3px;border-radius:4px;background:#fff;"></div>
+            {% endif %}
+            {{ formulaire.signature }}
+        </div>
         <div class="mag-field">
             <label>{{ formulaire.password.label }}</label>
             {{ formulaire.password }}

@@ -54,6 +54,13 @@ class Enseignant(Utilisateur):
     matieres = models.ManyToManyField("scolarite.Matiere", related_name="enseignants", blank=True)
     classes = models.ManyToManyField("scolarite.Classe", related_name="enseignants", blank=True)
     specialite = models.CharField(max_length=100, blank=True)
+    signature = models.ImageField(
+        upload_to="signatures_enseignants/",
+        blank=True,
+        null=True,
+        validators=[valider_taille_image],
+        help_text="Signature ou paraphe numerise de l'enseignant pour les bulletins.",
+    )
 
     def save(self, *args, **kwargs):
         self.role = Utilisateur.ROLE_ENSEIGNANT

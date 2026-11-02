@@ -13,7 +13,7 @@
     <div class="mag-section-entete">
         <div class="mag-stat-label">Creer un compte enseignant</div>
     </div>
-    <form method="post">
+    <form method="post" enctype="multipart/form-data">
         {% csrf_token %}
         <div class="mag-grid-2">
             <div class="mag-field"><label>Nom d'utilisateur</label>{{ formulaire.username }}</div>
@@ -24,6 +24,7 @@
             <div class="mag-field"><label>Telephone</label>{{ formulaire.telephone }}</div>
         </div>
         <div class="mag-field"><label>Specialite</label>{{ formulaire.specialite }}</div>
+        <div class="mag-field"><label>Signature ou paraphe numérisé</label>{{ formulaire.signature }}</div>
         <div class="mag-field">
             <label>Matieres enseignees</label>
             <div class="mag-checkbox-list-wrap">{{ formulaire.matieres }}</div>
