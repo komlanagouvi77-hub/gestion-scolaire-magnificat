@@ -48,22 +48,38 @@ COULEUR_REFUSEE = "#A32424"
 def _logo_embarque(parametres):
     """
     Renvoie (cid, MIMEImage) pour le logo de l'etablissement, ou (None, None)
-    si aucun logo n'est configure ou que le fichier est illisible - l'email
-    part alors sans logo plutot que d'echouer completement.
+    si aucun logo n'est configure ou que le fichier est illisible. Repli
+    automatique sur le logo par defaut si necessaire.
     """
-    if not parametres.logo:
-        return None, None
-    try:
-        parametres.logo.open("rb")
-        donnees = parametres.logo.read()
-        parametres.logo.close()
-        image = MIMEImage(donnees)
-        image.add_header("Content-ID", "<logo_ecole>")
-        image.add_header("Content-Disposition", "inline", filename="logo.png")
-        return "logo_ecole", image
-    except Exception:
-        logger.exception("Impossible de lire le logo de l'etablissement pour l'email")
-        return None, None
+    if parametres and parametres.logo:
+        try:
+            parametres.logo.open("rb")
+            donnees = parametres.logo.read()
+            parametres.logo.close()
+            image = MIMEImage(donnees)
+            image.add_header("Content-ID", "<logo_ecole>")
+            image.add_header("Content-Disposition", "inline", filename="logo.png")
+            return "logo_ecole", image
+        except Exception:
+            logger.exception("Impossible de lire le logo de l'etablissement pour l'email")
+
+    # Repli automatique sur le logo par defaut de l'etablissement
+    for chemin in [
+        settings.BASE_DIR / "static" / "frontend" / "logo-ecole-defaut.png",
+        settings.BASE_DIR / "static" / "img" / "logo-ecole-defaut.png",
+    ]:
+        if chemin.exists():
+            try:
+                with open(chemin, "rb") as f:
+                    donnees = f.read()
+                image = MIMEImage(donnees)
+                image.add_header("Content-ID", "<logo_ecole>")
+                image.add_header("Content-Disposition", "inline", filename="logo.png")
+                return "logo_ecole", image
+            except Exception:
+                pass
+
+    return None, None
 
 
 def _envoyer_email_html(gabarit, contexte, sujet, texte_brut, destinataire):
