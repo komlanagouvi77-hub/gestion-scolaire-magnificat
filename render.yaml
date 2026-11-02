@@ -37,5 +37,4 @@ services:
         value: "komlanagouvi77@gmail.com"
       - key: DEFAULT_FROM_EMAIL
         value: "Complexe Scolaire Magnificat <komlanagouvi77@gmail.com>"
-      - key: EMAIL_HOST_PASSWORD
-        sync: false
+      - fromGroup: magnificat-secrets
