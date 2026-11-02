@@ -49,6 +49,10 @@ ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1').sp
 RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default='')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
+# Autorise automatiquement les domaines Render en production
+if not DEBUG or RENDER_EXTERNAL_HOSTNAME:
+    if '.onrender.com' not in ALLOWED_HOSTS:
+        ALLOWED_HOSTS.extend(['.onrender.com', 'gestion-scolaire-magnificat.onrender.com'])
 
 CSRF_TRUSTED_ORIGINS = [
     origine.strip()
@@ -57,6 +61,9 @@ CSRF_TRUSTED_ORIGINS = [
 ]
 if RENDER_EXTERNAL_HOSTNAME:
     CSRF_TRUSTED_ORIGINS.append(f'https://{RENDER_EXTERNAL_HOSTNAME}')
+if not DEBUG or RENDER_EXTERNAL_HOSTNAME:
+    if 'https://*.onrender.com' not in CSRF_TRUSTED_ORIGINS:
+        CSRF_TRUSTED_ORIGINS.extend(['https://*.onrender.com', 'https://gestion-scolaire-magnificat.onrender.com'])
 
 
 INSTALLED_APPS = [
@@ -134,11 +141,14 @@ if config('DATABASE_URL', default=''):
     # Fourni automatiquement par Render (et la plupart des hebergeurs cloud) :
     # une seule variable au lieu de DB_NAME/DB_USER/... separes.
     import dj_database_url
+    _db_url = config('DATABASE_URL')
+    _ssl_require = (not DEBUG) or ('render.com' in _db_url)
     DATABASES = {
         'default': dj_database_url.config(
-            default=config('DATABASE_URL'),
+            default=_db_url,
             conn_max_age=600,
             conn_health_checks=True,
+            ssl_require=_ssl_require,
         )
     }
 elif config('DB_NAME', default=''):
