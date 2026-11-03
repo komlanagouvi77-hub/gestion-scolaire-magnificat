@@ -256,6 +256,7 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # supprime cette verification CSRF pour l'API, sans rien changer a
 # /admin/ (qui a son propre systeme, independant de DRF).
 REST_FRAMEWORK = {
+    'EXCEPTION_HANDLER': 'config.api_urls.custom_api_exception_handler',
     'DEFAULT_AUTHENTICATION_CLASSES': [
         'rest_framework.authentication.TokenAuthentication',
     ],

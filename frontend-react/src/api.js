@@ -207,7 +207,12 @@ export async function soumettreDemandeAcces(donnees) {
     headers: { "Content-Type": "application/json" },
     body: JSON.stringify(donnees),
   });
-  const contenu = await resp.json().catch(function () { return {}; });
+  let contenu = {};
+  try {
+    contenu = await resp.json();
+  } catch (e) {
+    contenu = { detail: "Erreur du serveur (HTTP " + resp.status + "). Veuillez réessayer dans quelques instants." };
+  }
   if (!resp.ok) {
     const err = new Error(extraireMessageErreur(contenu, "Erreur lors de l'envoi de la demande."));
     err.detailsChamps = contenu;

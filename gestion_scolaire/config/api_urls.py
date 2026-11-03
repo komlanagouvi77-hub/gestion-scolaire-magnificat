@@ -75,3 +75,28 @@ urlpatterns = [
     path("redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
     path("", include(router.urls)),
 ]
+
+
+def custom_api_exception_handler(exc, context):
+    """
+    Gestionnaire global d'exceptions pour l'API REST :
+    Garantit que TOUTE exception (y compris 500 inattendue) renvoie toujours
+    du JSON structure plutot qu'une page HTML brute, pour eviter le crash
+    'Unexpected token < is not valid JSON' dans le frontend React.
+    """
+    from rest_framework.views import exception_handler
+    from rest_framework.response import Response
+    import logging, traceback
+
+    response = exception_handler(exc, context)
+    if response is None:
+        logging.getLogger("django.request").exception("Exception API non capturee : %s", exc)
+        return Response(
+            {
+                "detail": f"Erreur serveur ({type(exc).__name__}) : {str(exc)}",
+                "error_type": type(exc).__name__,
+                "traceback": traceback.format_exc(),
+            },
+            status=500,
+        )
+    return response
