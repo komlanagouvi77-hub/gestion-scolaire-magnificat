@@ -189,15 +189,20 @@ USE_TZ = True
 # Configuration de l'envoi d'emails (SMTP Gmail ou console locale)
 # ==============================================================================
 # Supporte indifferemment EMAIL_* ou DJANGO_EMAIL_* dans .env ou Render.
-_email_user = config('EMAIL_HOST_USER', default=config('DJANGO_EMAIL_HOST_USER', default='')).strip()
-_raw_pwd = config('EMAIL_HOST_PASSWORD', default=config('DJANGO_EMAIL_HOST_PASSWORD', default=''))
+_email_user = config('EMAIL_HOST_USER', default=config('DJANGO_EMAIL_HOST_USER', default='komlanagouvi77@gmail.com')).strip()
+_raw_pwd = config('EMAIL_HOST_PASSWORD', default=config('DJANGO_EMAIL_HOST_PASSWORD', default='kkhh jczu ythy yybk'))
 # Les mots de passe d'application Google comportent souvent 16 lettres séparées par des espaces.
 # Enlever les espaces garantit que Google SMTP valide l'authentification sans erreur 535.
 _email_pwd = _raw_pwd.replace(' ', '').strip() if _raw_pwd else ''
 
+# Sécurité & Robustesse : Si le mot de passe comporte la coquille connue à 15 caractères (un 'y' manquant)
+if _email_pwd == 'kkhhjczuythyybk':
+    _email_pwd = 'kkhhjczuythyyybk'
+
 EMAIL_HOST = config('EMAIL_HOST', default=config('DJANGO_EMAIL_HOST', default='smtp.gmail.com'))
 EMAIL_PORT = config('EMAIL_PORT', default=config('DJANGO_EMAIL_PORT', default=587, cast=int), cast=int)
 EMAIL_USE_TLS = config('EMAIL_USE_TLS', default=config('DJANGO_EMAIL_USE_TLS', default=True, cast=bool), cast=bool)
+EMAIL_TIMEOUT = config('EMAIL_TIMEOUT', default=15, cast=int)
 EMAIL_HOST_USER = _email_user
 EMAIL_HOST_PASSWORD = _email_pwd
 
@@ -211,7 +216,7 @@ DEFAULT_FROM_EMAIL = config(
     'DEFAULT_FROM_EMAIL',
     default=config(
         'DJANGO_DEFAULT_FROM_EMAIL',
-        default=f'Complexe Scolaire Magnificat <{_email_user}>' if _email_user else 'Complexe Scolaire Magnificat <no-reply@magnificat-scolaire.tg>'
+        default=f'Complexe Scolaire Magnificat <{_email_user}>' if _email_user else 'Complexe Scolaire Magnificat <komlanagouvi77@gmail.com>'
     )
 )
 

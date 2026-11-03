@@ -314,8 +314,12 @@ class DemandeInscriptionViewSet(viewsets.ModelViewSet):
         demande.statut = DemandeInscription.STATUT_APPROUVEE
         demande.traite_par = request.user
         demande.save()
-        envoyer_email_demande_approuvee(demande)
-        return Response({"detail": f"Compte cree pour {demande.username_souhaite}."}, status=200)
+        succes_email, err_email = envoyer_email_demande_approuvee(demande)
+        if succes_email:
+            msg = f"Compte créé pour {demande.username_souhaite}. Un e-mail de confirmation a été envoyé à {demande.email}."
+        else:
+            msg = f"Compte créé pour {demande.username_souhaite}. E-mail non délivré : {err_email}"
+        return Response({"detail": msg, "email_envoye": succes_email}, status=200)
 
     @action(detail=True, methods=["post"], url_path="refuser")
     def refuser(self, request, pk=None):
@@ -327,5 +331,48 @@ class DemandeInscriptionViewSet(viewsets.ModelViewSet):
         demande.traite_par = request.user
         demande.motif_refus = request.data.get("motif_refus", "")
         demande.save()
-        envoyer_email_demande_refusee(demande)
-        return Response({"detail": "Demande refusee."}, status=200)
+        succes_email, err_email = envoyer_email_demande_refusee(demande)
+        return Response({"detail": "Demande refusee.", "email_envoye": succes_email}, status=200)
+
+
+@api_view(["POST", "GET"])
+@permission_classes([IsAuthenticated])
+def tester_envoi_email(request):
+    """
+    Point de terminaison diagnostique permettant de tester l'envoi d'e-mail via SMTP Gmail.
+    Accessible uniquement aux administrateurs.
+    """
+    if not hasattr(request.user, "administrateur"):
+        return Response({"detail": "Reserve a l'administrateur."}, status=403)
+
+    from django.conf import settings
+    from .emails import envoyer_email_demande_approuvee
+    from .models import DemandeInscription
+
+    pwd = settings.EMAIL_HOST_PASSWORD or ""
+    info = {
+        "EMAIL_HOST": settings.EMAIL_HOST,
+        "EMAIL_PORT": settings.EMAIL_PORT,
+        "EMAIL_USE_TLS": settings.EMAIL_USE_TLS,
+        "EMAIL_HOST_USER": settings.EMAIL_HOST_USER,
+        "EMAIL_HOST_PASSWORD_len": len(pwd),
+        "EMAIL_HOST_PASSWORD_masked": f"{pwd[:3]}...{pwd[-3:]}" if len(pwd) >= 6 else ("SET" if pwd else "EMPTY"),
+        "DEFAULT_FROM_EMAIL": settings.DEFAULT_FROM_EMAIL,
+    }
+
+    demande = DemandeInscription.objects.filter(statut=DemandeInscription.STATUT_APPROUVEE).last()
+    if not demande:
+        demande = DemandeInscription(
+            type_compte=DemandeInscription.TYPE_ENSEIGNANT,
+            first_name="Georges",
+            last_name="AGOUVI",
+            username_souhaite="prof.georges.test",
+            email=settings.EMAIL_HOST_USER or "komlanagouvi77@gmail.com",
+            statut=DemandeInscription.STATUT_APPROUVEE,
+        )
+
+    succes, erreur = envoyer_email_demande_approuvee(demande)
+    info["succes"] = succes
+    info["erreur"] = erreur
+    info["destinataire"] = demande.email
+    return Response(info, status=200 if succes else 500)

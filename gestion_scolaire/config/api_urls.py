@@ -11,6 +11,7 @@ from comptes.views_api import (
     identite_publique_ecole,
     parametres_ecole,
     qui_suis_je,
+    tester_envoi_email,
 )
 from communication.views_api import AnnonceViewSet, EvenementViewSet, MessageViewSet, correspondants_messagerie
 from paiements.views_api import FraisScolariteViewSet, PaiementViewSet, situation_financiere
@@ -59,6 +60,8 @@ urlpatterns = [
     path("identite-publique/", identite_publique_ecole, name="identite_publique_ecole"),
     # Suivi de la saisie des notes par enseignant/classe/matiere (Administrateur)
     path("suivi-saisie/", suivi_saisie_notes, name="suivi_saisie_notes"),
+    # Diagnostic d'envoi d'e-mail officiel (Administrateur)
+    path("tester-email/", tester_envoi_email, name="tester_email"),
     # Import en masse d'eleves depuis un fichier CSV (Administrateur)
     path("eleves/importer-csv/", importer_eleves_csv, name="importer_eleves_csv"),
     # Correspondants valides pour la messagerie (Enseignant <-> Parent)

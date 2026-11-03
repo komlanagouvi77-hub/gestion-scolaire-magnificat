@@ -84,7 +84,7 @@ def _logo_embarque(parametres):
 
 def _envoyer_email_html(gabarit, contexte, sujet, texte_brut, destinataire):
     if not destinataire:
-        return
+        return False, "Aucun destinataire fourni"
     import datetime
     from .models import Parametres
 
@@ -121,8 +121,10 @@ def _envoyer_email_html(gabarit, contexte, sujet, texte_brut, destinataire):
         if image_logo is not None:
             email.attach(image_logo)
         email.send(fail_silently=False)
-    except Exception:
-        logger.exception("Echec de l'envoi d'un email de demande d'acces a %s", destinataire)
+        return True, None
+    except Exception as e:
+        logger.exception("Echec de l'envoi d'un email de demande d'acces a %s : %s", destinataire, e)
+        return False, str(e)
 
 
 def envoyer_email_demande_approuvee(demande):
@@ -140,7 +142,7 @@ def envoyer_email_demande_approuvee(demande):
         f"Email : collegemagnificat2024@gmail.com\n\n"
         f"Cordialement,\nComplexe Scolaire Magnificat"
     )
-    _envoyer_email_html(
+    return _envoyer_email_html(
         "comptes/emails/demande_approuvee.html",
         {"prenom": prenom, "type_compte_label": type_compte_label, "username": demande.username_souhaite, "couleur_bandeau": COULEUR_APPROUVEE},
         "Votre compte a ete cree - Complexe Scolaire Magnificat",
@@ -162,7 +164,7 @@ def envoyer_email_demande_refusee(demande):
         f"Email : collegemagnificat2024@gmail.com\n\n"
         f"Cordialement,\nComplexe Scolaire Magnificat"
     )
-    _envoyer_email_html(
+    return _envoyer_email_html(
         "comptes/emails/demande_refusee.html",
         {"prenom": prenom, "type_compte_label": type_compte_label, "motif": demande.motif_refus, "couleur_bandeau": COULEUR_REFUSEE},
         "Votre demande d'acces - Complexe Scolaire Magnificat",
