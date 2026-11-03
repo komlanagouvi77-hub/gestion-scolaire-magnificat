@@ -219,7 +219,7 @@ function ChampFlottant({
           }}
           onChange={onChange}
         />
-        <label htmlFor={nomChamp} className={requis ? "mag-label-requis" : undefined}>{label}</label>
+        <label htmlFor={nomChamp}>{label}</label>
         {boutonAction}
       </div>
       {erreur ? (

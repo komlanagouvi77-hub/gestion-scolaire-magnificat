@@ -116,11 +116,11 @@ export default function GestionEnseignants({ token }) {
         <form onSubmit={soumettre}>
           <div className="mag-grid-2">
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="ens-username">Nom d'utilisateur</label>
+              <label htmlFor="ens-username">Nom d'utilisateur</label>
               <input id="ens-username" type="text" value={username} onChange={function (e) { setUsername(e.target.value); }} required disabled={!!idEnEdition} />
             </div>
             <div className="mag-field">
-              <label className={idEnEdition ? undefined : "mag-label-requis"} htmlFor="ens-password">Mot de passe {idEnEdition ? "(laisser vide pour ne pas changer)" : ""}</label>
+              <label htmlFor="ens-password">Mot de passe {idEnEdition ? "(laisser vide pour ne pas changer)" : ""}</label>
               <input id="ens-password" type="password" value={password} onChange={function (e) { setPassword(e.target.value); }} required={!idEnEdition} minLength={8} />
             </div>
             <div className="mag-field"><label htmlFor="ens-prenom">Prenom</label><input id="ens-prenom" type="text" value={firstName} onChange={function (e) { setFirstName(e.target.value); }} /></div>

@@ -139,22 +139,22 @@ export default function Evenements({ token, role }) {
           {message ? <Alerte type={message.type}>{message.texte}</Alerte> : null}
           <form onSubmit={soumettre}>
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="ev-titre">Titre</label>
+              <label htmlFor="ev-titre">Titre</label>
               <input id="ev-titre" type="text" value={champs.titre} onChange={function (e) { modifierChamp("titre", e.target.value); }} required />
             </div>
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="ev-type">Type</label>
+              <label htmlFor="ev-type">Type</label>
               <select id="ev-type" value={champs.type_evenement} onChange={function (e) { modifierChamp("type_evenement", e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                 {TYPES_EVENEMENT.map(function (t) { return <option key={t.valeur} value={t.valeur}>{traduireTexte(t.label)}</option>; })}
               </select>
             </div>
             <div className="mag-grid-2">
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="ev-debut">Date de debut</label>
+                <label htmlFor="ev-debut">Date de debut</label>
                 <input id="ev-debut" type="date" value={champs.date_debut} onChange={function (e) { modifierChamp("date_debut", e.target.value); }} required />
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="ev-fin">Date de fin</label>
+                <label htmlFor="ev-fin">Date de fin</label>
                 <input id="ev-fin" type="date" value={champs.date_fin} onChange={function (e) { modifierChamp("date_fin", e.target.value); }} required />
               </div>
             </div>

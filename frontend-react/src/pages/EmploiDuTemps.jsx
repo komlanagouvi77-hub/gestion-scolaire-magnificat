@@ -142,14 +142,14 @@ export default function EmploiDuTemps({ token, role }) {
           <form onSubmit={soumettre}>
             <div className="mag-grid-2">
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="edt-classe">Classe</label>
+                <label htmlFor="edt-classe">Classe</label>
                 <select id="edt-classe" value={classeId} onChange={function (e) { setClasseId(e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   <option value="">-- Choisir --</option>
                   {classes.map(function (c) { return <option key={c.id} value={c.id}>{c.nom}</option>; })}
                 </select>
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="edt-matiere">Matiere</label>
+                <label htmlFor="edt-matiere">Matiere</label>
                 <select id="edt-matiere" value={matiereId} onChange={function (e) { setMatiereId(e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   <option value="">-- Choisir --</option>
                   {matieres.map(function (m) { return <option key={m.id} value={m.id}>{m.nom}</option>; })}
@@ -157,7 +157,7 @@ export default function EmploiDuTemps({ token, role }) {
               </div>
             </div>
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="edt-enseignant">Enseignant</label>
+              <label htmlFor="edt-enseignant">Enseignant</label>
               <select id="edt-enseignant" value={enseignantId} onChange={function (e) { setEnseignantId(e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                 <option value="">-- Choisir --</option>
                 {enseignants.map(function (e) { return <option key={e.id} value={e.id}>{e.first_name} {e.last_name} ({e.username})</option>; })}
@@ -177,11 +177,11 @@ export default function EmploiDuTemps({ token, role }) {
             </div>
             <div className="mag-grid-2">
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="edt-debut">Heure de debut</label>
+                <label htmlFor="edt-debut">Heure de debut</label>
                 <input id="edt-debut" type="time" value={heureDebut} onChange={function (e) { setHeureDebut(e.target.value); }} required />
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="edt-fin">Heure de fin</label>
+                <label htmlFor="edt-fin">Heure de fin</label>
                 <input id="edt-fin" type="time" value={heureFin} onChange={function (e) { setHeureFin(e.target.value); }} required />
               </div>
             </div>

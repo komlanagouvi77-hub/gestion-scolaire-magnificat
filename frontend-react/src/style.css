@@ -197,6 +197,10 @@ body {
   margin-bottom: 0.3rem;
   display: block;
 }
+.mag-label-requis::after {
+  content: "" !important;
+  display: none !important;
+}
 .mag-field input {
   width: 100%;
   border: 1px solid var(--line);

@@ -137,14 +137,14 @@ export default function GestionAbsences({ token, role }) {
           <div className="mag-panneau-form react-fade-in" style={{ marginBottom: "1.8rem" }}>
             <div className="mag-grid-2">
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="abs-classe">Classe</label>
+                <label htmlFor="abs-classe">Classe</label>
                 <select id="abs-classe" value={classeId} onChange={function (e) { setClasseId(e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   <option value="">-- Choisir --</option>
                   {classes.map(function (c) { return <option key={c.id} value={c.id}>{c.nom}</option>; })}
                 </select>
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="abs-date">Date</label>
+                <label htmlFor="abs-date">Date</label>
                 <input id="abs-date" type="date" value={date} onChange={function (e) { setDate(e.target.value); }} />
               </div>
             </div>

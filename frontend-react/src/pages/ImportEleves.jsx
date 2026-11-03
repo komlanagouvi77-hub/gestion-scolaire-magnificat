@@ -53,7 +53,7 @@ export default function ImportEleves({ token }) {
 
         <form onSubmit={soumettre}>
           <div className="mag-field">
-            <label className="mag-label-requis" htmlFor="import-fichier">Fichier CSV</label>
+            <label htmlFor="import-fichier">Fichier CSV</label>
             <input id="import-fichier" type="file" accept=".csv" onChange={function (e) { setFichier(e.target.files[0] || null); }} required />
             {fichier ? (
               <p style={{ fontSize: "0.8rem", color: "var(--ink-600)", marginTop: "0.4rem" }}>

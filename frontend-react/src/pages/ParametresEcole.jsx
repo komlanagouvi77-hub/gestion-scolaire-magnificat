@@ -60,7 +60,7 @@ export default function ParametresEcole({ token, onEnregistre }) {
 
           <form onSubmit={soumettre}>
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="param-nom-ecole">Nom de l'ecole</label>
+              <label htmlFor="param-nom-ecole">Nom de l'ecole</label>
               <input id="param-nom-ecole" type="text" value={donnees.nom_ecole} onChange={function (e) { modifierChamp("nom_ecole", e.target.value); }} required />
             </div>
             <div className="mag-field">

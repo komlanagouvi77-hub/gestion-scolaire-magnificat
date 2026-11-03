@@ -276,30 +276,30 @@ export default function ElevesParClasse({ token, role }) {
           <form onSubmit={soumettre}>
             <div className="mag-grid-2">
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="el-matricule">Matricule</label>
+                <label htmlFor="el-matricule">Matricule</label>
                 <input id="el-matricule" type="text" value={champs.matricule} onChange={function (e) { modifierChamp("matricule", e.target.value); }} required />
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="el-classe">Classe</label>
+                <label htmlFor="el-classe">Classe</label>
                 <select id="el-classe" value={champs.classe} onChange={function (e) { modifierChamp("classe", e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   <option value="">-- Sans classe --</option>
                   {classes.map(function (c) { return <option key={c.id} value={c.id}>{c.nom}</option>; })}
                 </select>
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="el-nom">Nom</label>
+                <label htmlFor="el-nom">Nom</label>
                 <input id="el-nom" type="text" value={champs.nom} onChange={function (e) { modifierChamp("nom", e.target.value); }} required />
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="el-prenom">Prenom</label>
+                <label htmlFor="el-prenom">Prenom</label>
                 <input id="el-prenom" type="text" value={champs.prenom} onChange={function (e) { modifierChamp("prenom", e.target.value); }} required />
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="el-naissance">Date de naissance</label>
+                <label htmlFor="el-naissance">Date de naissance</label>
                 <input id="el-naissance" type="date" value={champs.date_naissance} onChange={function (e) { modifierChamp("date_naissance", e.target.value); }} required />
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="el-sexe">Sexe</label>
+                <label htmlFor="el-sexe">Sexe</label>
                 <select id="el-sexe" value={champs.sexe} onChange={function (e) { modifierChamp("sexe", e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   <option value="M">Masculin</option>
                   <option value="F">Feminin</option>

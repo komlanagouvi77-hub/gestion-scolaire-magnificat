@@ -77,7 +77,7 @@ function ChampFlottant({ id, label, type, valeur, onChange, icone, requis, bouto
         onBlur={function () { setFocalise(false); }}
         onChange={onChange}
       />
-      <label htmlFor={id} className={requis ? "mag-label-requis" : undefined}>{label}</label>
+      <label htmlFor={id}>{label}</label>
       {boutonOeil}
     </div>
   );

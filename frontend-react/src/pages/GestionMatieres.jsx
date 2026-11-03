@@ -80,8 +80,8 @@ export default function GestionMatieres({ token }) {
         {message ? <Alerte type={message.type}>{message.texte}</Alerte> : null}
         <form onSubmit={soumettre}>
           <div className="mag-grid-2">
-            <div className="mag-field"><label className="mag-label-requis" htmlFor="mat-nom">Nom</label><input id="mat-nom" type="text" value={nom} onChange={function (e) { setNom(e.target.value); }} placeholder="Ex: Mathematiques" required /></div>
-            <div className="mag-field"><label className="mag-label-requis" htmlFor="mat-coeff">Coefficient</label><input id="mat-coeff" type="number" min="1" value={coefficient} onChange={function (e) { setCoefficient(e.target.value); }} required /></div>
+            <div className="mag-field"><label htmlFor="mat-nom">Nom</label><input id="mat-nom" type="text" value={nom} onChange={function (e) { setNom(e.target.value); }} placeholder="Ex: Mathematiques" required /></div>
+            <div className="mag-field"><label htmlFor="mat-coeff">Coefficient</label><input id="mat-coeff" type="number" min="1" value={coefficient} onChange={function (e) { setCoefficient(e.target.value); }} required /></div>
           </div>
           <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.55rem 1.6rem" }} disabled={enCours}>
             {enCours ? <span className="react-spinner"></span> : "Creer"}

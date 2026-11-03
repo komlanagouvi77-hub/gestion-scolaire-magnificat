@@ -87,7 +87,7 @@ export default function SituationFinanciere({ token }) {
       {statutClasses === "refuse" ? <Alerte>Impossible de charger les classes.</Alerte> : null}
       {statutClasses === "ok" ? (
         <div className="mag-field" style={{ maxWidth: "380px", marginBottom: "1.6rem" }}>
-          <label className="mag-label-requis" htmlFor="sit-classe">Classe</label>
+          <label htmlFor="sit-classe">Classe</label>
           <select id="sit-classe" value={classeId} onChange={function (e) { setClasseId(e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
             <option value="">-- Choisir une classe --</option>
             {classes.map(function (c) { return <option key={c.id} value={c.id}>{c.nom}</option>; })}

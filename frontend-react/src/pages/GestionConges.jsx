@@ -72,16 +72,16 @@ export default function GestionConges({ token, role }) {
         <form onSubmit={soumettre}>
           <div className="mag-grid-2">
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="conge-debut">Date de debut</label>
+              <label htmlFor="conge-debut">Date de debut</label>
               <input id="conge-debut" type="date" value={dateDebut} onChange={function (e) { setDateDebut(e.target.value); }} required />
             </div>
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="conge-fin">Date de fin</label>
+              <label htmlFor="conge-fin">Date de fin</label>
               <input id="conge-fin" type="date" value={dateFin} onChange={function (e) { setDateFin(e.target.value); }} required min={dateDebut || undefined} />
             </div>
           </div>
           <div className="mag-field">
-            <label className="mag-label-requis" htmlFor="conge-motif">Motif</label>
+            <label htmlFor="conge-motif">Motif</label>
             <textarea id="conge-motif" rows={3} value={motif} onChange={function (e) { setMotif(e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px", fontFamily: "inherit" }} />
           </div>
           <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.6rem 1.8rem" }} disabled={enCours}>

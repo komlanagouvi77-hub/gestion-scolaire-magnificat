@@ -109,11 +109,11 @@ export default function GestionParents({ token }) {
         <form onSubmit={soumettre}>
           <div className="mag-grid-2">
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="par-username">Nom d'utilisateur</label>
+              <label htmlFor="par-username">Nom d'utilisateur</label>
               <input id="par-username" type="text" value={username} onChange={function (e) { setUsername(e.target.value); }} required disabled={!!idEnEdition} />
             </div>
             <div className="mag-field">
-              <label className={idEnEdition ? undefined : "mag-label-requis"} htmlFor="par-password">Mot de passe {idEnEdition ? "(laisser vide pour ne pas changer)" : ""}</label>
+              <label htmlFor="par-password">Mot de passe {idEnEdition ? "(laisser vide pour ne pas changer)" : ""}</label>
               <input id="par-password" type="password" value={password} onChange={function (e) { setPassword(e.target.value); }} required={!idEnEdition} minLength={8} />
             </div>
             <div className="mag-field"><label htmlFor="par-prenom">Prenom</label><input id="par-prenom" type="text" value={firstName} onChange={function (e) { setFirstName(e.target.value); }} /></div>

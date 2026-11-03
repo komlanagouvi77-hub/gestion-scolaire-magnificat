@@ -55,11 +55,11 @@ export default function Annonces({ token }) {
 
         <form onSubmit={soumettre}>
           <div className="mag-field">
-            <label className="mag-label-requis" htmlFor="annonce-titre">Titre</label>
+            <label htmlFor="annonce-titre">Titre</label>
             <input id="annonce-titre" type="text" value={titre} onChange={function (e) { setTitre(e.target.value); }} required />
           </div>
           <div className="mag-field">
-            <label className="mag-label-requis" htmlFor="annonce-contenu">Contenu</label>
+            <label htmlFor="annonce-contenu">Contenu</label>
             <textarea id="annonce-contenu" value={contenu} onChange={function (e) { setContenu(e.target.value); }} required rows={3} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px", fontFamily: "inherit" }}></textarea>
           </div>
           <div className="mag-field">

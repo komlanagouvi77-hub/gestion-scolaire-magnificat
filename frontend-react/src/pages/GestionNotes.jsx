@@ -161,14 +161,14 @@ export default function GestionNotes({ token, role }) {
           <div className="mag-panneau-form react-fade-in" style={{ marginBottom: "1.8rem" }}>
             <div className="mag-grid-2">
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="notes-classe">Classe</label>
+                <label htmlFor="notes-classe">Classe</label>
                 <select id="notes-classe" value={classeId} onChange={function (e) { setClasseId(e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   <option value="">-- Choisir --</option>
                   {classes.map(function (c) { return <option key={c.id} value={c.id}>{c.nom}</option>; })}
                 </select>
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="notes-matiere">Matiere</label>
+                <label htmlFor="notes-matiere">Matiere</label>
                 <select id="notes-matiere" value={matiereId} onChange={function (e) { setMatiereId(e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   <option value="">-- Choisir --</option>
                   {matieres.map(function (m) { return <option key={m.id} value={m.id}>{m.nom}</option>; })}
@@ -177,13 +177,13 @@ export default function GestionNotes({ token, role }) {
             </div>
             <div className="mag-grid-2">
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="notes-trimestre">Trimestre</label>
+                <label htmlFor="notes-trimestre">Trimestre</label>
                 <select id="notes-trimestre" value={trimestre} onChange={function (e) { setTrimestre(e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   {TRIMESTRES.map(function (t) { return <option key={t.valeur} value={t.valeur}>{traduireTexte(t.label)}</option>; })}
                 </select>
               </div>
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="notes-type-eval">Type d'evaluation</label>
+                <label htmlFor="notes-type-eval">Type d'evaluation</label>
                 <select id="notes-type-eval" value={typeEvaluation} onChange={function (e) { setTypeEvaluation(e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   {TYPES_EVALUATION.map(function (t) { return <option key={t.valeur} value={t.valeur}>{traduireTexte(t.label)}</option>; })}
                 </select>

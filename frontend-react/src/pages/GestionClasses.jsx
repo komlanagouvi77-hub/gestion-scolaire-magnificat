@@ -87,10 +87,10 @@ export default function GestionClasses({ token }) {
         {message ? <Alerte type={message.type}>{message.texte}</Alerte> : null}
         <form onSubmit={soumettre}>
           <div className="mag-grid-2">
-            <div className="mag-field"><label className="mag-label-requis" htmlFor="cls-nom">Nom</label><input id="cls-nom" type="text" value={nom} onChange={function (e) { setNom(e.target.value); }} placeholder="Ex: 3e A" required /></div>
-            <div className="mag-field"><label className="mag-label-requis" htmlFor="cls-niveau">Niveau</label><input id="cls-niveau" type="text" value={niveau} onChange={function (e) { setNiveau(e.target.value); }} placeholder="Ex: 3e" required /></div>
+            <div className="mag-field"><label htmlFor="cls-nom">Nom</label><input id="cls-nom" type="text" value={nom} onChange={function (e) { setNom(e.target.value); }} placeholder="Ex: 3e A" required /></div>
+            <div className="mag-field"><label htmlFor="cls-niveau">Niveau</label><input id="cls-niveau" type="text" value={niveau} onChange={function (e) { setNiveau(e.target.value); }} placeholder="Ex: 3e" required /></div>
           </div>
-          <div className="mag-field"><label className="mag-label-requis" htmlFor="cls-annee">Annee scolaire</label><input id="cls-annee" type="text" value={anneeScolaire} onChange={function (e) { setAnneeScolaire(e.target.value); }} placeholder="Ex: 2026-2027" required /></div>
+          <div className="mag-field"><label htmlFor="cls-annee">Annee scolaire</label><input id="cls-annee" type="text" value={anneeScolaire} onChange={function (e) { setAnneeScolaire(e.target.value); }} placeholder="Ex: 2026-2027" required /></div>
           <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.6rem 1.8rem" }} disabled={enCours}>
             {enCours ? <span className="react-spinner"></span> : "Creer"}
           </button>

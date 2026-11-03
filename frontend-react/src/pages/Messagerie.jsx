@@ -85,21 +85,21 @@ export default function Messagerie({ token }) {
           {message ? <Alerte type={message.type}>{message.texte}</Alerte> : null}
           <form onSubmit={envoyer}>
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="msg-eleve">A propos de l'eleve</label>
+              <label htmlFor="msg-eleve">A propos de l'eleve</label>
               <select id="msg-eleve" value={eleveId} onChange={function (e) { setEleveId(e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                 <option value="">-- Choisir --</option>
                 {eleves.map(function (e) { return <option key={e.id} value={e.id}>{e.nom}</option>; })}
               </select>
             </div>
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="msg-destinataire">Destinataire</label>
+              <label htmlFor="msg-destinataire">Destinataire</label>
               <select id="msg-destinataire" value={destinataireId} onChange={function (e) { setDestinataireId(e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                 <option value="">-- Choisir --</option>
                 {correspondants.map(function (c) { return <option key={c.id} value={c.id}>{c.nom}</option>; })}
               </select>
             </div>
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="msg-contenu">Message</label>
+              <label htmlFor="msg-contenu">Message</label>
               <textarea id="msg-contenu" value={contenu} onChange={function (e) { setContenu(e.target.value); }} required rows={4}
                 style={{ width: "100%", padding: "0.7rem", border: "1px solid var(--line)", borderRadius: "8px", fontFamily: "inherit", resize: "vertical" }}
                 placeholder="Votre message..." />

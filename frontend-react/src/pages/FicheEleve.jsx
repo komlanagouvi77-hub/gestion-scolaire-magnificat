@@ -225,7 +225,7 @@ export default function FicheEleve({ eleveId, token, role }) {
           <form onSubmit={ajouterObservation}>
             <div className="mag-grid-2">
               <div className="mag-field">
-                <label className="mag-label-requis" htmlFor="obs-type">Type</label>
+                <label htmlFor="obs-type">Type</label>
                 <select id="obs-type" value={typeObs} onChange={function (e) { setTypeObs(e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
                   <option value="positive">Positive</option>
                   <option value="neutre">Neutre</option>
@@ -240,7 +240,7 @@ export default function FicheEleve({ eleveId, token, role }) {
               </div>
             </div>
             <div className="mag-field">
-              <label className="mag-label-requis" htmlFor="obs-contenu">Contenu</label>
+              <label htmlFor="obs-contenu">Contenu</label>
               <textarea id="obs-contenu" rows={2} value={contenuObs} onChange={function (e) { setContenuObs(e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px", fontFamily: "inherit" }} />
             </div>
             <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.6rem 1.8rem" }} disabled={enCours}>
