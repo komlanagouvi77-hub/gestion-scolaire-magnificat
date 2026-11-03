@@ -95,7 +95,7 @@ def _envoyer_email_html(gabarit, contexte, sujet, texte_brut, destinataire):
     adresse = parametres.adresse or "Adidogomé - Cacaveli, 08 BP 80213 Lomé 08, Togo"
     telephone = parametres.telephone or "(+228) 92 19 02 56 / 92 63 55 85 / 99 48 88 21"
     email_ecole = parametres.email or "collegemagnificat2024@gmail.com"
-    platform_url = getattr(settings, "PLATFORM_URL", "https://gestion-scolaire-magnificat.onrender.com/app/")
+    platform_url = getattr(settings, "PLATFORM_URL", "https://gestion-scolaire-magnificat-vcov.onrender.com/app/")
 
     contexte_enrichi = {
         "nom_ecole": nom_ecole,
@@ -128,7 +128,7 @@ def _envoyer_email_html(gabarit, contexte, sujet, texte_brut, destinataire):
 def envoyer_email_demande_approuvee(demande):
     prenom = demande.first_name or demande.username_souhaite
     type_compte_label = demande.get_type_compte_display()
-    platform_url = getattr(settings, "PLATFORM_URL", "https://gestion-scolaire-magnificat.onrender.com/app/")
+    platform_url = getattr(settings, "PLATFORM_URL", "https://gestion-scolaire-magnificat-vcov.onrender.com/app/")
     texte_brut = (
         f"Bonjour {prenom},\n\n"
         f"Votre demande d'acces a l'espace {type_compte_label} du Complexe Scolaire Magnificat a ete approuvee par l'administration.\n"

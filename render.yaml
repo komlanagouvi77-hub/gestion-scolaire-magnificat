@@ -32,7 +32,7 @@ services:
       - key: EMAIL_USE_TLS
         value: "True"
       - key: PLATFORM_URL
-        value: "https://gestion-scolaire-magnificat.onrender.com/app/"
+        value: "https://gestion-scolaire-magnificat-vcov.onrender.com/app/"
       - key: EMAIL_HOST_USER
         value: "komlanagouvi77@gmail.com"
       - key: DEFAULT_FROM_EMAIL

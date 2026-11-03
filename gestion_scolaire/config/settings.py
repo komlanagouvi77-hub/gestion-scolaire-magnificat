@@ -220,7 +220,7 @@ PLATFORM_URL = config(
     'PLATFORM_URL',
     default=config(
         'DJANGO_PLATFORM_URL',
-        default='https://gestion-scolaire-magnificat.onrender.com/app/'
+        default='https://gestion-scolaire-magnificat-vcov.onrender.com/app/'
     )
 )
 
