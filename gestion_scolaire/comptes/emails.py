@@ -116,6 +116,54 @@ def _envoyer_email_html(gabarit, contexte, sujet, texte_brut, destinataire):
 
     try:
         html = render_to_string(gabarit, contexte_enrichi)
+
+        # Passerelle HTTPS automatique pour contourner le blocage du port 587 sur Render Gratuit
+        from decouple import config
+        resend_key = config("RESEND_API_KEY", default="").strip()
+        brevo_key = config("BREVO_API_KEY", default="").strip()
+
+        if resend_key:
+            import json, urllib.request
+            req = urllib.request.Request(
+                "https://api.resend.com/emails",
+                headers={
+                    "Authorization": f"Bearer {resend_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "Magnificat-App/1.0",
+                },
+                data=json.dumps({
+                    "from": "Complexe Scolaire Magnificat <onboarding@resend.dev>",
+                    "to": [destinataire],
+                    "subject": sujet,
+                    "html": html,
+                    "text": texte_brut,
+                }).encode("utf-8"),
+            )
+            with urllib.request.urlopen(req, timeout=15) as r:
+                return True, None
+
+        if brevo_key:
+            import json, urllib.request
+            sender_email = getattr(settings, "EMAIL_HOST_USER", "komlanagouvi77@gmail.com")
+            req = urllib.request.Request(
+                "https://api.brevo.com/v3/smtp/email",
+                headers={
+                    "api-key": brevo_key,
+                    "Content-Type": "application/json",
+                    "User-Agent": "Magnificat-App/1.0",
+                },
+                data=json.dumps({
+                    "sender": {"name": nom_ecole, "email": sender_email},
+                    "to": [{"email": destinataire}],
+                    "subject": sujet,
+                    "htmlContent": html,
+                    "textContent": texte_brut,
+                }).encode("utf-8"),
+            )
+            with urllib.request.urlopen(req, timeout=15) as r:
+                return True, None
+
+        # Mode SMTP standard (port 587 / 465) ou console
         email = EmailAvecImagesIncorporees(sujet, texte_brut, settings.DEFAULT_FROM_EMAIL, [destinataire])
         email.attach_alternative(html, "text/html")
         if image_logo is not None:
@@ -123,8 +171,14 @@ def _envoyer_email_html(gabarit, contexte, sujet, texte_brut, destinataire):
         email.send(fail_silently=False)
         return True, None
     except Exception as e:
-        logger.exception("Echec de l'envoi d'un email de demande d'acces a %s : %s", destinataire, e)
-        return False, str(e)
+        msg_err = str(e)
+        if "Network is unreachable" in msg_err or "101" in msg_err:
+            msg_err = (
+                "Le plan gratuit de Render bloque les connexions SMTP sortantes (port 587). "
+                "L'envoi direct fonctionne en local sur votre PC ou via une clé API gratuite Brevo/Resend en HTTPS."
+            )
+        logger.exception("Echec de l'envoi d'un email de demande d'acces a %s : %s", destinataire, msg_err)
+        return False, msg_err
 
 
 def envoyer_email_demande_approuvee(demande):
