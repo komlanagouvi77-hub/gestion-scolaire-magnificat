@@ -47,8 +47,12 @@ class Command(BaseCommand):
                     shutil.copy2(chemin_defaut, chemin_media_logo)
                     parametres.logo = "logo_ecole/logo_magnificat.png"
 
+        # Deconnexion et deverrouillage des periodes par defaut pour une soutenance fluide
+        parametres.notes_verrouillees_t1 = False
+        parametres.notes_verrouillees_t2 = False
+        parametres.notes_verrouillees_t3 = False
         parametres.save()
-        self.stdout.write(self.style.SUCCESS("Parametres de l'etablissement configures."))
+        self.stdout.write(self.style.SUCCESS("Parametres de l'etablissement configures (trimestres ouverts a la saisie)."))
 
         # 2. Comptes Administrateurs garantis
         admin_user = None
@@ -78,6 +82,31 @@ class Command(BaseCommand):
         for parent_demo in Parent.objects.filter(username__in=["demo_parent", "parent1"]):
             parent_demo.set_password("DemoMagnificat2026!")
             parent_demo.save()
+
+        # Filtrage strict des matieres pour tous les enseignants (specialite unique)
+        try:
+            import unicodedata
+
+            def _clean(t):
+                if not t:
+                    return ""
+                t = unicodedata.normalize("NFD", str(t))
+                return "".join(c for c in t if unicodedata.category(c) != "Mn").lower().strip()
+
+            from scolarite.models import Matiere
+            toutes_matieres = list(Matiere.objects.all())
+            for prof in Enseignant.objects.all():
+                if prof.specialite:
+                    spec_norm = _clean(prof.specialite)
+                    spec_mats = [m for m in toutes_matieres if spec_norm in _clean(m.nom) or _clean(m.nom) in spec_norm]
+                    if spec_mats:
+                        prof.matieres.set(spec_mats)
+                elif prof.username in ["demo_prof", "prof_math"]:
+                    math_mats = [m for m in toutes_matieres if "math" in _clean(m.nom)]
+                    if math_mats:
+                        prof.matieres.set(math_mats)
+        except Exception:
+            pass
 
         # 3. Donnees de demonstration si demandees
         avec_demo = options.get("avec_demo") or os.environ.get("DEMO_DATA", "False") == "True"

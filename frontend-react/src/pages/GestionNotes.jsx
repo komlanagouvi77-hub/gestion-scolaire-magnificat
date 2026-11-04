@@ -50,15 +50,41 @@ export default function GestionNotes({ token, role }) {
     Promise.all(appels)
       .then(function (resultats) {
         if (estAdmin) {
-          setClasses(resultats[0]);
-          setMatieres(resultats[1]);
-          setEleves(resultats[2]);
+          const cls = resultats[0] || [];
+          const mats = resultats[1] || [];
+          setClasses(cls);
+          setMatieres(mats);
+          setEleves(resultats[2] || []);
           setParametres(resultats[3]);
+          if (cls.length === 1) setClasseId(String(cls[0].id));
+          if (mats.length === 1) setMatiereId(String(mats[0].id));
         } else {
-          setClasses(resultats[0].classes || []);
-          setMatieres(resultats[0].matieres || []);
-          setEleves(resultats[1]);
+          const profil = resultats[0] || {};
+          const profClasses = profil.classes || [];
+          let profMatieres = profil.matieres || [];
+
+          // Filtrage intelligent par specialite si presente (sans accents)
+          if (profil.specialite && profMatieres.length > 1) {
+            const normaliser = function (s) {
+              return (s || "").normalize("NFD").replace(/[\u0300-\u036f]/g, "").toLowerCase().trim();
+            };
+            const specNorm = normaliser(profil.specialite);
+            const specMatiere = profMatieres.filter(function (m) {
+              const nomNorm = normaliser(m.nom);
+              return nomNorm.includes(specNorm) || specNorm.includes(nomNorm);
+            });
+            if (specMatiere.length > 0) {
+              profMatieres = specMatiere;
+            }
+          }
+
+          setClasses(profClasses);
+          setMatieres(profMatieres);
+          setEleves(resultats[1] || []);
           setParametres(resultats[2]);
+
+          if (profClasses.length === 1) setClasseId(String(profClasses[0].id));
+          if (profMatieres.length === 1) setMatiereId(String(profMatieres[0].id));
         }
         setStatut("ok");
       })
@@ -79,7 +105,8 @@ export default function GestionNotes({ token, role }) {
     setChargementNotes(true);
     lister("notes", token)
       .then(function (toutes) {
-        const filtrees = toutes.filter(function (n) {
+        const liste = Array.isArray(toutes) ? toutes : (toutes && Array.isArray(toutes.results) ? toutes.results : []);
+        const filtrees = liste.filter(function (n) {
           return String(n.matiere) === String(matiereId)
             && String(n.trimestre) === String(trimestre)
             && n.type_evaluation === typeEvaluation
@@ -99,6 +126,7 @@ export default function GestionNotes({ token, role }) {
 
   const soumettre = async function (evt) {
     evt.preventDefault();
+    if (estVerrouille && !estAdmin) return;
     setMessage(null);
     setEnCours(true);
     let enregistrees = 0;
@@ -197,15 +225,17 @@ export default function GestionNotes({ token, role }) {
             <div className="mag-card" style={{ textAlign: "center", padding: "2.5rem", border: "1px dashed var(--line)", color: "var(--ink-600)" }}>
               Choisissez une classe, une matiere, un trimestre et un type d'evaluation pour commencer la saisie.
             </div>
-          ) : (estVerrouille && !estAdmin) ? (
-            <Alerte>{traduireTexte("Ce trimestre est verrouille par l'administration : les notes ne peuvent plus etre modifiees.")}</Alerte>
           ) : chargementNotes ? (
             <Spinner texte={traduireTexte("Chargement des notes...")} />
           ) : elevesDeLaClasse.length === 0 ? (
             <Alerte>{traduireTexte("Aucun eleve dans cette classe.")}</Alerte>
           ) : (
             <form onSubmit={soumettre} className="react-fade-in">
-              {estVerrouille && estAdmin ? (
+              {estVerrouille && !estAdmin ? (
+                <div style={{ marginBottom: "1.2rem", padding: "0.85rem 1.2rem", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "8px", color: "var(--ink-800)", fontSize: "0.9rem" }}>
+                  🔒 <strong>{traduireTexte("Trimestre verrouillé")} :</strong> {traduireTexte("Ce trimestre est clôturé par l'administration (consultation seule). Les notes déjà enregistrées sont affichées ci-dessous mais ne peuvent plus être modifiées.")}
+                </div>
+              ) : estVerrouille && estAdmin ? (
                 <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "rgba(234, 179, 8, 0.12)", border: "1px solid rgba(202, 138, 4, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "var(--ink-800)" }}>
                   ℹ️ <strong>{traduireTexte("Trimestre verrouille")} :</strong> {traduireTexte("En tant qu'administrateur, vous disposez des droits de saisie et de correction exceptionnelle.")}
                 </div>
@@ -215,6 +245,7 @@ export default function GestionNotes({ token, role }) {
                   <thead><tr><th>Eleve</th><th style={{ width: "160px" }}>Note / 20</th></tr></thead>
                   <tbody>
                     {elevesDeLaClasse.map(function (eleve) {
+                      const estDesactive = estVerrouille && !estAdmin;
                       return (
                         <tr key={eleve.id}>
                           <td>{eleve.nom} {eleve.prenom}</td>
@@ -222,11 +253,17 @@ export default function GestionNotes({ token, role }) {
                             <input
                               type="number" min="0" max="20" step="0.25"
                               value={valeurs[eleve.id] || ""}
+                              disabled={estDesactive}
                               onChange={function (e) {
                                 setValeurs(Object.assign({}, valeurs, { [eleve.id]: e.target.value }));
                               }}
                               aria-label={"Note de " + eleve.nom + " " + eleve.prenom}
-                              style={{ width: "100px", padding: "0.4rem" }}
+                              style={{
+                                width: "100px",
+                                padding: "0.4rem",
+                                background: estDesactive ? "#f3f4f6" : "inherit",
+                                cursor: estDesactive ? "not-allowed" : "text",
+                              }}
                             />
                           </td>
                         </tr>
@@ -235,9 +272,15 @@ export default function GestionNotes({ token, role }) {
                   </tbody>
                 </table>
               </div>
-              <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.6rem 1.8rem", marginTop: "1.2rem" }} disabled={enCours}>
-                {enCours ? <span className="react-spinner"></span> : "Enregistrer les notes"}
-              </button>
+              {estVerrouille && !estAdmin ? (
+                <div style={{ marginTop: "1.2rem", display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1.4rem", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: "6px", color: "#6b7280", fontSize: "0.9rem", fontWeight: "500" }}>
+                  🔒 {traduireTexte("Saisie clôturée (Trimestre verrouillé par l'administration)")}
+                </div>
+              ) : (
+                <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.6rem 1.8rem", marginTop: "1.2rem" }} disabled={enCours}>
+                  {enCours ? <span className="react-spinner"></span> : "Enregistrer les notes"}
+                </button>
+              )}
             </form>
           )}
         </>

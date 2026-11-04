@@ -1,3 +1,4 @@
+import unicodedata
 from rest_framework import viewsets
 from rest_framework.decorators import action, api_view, parser_classes, permission_classes
 from rest_framework.exceptions import PermissionDenied
@@ -8,6 +9,13 @@ from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
 
 from django.shortcuts import get_object_or_404
+
+
+def sans_accents(texte):
+    if not texte:
+        return ""
+    texte = unicodedata.normalize("NFD", str(texte))
+    return "".join(c for c in texte if unicodedata.category(c) != "Mn").lower().strip()
 
 from .emails import envoyer_email_demande_approuvee, envoyer_email_demande_refusee
 from .models import DemandeConge, DemandeInscription, Enseignant, Parametres, Parent
@@ -62,8 +70,26 @@ def qui_suis_je(request):
     # expose ici, la seule route qu'un enseignant peut interroger sur
     # lui-meme.
     if role == "enseignant":
-        donnees["classes"] = list(utilisateur.enseignant.classes.values("id", "nom", "niveau"))
-        donnees["matieres"] = list(utilisateur.enseignant.matieres.values("id", "nom"))
+        ens = utilisateur.enseignant
+        donnees["specialite"] = ens.specialite or ""
+        donnees["classes"] = list(ens.classes.values("id", "nom", "niveau"))
+
+        # Filtrage strict et robuste des matieres de l'enseignant :
+        # L'enseignant ne doit voir QUE sa matiere de specialite.
+        mats_list = list(ens.matieres.all())
+        if not mats_list and ens.specialite:
+            from scolarite.models import Matiere
+            mats_list = list(Matiere.objects.all())
+
+        if ens.specialite and mats_list:
+            spec_norm = sans_accents(ens.specialite)
+            filtrees = [
+                m for m in mats_list
+                if spec_norm in sans_accents(m.nom) or sans_accents(m.nom) in spec_norm
+            ]
+            if filtrees:
+                mats_list = filtrees
+        donnees["matieres"] = [{"id": m.id, "nom": m.nom} for m in mats_list]
 
     return Response(donnees)
 
@@ -299,6 +325,18 @@ class DemandeInscriptionViewSet(viewsets.ModelViewSet):
             )
             compte.password = demande.mot_de_passe_hache
             compte.save()
+
+            # Lier automatiquement la matiere et les classes par defaut
+            from scolarite.models import Matiere, Classe
+            if demande.specialite:
+                spec_norm = sans_accents(demande.specialite)
+                mats = [m for m in Matiere.objects.all() if spec_norm in sans_accents(m.nom) or sans_accents(m.nom) in spec_norm]
+                if mats:
+                    compte.matieres.set(mats)
+            if not compte.classes.exists():
+                classes_dispos = Classe.objects.all()
+                if classes_dispos.exists():
+                    compte.classes.set(classes_dispos[:3])
         else:
             from scolarite.models import Eleve
             compte = Parent(
