@@ -389,14 +389,24 @@ class CoursViewSet(viewsets.ModelViewSet):
 
 @extend_schema(responses=inline_serializer(name="LigneSuiviSaisieNotes", fields={
     "enseignant": serializers.CharField(),
+    "enseignant_id": serializers.IntegerField(),
+    "enseignant_telephone": serializers.CharField(),
     "classe": serializers.CharField(),
+    "classe_id": serializers.IntegerField(),
     "matiere": serializers.CharField(),
+    "matiere_id": serializers.IntegerField(),
+    "matiere_coeff": serializers.IntegerField(),
     "trimestre": serializers.IntegerField(),
+    "trimestre_verrouille": serializers.BooleanField(),
     "total_eleves": serializers.IntegerField(),
     "eleves_avec_note": serializers.IntegerField(),
+    "eleves_avec_compo": serializers.IntegerField(),
+    "eleves_avec_devoir": serializers.IntegerField(),
+    "pct_progression": serializers.IntegerField(),
+    "moyenne_matiere": serializers.FloatField(allow_null=True),
+    "taux_reussite_pct": serializers.FloatField(allow_null=True),
     "statut": serializers.CharField(),
 }, many=True))
-@api_view(["GET"])
 @api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def suivi_saisie_notes(request):

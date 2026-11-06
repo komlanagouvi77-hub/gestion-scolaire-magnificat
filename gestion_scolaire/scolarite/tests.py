@@ -630,6 +630,34 @@ class SuiviSaisieNotesTests(TestCase):
         resp = self.client.get("/api/suivi-saisie/?trimestre=1", HTTP_AUTHORIZATION="Token " + token)
         self.assertEqual(resp.status_code, 200)
 
+    def test_administrateur_voit_le_suivi_avec_indicateurs_complets(self):
+        token = self._obtenir_token("admin1")
+        from decimal import Decimal
+        # Création d'une note de devoir et d'une note de composition
+        Note.objects.create(
+            eleve=self.donnees["eleve"], matiere=self.donnees["maths"],
+            enseignant=self.donnees["prof"], type_evaluation="devoir",
+            valeur=Decimal("14.50"), trimestre=1,
+        )
+        Note.objects.create(
+            eleve=self.donnees["eleve"], matiere=self.donnees["maths"],
+            enseignant=self.donnees["prof"], type_evaluation="composition",
+            valeur=Decimal("12.00"), trimestre=1,
+        )
+        resp = self.client.get("/api/suivi-saisie/?trimestre=1", HTTP_AUTHORIZATION="Token " + token)
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(len(resp.data) > 0)
+        ligne = resp.data[0]
+        self.assertIn("pct_progression", ligne)
+        self.assertIn("moyenne_matiere", ligne)
+        self.assertIn("eleves_avec_compo", ligne)
+        self.assertIn("eleves_avec_devoir", ligne)
+        self.assertIn("enseignant_telephone", ligne)
+        self.assertEqual(ligne["statut"], "termine")
+        self.assertEqual(ligne["eleves_avec_compo"], 1)
+        self.assertEqual(ligne["eleves_avec_devoir"], 1)
+        self.assertEqual(ligne["moyenne_matiere"], 13.25)
+
     def test_enseignant_ne_peut_pas_voir_le_suivi(self):
         token = self._obtenir_token("prof1")
         resp = self.client.get("/api/suivi-saisie/?trimestre=1", HTTP_AUTHORIZATION="Token " + token)
