@@ -198,6 +198,31 @@ def situation_financiere(request, classe_id):
     })
 
 
+@extend_schema(
+    request=inline_serializer(
+        name="InitierPaiementMobileMoneyRequest",
+        fields={
+            "eleve_id": serializers.IntegerField(),
+            "tranche": serializers.IntegerField(),
+            "montant": serializers.CharField(),
+            "operateur": serializers.ChoiceField(choices=["tmoney", "flooz"]),
+            "telephone": serializers.CharField(),
+        },
+    ),
+    responses=inline_serializer(
+        name="InitierPaiementMobileMoneyResponse",
+        fields={
+            "succes": serializers.BooleanField(),
+            "reference": serializers.CharField(),
+            "montant": serializers.CharField(),
+            "operateur": serializers.CharField(),
+            "operateur_nom": serializers.CharField(),
+            "telephone": serializers.CharField(),
+            "fedapay_url": serializers.CharField(allow_null=True),
+            "instructions": serializers.CharField(),
+        },
+    ),
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def initier_paiement_mobile_money(request):
@@ -296,6 +321,24 @@ def initier_paiement_mobile_money(request):
     })
 
 
+@extend_schema(
+    request=inline_serializer(
+        name="ValiderPaiementMobileMoneyRequest",
+        fields={"reference": serializers.CharField()},
+    ),
+    responses=inline_serializer(
+        name="ValiderPaiementMobileMoneyResponse",
+        fields={
+            "succes": serializers.BooleanField(),
+            "message": serializers.CharField(),
+            "paiement_id": serializers.IntegerField(),
+            "reference": serializers.CharField(),
+            "eleve_nom": serializers.CharField(required=False),
+            "montant": serializers.CharField(required=False),
+            "tranche": serializers.IntegerField(required=False),
+        },
+    ),
+)
 @api_view(["POST"])
 @permission_classes([IsAuthenticated])
 def valider_paiement_mobile_money(request):
@@ -347,6 +390,16 @@ def valider_paiement_mobile_money(request):
     })
 
 
+@extend_schema(
+    request=inline_serializer(
+        name="WebhookPaiementRequest",
+        fields={"identifier": serializers.CharField(required=False), "status": serializers.CharField(required=False)},
+    ),
+    responses=inline_serializer(
+        name="WebhookPaiementResponse",
+        fields={"succes": serializers.BooleanField(), "statut": serializers.CharField()},
+    ),
+)
 @api_view(["POST"])
 @permission_classes([AllowAny])
 def webhook_fedapay(request):

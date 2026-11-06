@@ -373,6 +373,21 @@ class DemandeInscriptionViewSet(viewsets.ModelViewSet):
         return Response({"detail": "Demande refusee.", "email_envoye": succes_email}, status=200)
 
 
+@extend_schema(
+    request=None,
+    responses=inline_serializer(
+        name="DiagnosticEmailResponse",
+        fields={
+            "EMAIL_HOST": serializers.CharField(),
+            "EMAIL_PORT": serializers.IntegerField(),
+            "EMAIL_USE_TLS": serializers.BooleanField(),
+            "EMAIL_HOST_USER": serializers.CharField(),
+            "succes": serializers.BooleanField(),
+            "erreur": serializers.CharField(allow_null=True),
+            "destinataire": serializers.CharField(),
+        },
+    ),
+)
 @api_view(["POST", "GET"])
 @permission_classes([IsAuthenticated])
 def tester_envoi_email(request):
