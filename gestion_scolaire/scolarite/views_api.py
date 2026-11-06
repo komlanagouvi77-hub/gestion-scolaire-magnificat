@@ -397,12 +397,14 @@ class CoursViewSet(viewsets.ModelViewSet):
     "statut": serializers.CharField(),
 }, many=True))
 @api_view(["GET"])
+@api_view(["GET"])
 @permission_classes([IsAuthenticated])
 def suivi_saisie_notes(request):
     """
-    Pour l'Administrateur : etat de la saisie des notes, croise par
-    enseignant / classe / matiere, pour un trimestre donne. Permet de voir
-    en un coup d'oeil qui a termine et qui est en retard.
+    Pour l'Administrateur : tableau de bord de suivi pedagogique de la saisie
+    des notes, croise par enseignant / classe / matiere, pour un trimestre donne.
+    Inclut la distinction Devoir / Composition, les moyennes de classe, le
+    taux de reussite et les coordonnees pour relance directe.
     """
     if not hasattr(request.user, "administrateur"):
         return Response({"detail": "Reserve a l'administrateur."}, status=403)
@@ -413,6 +415,13 @@ def suivi_saisie_notes(request):
     except ValueError:
         trimestre = 1
 
+    from comptes.models import Parametres
+    from django.db.models import Avg
+
+    parametres = Parametres.charger()
+    champ_verrou = f"notes_verrouillees_t{trimestre}"
+    est_verrouille = getattr(parametres, champ_verrou, False) if parametres else False
+
     resultats = []
     for enseignant in Enseignant.objects.all().order_by("username"):
         for classe in enseignant.classes.all():
@@ -420,24 +429,52 @@ def suivi_saisie_notes(request):
             if total_eleves == 0:
                 continue
             for matiere in enseignant.matieres.all():
-                eleves_avec_note = Eleve.objects.filter(
-                    classe=classe, notes__matiere=matiere, notes__trimestre=trimestre,
-                ).distinct().count()
+                notes_qs = Note.objects.filter(
+                    eleve__classe=classe,
+                    matiere=matiere,
+                    trimestre=trimestre,
+                )
+                eleves_avec_note = notes_qs.values_list("eleve_id", flat=True).distinct().count()
+                eleves_avec_compo = notes_qs.filter(type_evaluation="composition").values_list("eleve_id", flat=True).distinct().count()
+                eleves_avec_devoir = notes_qs.filter(type_evaluation="devoir").values_list("eleve_id", flat=True).distinct().count()
+                total_notes = notes_qs.count()
+
+                moyenne = None
+                taux_reussite = None
+                if total_notes > 0:
+                    moyenne_val = notes_qs.aggregate(Avg("valeur"))["valeur__avg"]
+                    if moyenne_val is not None:
+                        moyenne = round(float(moyenne_val), 2)
+                    notes_reussies = notes_qs.filter(valeur__gte=10).count()
+                    taux_reussite = round((notes_reussies / total_notes) * 100, 1)
 
                 if eleves_avec_note == 0:
                     statut = "pas_commence"
-                elif eleves_avec_note >= total_eleves:
+                elif eleves_avec_note >= total_eleves and eleves_avec_compo >= total_eleves:
                     statut = "termine"
                 else:
                     statut = "en_cours"
 
+                pct_progression = round((eleves_avec_note / total_eleves) * 100) if total_eleves > 0 else 0
+
                 resultats.append({
                     "enseignant": enseignant.get_full_name() or enseignant.username,
+                    "enseignant_id": enseignant.id,
+                    "enseignant_telephone": getattr(enseignant, "telephone", "") or "",
                     "classe": str(classe),
+                    "classe_id": classe.id,
                     "matiere": matiere.nom,
+                    "matiere_id": matiere.id,
+                    "matiere_coeff": getattr(matiere, "coefficient", 1),
                     "trimestre": trimestre,
+                    "trimestre_verrouille": est_verrouille,
                     "total_eleves": total_eleves,
                     "eleves_avec_note": eleves_avec_note,
+                    "eleves_avec_compo": eleves_avec_compo,
+                    "eleves_avec_devoir": eleves_avec_devoir,
+                    "pct_progression": pct_progression,
+                    "moyenne_matiere": moyenne,
+                    "taux_reussite_pct": taux_reussite,
                     "statut": statut,
                 })
 
