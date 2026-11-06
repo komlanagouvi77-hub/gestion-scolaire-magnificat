@@ -67,3 +67,51 @@ class Paiement(models.Model):
 
     def __str__(self):
         return f"{self.eleve} - {self.montant} FCFA ({self.date_paiement})"
+
+
+class TransactionEnLigne(models.Model):
+    """
+    Suit l'initiation et l'aboutissement d'un paiement en ligne Mobile Money (T-Money / Flooz).
+    Compatible avec les passerelles de paiement (FedaPay / PayGate / CinetPay).
+    """
+
+    STATUT_EN_ATTENTE = "en_attente"
+    STATUT_APPROUVEE = "approuvee"
+    STATUT_ECHOUEE = "echouee"
+    STATUT_ANNULEE = "annulee"
+    STATUT_CHOICES = [
+        (STATUT_EN_ATTENTE, "En attente"),
+        (STATUT_APPROUVEE, "Approuvee"),
+        (STATUT_ECHOUEE, "Echouee"),
+        (STATUT_ANNULEE, "Annulee"),
+    ]
+
+    OPERATEUR_CHOICES = [
+        ("tmoney", "T-Money (Togocom)"),
+        ("flooz", "Flooz (Moov Africa)"),
+    ]
+
+    reference_interne = models.CharField(max_length=100, unique=True)
+    reference_passerelle = models.CharField(max_length=150, blank=True)
+    eleve = models.ForeignKey("scolarite.Eleve", on_delete=models.CASCADE, related_name="transactions_mobile_money")
+    tranche = models.PositiveSmallIntegerField(choices=FraisScolarite.TRANCHE_CHOICES)
+    montant = models.DecimalField(max_digits=10, decimal_places=2, validators=[MinValueValidator(Decimal("0.01"))])
+    operateur = models.CharField(max_length=20, choices=OPERATEUR_CHOICES, default="tmoney")
+    telephone = models.CharField(max_length=30)
+    statut = models.CharField(max_length=20, choices=STATUT_CHOICES, default=STATUT_EN_ATTENTE)
+    paiement_genere = models.OneToOneField(
+        Paiement, on_delete=models.SET_NULL, null=True, blank=True, related_name="transaction_origine"
+    )
+    initie_par = models.ForeignKey(
+        "comptes.Utilisateur", on_delete=models.SET_NULL, null=True, blank=True, related_name="transactions_initiees"
+    )
+    date_creation = models.DateTimeField(auto_now_add=True)
+    date_mise_a_jour = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        ordering = ["-date_creation"]
+        verbose_name = "Transaction Mobile Money"
+        verbose_name_plural = "Transactions Mobile Money"
+
+    def __str__(self):
+        return f"{self.reference_interne} - {self.eleve} ({self.montant} FCFA) [{self.statut}]"

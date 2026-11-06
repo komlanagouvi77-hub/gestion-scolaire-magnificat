@@ -3,6 +3,7 @@ import { lister, obtenirStatistiquesGlobales } from "../api.js";
 import { CarteStat, GraphiqueBarres } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import { traduireTexte, localeActive } from "../localisation.js";
+import ModalPaiementMobileMoney from "../components/ModalPaiementMobileMoney.jsx";
 
 function useListe(ressource, token) {
   const [donnees, setDonnees] = useState([]);
@@ -102,10 +103,22 @@ function BarreParite({ label, valeur, total, couleur }) {
   );
 }
 
-function CarteMesEnfants({ eleves }) {
+function CarteMesEnfants({ eleves, onPayer }) {
   return (
     <div className="mag-card react-fade-in">
-      <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Mes enfants</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.9rem", flexWrap: "wrap", gap: "0.5rem" }}>
+        <div className="mag-stat-label" style={{ margin: 0 }}>Mes enfants</div>
+        {eleves.length > 0 && onPayer ? (
+          <button
+            type="button"
+            onClick={function () { onPayer(eleves[0] ? String(eleves[0].id) : ""); }}
+            className="mag-btn-primary"
+            style={{ background: "#E65100", borderColor: "#E65100", fontSize: "0.8rem", padding: "0.4rem 0.9rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
+          >
+            <span>📲</span> {traduireTexte("Payer scolarite (T-Money / Flooz)")}
+          </button>
+        ) : null}
+      </div>
       {eleves.length === 0 ? (
         <p style={{ fontSize: "0.85rem", color: "var(--ink-600)" }}>Aucun enfant rattache a votre compte pour le moment.</p>
       ) : (
@@ -113,12 +126,25 @@ function CarteMesEnfants({ eleves }) {
           {eleves.map(function (e) {
             const initiales = ((e.prenom || "?").charAt(0) + (e.nom || "").charAt(0)).toUpperCase();
             return (
-              <div className="react-enfant-carte" key={e.id}>
-                <div className="react-enfant-avatar">{initiales}</div>
-                <div>
-                  <div className="react-enfant-nom">{e.prenom} {e.nom}</div>
-                  <div className="react-enfant-classe">{e.classe_nom || "Classe non assignee"}</div>
+              <div className="react-enfant-carte" key={e.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
+                  <div className="react-enfant-avatar">{initiales}</div>
+                  <div>
+                    <div className="react-enfant-nom">{e.prenom} {e.nom}</div>
+                    <div className="react-enfant-classe">{e.classe_nom || "Classe non assignee"}</div>
+                  </div>
                 </div>
+                {onPayer ? (
+                  <button
+                    type="button"
+                    onClick={function () { onPayer(String(e.id)); }}
+                    className="mag-btn-lien"
+                    style={{ fontSize: "0.8rem", color: "#E65100", fontWeight: 600, padding: "0.3rem 0.6rem", border: "1px solid #FFCC80", borderRadius: "6px", background: "#FFF8E1" }}
+                    title="Payer les frais de scolarite par Mobile Money"
+                  >
+                    📲 Payer →
+                  </button>
+                ) : null}
               </div>
             );
           })}
@@ -199,6 +225,7 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
   const paiements = useListe(affichePaiements ? "paiements" : null, token);
   const cours = useListe((estEnseignant || estParent) ? "cours" : null, token);
   const [statsGlobales, setStatsGlobales] = useState(null);
+  const [enfantMobileMoney, setEnfantMobileMoney] = useState(null);
 
   useEffect(function () {
     if (estAdmin && token) {
@@ -348,7 +375,10 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
           </div>
 
           {estParent ? (
-            <CarteMesEnfants eleves={eleves.donnees} />
+            <CarteMesEnfants
+              eleves={eleves.donnees}
+              onPayer={function (id) { setEnfantMobileMoney(id || "1"); }}
+            />
           ) : (
             <GraphiqueBarres titre={estEnseignant ? "Repartition de mes eleves par classe" : "Repartition des eleves par classe"} donnees={repartitionParClasse} />
           )}
@@ -448,6 +478,19 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
                 </div>
               </div>
             </>
+          ) : null}
+
+          {enfantMobileMoney !== null ? (
+            <ModalPaiementMobileMoney
+              token={token}
+              eleves={eleves.donnees}
+              eleveInitialId={enfantMobileMoney}
+              onFermer={function () { setEnfantMobileMoney(null); }}
+              onSucces={function () {
+                setEnfantMobileMoney(null);
+                window.location.reload();
+              }}
+            />
           ) : null}
         </>
       )}

@@ -14,7 +14,14 @@ from comptes.views_api import (
     tester_envoi_email,
 )
 from communication.views_api import AnnonceViewSet, EvenementViewSet, MessageViewSet, correspondants_messagerie
-from paiements.views_api import FraisScolariteViewSet, PaiementViewSet, situation_financiere
+from paiements.views_api import (
+    FraisScolariteViewSet,
+    PaiementViewSet,
+    initier_paiement_mobile_money,
+    situation_financiere,
+    valider_paiement_mobile_money,
+    webhook_fedapay,
+)
 from scolarite.views_api import (
     AbsenceViewSet,
     BulletinViewSet,
@@ -68,6 +75,10 @@ urlpatterns = [
     path("messagerie/correspondants/", correspondants_messagerie, name="correspondants_messagerie"),
     # Situation financiere (du/paye/reste par eleve et par tranche) d'une classe
     path("paiements/situation/<int:classe_id>/", situation_financiere, name="situation_financiere"),
+    # Paiements en ligne Mobile Money (T-Money / Flooz)
+    path("paiements/mobile-money/initier/", initier_paiement_mobile_money, name="initier_mobile_money"),
+    path("paiements/mobile-money/valider/", valider_paiement_mobile_money, name="valider_mobile_money"),
+    path("paiements/mobile-money/webhook/", webhook_fedapay, name="webhook_fedapay"),
     # Statistiques globales de l'etablissement (KPIs, effectifs, finances, absences)
     path("statistiques/globales/", statistiques_globales_view, name="statistiques_globales"),
     # Export CSV d'une classe (liste des eleves et contacts parents pour Excel)

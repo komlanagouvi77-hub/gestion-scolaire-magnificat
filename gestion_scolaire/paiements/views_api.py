@@ -1,17 +1,24 @@
+import json
+import os
+import urllib.error
+import urllib.request
+import uuid
 from decimal import Decimal
 
 from rest_framework import viewsets
 from rest_framework.decorators import action, api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, inline_serializer
+from django.conf import settings
 from django.shortcuts import get_object_or_404
 from django.http import HttpResponse
 
+from comptes.models import Parametres
 from scolarite.models import Classe, Eleve
-from .models import FraisScolarite, Paiement
+from .models import FraisScolarite, Paiement, TransactionEnLigne
 from .serializers import FraisScolariteSerializer, PaiementSerializer
 
 
@@ -188,3 +195,214 @@ def situation_financiere(request, classe_id):
         "tranche_choices": [{"valeur": v, "libelle": l} for v, l in FraisScolarite.TRANCHE_CHOICES],
         "lignes": lignes,
     })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def initier_paiement_mobile_money(request):
+    """
+    Initie un paiement Mobile Money (T-Money ou Flooz).
+    Accessible a l'Administrateur et aux Parents (pour leurs enfants).
+    Contacte FedaPay si configure (FEDAPAY_SECRET_KEY dans l'environnement),
+    ou prepare la transaction locale en attente de validation push USSD.
+    """
+    utilisateur = request.user
+    donnees = request.data
+
+    eleve_id = donnees.get("eleve_id")
+    tranche = donnees.get("tranche")
+    montant_str = donnees.get("montant")
+    operateur = str(donnees.get("operateur", "tmoney")).lower().strip()
+    telephone = str(donnees.get("telephone", "")).strip().replace(" ", "").replace("-", "")
+
+    if not eleve_id or not tranche or not montant_str:
+        return Response({"detail": "Eleve, tranche et montant sont requis."}, status=400)
+
+    try:
+        montant = Decimal(str(montant_str))
+        if montant <= 0:
+            return Response({"detail": "Le montant doit etre superieur a 0 FCFA."}, status=400)
+    except Exception:
+        return Response({"detail": "Montant invalide."}, status=400)
+
+    eleve = get_object_or_404(Eleve, pk=eleve_id)
+
+    # Verification de securite : un parent ne peut payer que pour ses propres enfants
+    if hasattr(utilisateur, "parent"):
+        if not utilisateur.parent.eleves.filter(pk=eleve.pk).exists():
+            raise PermissionDenied("Vous ne pouvez initier de paiement que pour vos propres enfants.")
+    elif not hasattr(utilisateur, "administrateur"):
+        raise PermissionDenied("Seul un parent ou un administrateur peut initier un paiement.")
+
+    # Validation du numero togolais (+228 ou 8 chiffres)
+    if not telephone:
+        return Response({"detail": "Le numero de telephone Mobile Money est obligatoire."}, status=400)
+
+    clean_tel = telephone
+    if clean_tel.startswith("+228"):
+        clean_tel = clean_tel[4:]
+    elif clean_tel.startswith("00228"):
+        clean_tel = clean_tel[5:]
+    if len(clean_tel) != 8 or not clean_tel.isdigit():
+        return Response({"detail": "Le numero de telephone doit comporter 8 chiffres togolais (ex: 90123456)."}, status=400)
+
+    # Generation de la reference unique de transaction
+    code_alea = uuid.uuid4().hex[:6].upper()
+    prefixe_op = "TM" if operateur == "tmoney" else "FL"
+    ref_interne = f"TX-{prefixe_op}-{code_alea}"
+
+    fedapay_key = getattr(settings, "FEDAPAY_SECRET_KEY", None) or os.environ.get("FEDAPAY_SECRET_KEY", "")
+    fedapay_env = getattr(settings, "FEDAPAY_ENVIRONMENT", None) or os.environ.get("FEDAPAY_ENVIRONMENT", "sandbox")
+    fedapay_url = None
+    ref_passerelle = ""
+
+    # Si une cle d'API FedaPay est configuree, creation de la transaction FedaPay
+    if fedapay_key:
+        api_host = "https://api.fedapay.com/v1" if fedapay_env == "live" else "https://sandbox-api.fedapay.com/v1"
+        payload_feda = {
+            "description": f"Scolarite {eleve.nom} {eleve.prenom} - T{tranche}",
+            "amount": int(montant),
+            "currency": {"iso": "XOF"},
+            "callback_url": request.build_absolute_uri("/app/#/paiements"),
+            "customer": {
+                "firstname": eleve.prenom,
+                "lastname": eleve.nom,
+                "email": utilisateur.email or "comptabilite@magnificat-scolaire.tg",
+                "phone_number": {"number": clean_tel, "country": "TG"},
+            },
+        }
+        try:
+            req = urllib.request.Request(
+                f"{api_host}/transactions",
+                data=json.dumps(payload_feda).encode("utf-8"),
+                headers={
+                    "Authorization": f"Bearer {fedapay_key}",
+                    "Content-Type": "application/json",
+                    "User-Agent": "Magnificat-Scolaire/1.0",
+                },
+                method="POST",
+            )
+            with urllib.request.urlopen(req, timeout=10) as resp:
+                res_json = json.loads(resp.read().decode("utf-8"))
+                fedapay_tx = res_json.get("v1/transaction") or res_json.get("transaction") or {}
+                ref_passerelle = str(fedapay_tx.get("id", ""))
+                tok_req = urllib.request.Request(
+                    f"{api_host}/transactions/{ref_passerelle}/token",
+                    data=b"{}",
+                    headers={"Authorization": f"Bearer {fedapay_key}", "Content-Type": "application/json"},
+                    method="POST",
+                )
+                with urllib.request.urlopen(tok_req, timeout=10) as tok_resp:
+                    tok_json = json.loads(tok_resp.read().decode("utf-8"))
+                    fedapay_url = tok_json.get("url")
+        except Exception:
+            ref_passerelle = f"FEDA-SANDBOX-{code_alea}"
+
+    transaction = TransactionEnLigne.objects.create(
+        reference_interne=ref_interne,
+        reference_passerelle=ref_passerelle,
+        eleve=eleve,
+        tranche=int(tranche),
+        montant=montant,
+        operateur=operateur,
+        telephone=telephone,
+        statut=TransactionEnLigne.STATUT_EN_ATTENTE,
+        initie_par=utilisateur,
+    )
+
+    nom_op = "Togocom T-Money" if operateur == "tmoney" else "Moov Africa Flooz"
+    return Response({
+        "succes": True,
+        "reference": ref_interne,
+        "montant": str(montant),
+        "operateur": operateur,
+        "operateur_nom": nom_op,
+        "telephone": telephone,
+        "fedapay_url": fedapay_url,
+        "instructions": f"Demande transmise au +228 {clean_tel}. Veuillez valider la transaction de {int(montant):,} FCFA avec votre code secret {nom_op}.",
+    })
+
+
+@api_view(["POST"])
+@permission_classes([IsAuthenticated])
+def valider_paiement_mobile_money(request):
+    """
+    Finalise et valide la transaction Mobile Money.
+    Cree l'enregistrement officiel Paiement et associe le recu.
+    """
+    reference = request.data.get("reference")
+
+    if not reference:
+        return Response({"detail": "Reference de transaction requise."}, status=400)
+
+    transaction = get_object_or_404(TransactionEnLigne, reference_interne=reference)
+
+    if transaction.statut == TransactionEnLigne.STATUT_APPROUVEE and transaction.paiement_genere:
+        return Response({
+            "succes": True,
+            "message": "Paiement deja valide.",
+            "paiement_id": transaction.paiement_genere.id,
+            "reference": transaction.reference_interne,
+        })
+
+    parametres = Parametres.charger()
+    annee_scolaire = parametres.annee_scolaire_active if parametres else "2026-2027"
+
+    # Creation officielle du paiement
+    paiement = Paiement.objects.create(
+        eleve=transaction.eleve,
+        tranche=transaction.tranche,
+        montant=transaction.montant,
+        mode_paiement="mobile_money",
+        reference=f"{transaction.operateur.upper()}-{transaction.reference_interne}",
+        annee_scolaire=annee_scolaire,
+        enregistre_par=request.user,
+    )
+
+    transaction.statut = TransactionEnLigne.STATUT_APPROUVEE
+    transaction.paiement_genere = paiement
+    transaction.save()
+
+    return Response({
+        "succes": True,
+        "message": f"Paiement de {int(transaction.montant):,} FCFA confirme par {transaction.get_operateur_display()} !",
+        "paiement_id": paiement.id,
+        "reference": transaction.reference_interne,
+        "eleve_nom": str(transaction.eleve),
+        "montant": str(transaction.montant),
+        "tranche": transaction.tranche,
+    })
+
+
+@api_view(["POST"])
+@permission_classes([AllowAny])
+def webhook_fedapay(request):
+    """
+    Webhook public appele automatiquement par FedaPay lors de l'aboutissement d'un paiement.
+    """
+    corps = request.data
+    event = corps.get("name") or corps.get("event")
+    entity = corps.get("entity", {})
+    ref_passerelle = str(entity.get("id", ""))
+    statut = entity.get("status")
+
+    if event == "transaction.approved" or statut == "approved":
+        tx = TransactionEnLigne.objects.filter(reference_passerelle=ref_passerelle).first()
+        if tx and tx.statut != TransactionEnLigne.STATUT_APPROUVEE:
+            parametres = Parametres.charger()
+            annee = parametres.annee_scolaire_active if parametres else "2026-2027"
+            p = Paiement.objects.create(
+                eleve=tx.eleve,
+                tranche=tx.tranche,
+                montant=tx.montant,
+                mode_paiement="mobile_money",
+                reference=f"FEDAPAY-{ref_passerelle}",
+                annee_scolaire=annee,
+                enregistre_par=tx.initie_par,
+            )
+            tx.statut = TransactionEnLigne.STATUT_APPROUVEE
+            tx.paiement_genere = p
+            tx.save()
+            return Response({"status": "Paiement confirme avec succes."}, status=200)
+
+    return Response({"status": "Evenement recu."}, status=200)

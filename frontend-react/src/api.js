@@ -264,3 +264,19 @@ export function telechargerClasseCsv(classeId, token, nomClasse) {
   const nom = "eleves_" + (nomClasse || classeId).toString().replace(/\s+/g, "_") + ".csv";
   return telechargerFichierProtege(API_BASE + "/classes/" + classeId + "/exporter-csv/", token, nom);
 }
+
+export function initierMobileMoney(token, donnees) {
+  return requete("paiements/mobile-money/initier/", token, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(donnees),
+  });
+}
+
+export function validerMobileMoney(token, donnees) {
+  return requete("paiements/mobile-money/valider/", token, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify(donnees),
+  });
+}

@@ -12,6 +12,7 @@ import useConfirmation from "../hooks/useConfirmation.js";
 import { traduireTexte, localeActive } from "../localisation.js";
 import BoutonSupprimer from "../components/BoutonSupprimer.jsx";
 import RecuPaiementModal from "../components/RecuPaiementModal.jsx";
+import ModalPaiementMobileMoney from "../components/ModalPaiementMobileMoney.jsx";
 
 const MODES_PAIEMENT = [
   { valeur: "especes", label: "Especes" },
@@ -36,6 +37,7 @@ export default function GestionPaiements({ token }) {
   const [idEnEdition, setIdEnEdition] = useState(null);
   const [parametres, setParametres] = useState(null);
   const [paiementPourRecu, setPaiementPourRecu] = useState(null);
+  const [modalMobileMoney, setModalMobileMoney] = useState(false);
 
   const [champs, setChamps] = useState(CHAMPS_VIDES);
 
@@ -131,7 +133,19 @@ export default function GestionPaiements({ token }) {
 
   return (
     <>
-      <div className="mag-page-title"><span className="eyebrow">Finances</span> Paiements</div>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
+        <div className="mag-page-title" style={{ margin: 0, paddingBottom: 0, borderBottom: "none" }}>
+          <span className="eyebrow">Finances</span> Paiements
+        </div>
+        <button
+          type="button"
+          onClick={function () { setModalMobileMoney(true); }}
+          className="mag-btn-primary"
+          style={{ background: "#E65100", borderColor: "#E65100", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+        >
+          <span>📲</span> {traduireTexte("Paiement Mobile Money (T-Money / Flooz)")}
+        </button>
+      </div>
 
       <div className="mag-panneau-form react-fade-in" style={{ marginBottom: "1.8rem", maxWidth: "680px" }}>
         <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>
@@ -232,6 +246,18 @@ export default function GestionPaiements({ token }) {
           danger
           onConfirmer={confirmation.confirmer}
           onAnnuler={confirmation.annuler}
+        />
+      ) : null}
+
+      {modalMobileMoney ? (
+        <ModalPaiementMobileMoney
+          token={token}
+          eleves={eleves}
+          onFermer={function () { setModalMobileMoney(false); }}
+          onSucces={function () {
+            chargerTout();
+            setModalMobileMoney(false);
+          }}
         />
       ) : null}
 
