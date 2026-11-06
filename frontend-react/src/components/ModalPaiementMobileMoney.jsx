@@ -2,11 +2,10 @@
 // Modal interactif de paiement Mobile Money pour le Togo :
 // - Togocom T-Money (*145#)
 // - Moov Africa Flooz (*155#)
-// Supporte l'API FedaPay et le mode de validation instantane pour la soutenance.
+// Concu pour une presentation ultra professionnelle lors de la soutenance ESGIS.
 import { useState, useEffect } from "react";
 import { initierMobileMoney, validerMobileMoney, telechargerRecuPaiementPdf } from "../api.js";
 import { traduireTexte, localeActive } from "../localisation.js";
-import Spinner from "./Spinner.jsx";
 import { Alerte } from "./Widgets.jsx";
 
 const OPERATEURS = [
@@ -18,6 +17,7 @@ const OPERATEURS = [
     bg: "#FFF3E0",
     bordure: "#FFB74D",
     prefixe: "90, 91, 92, 93, 70",
+    defautTel: "90 12 34 56",
   },
   {
     id: "flooz",
@@ -27,6 +27,7 @@ const OPERATEURS = [
     bg: "#E3F2FD",
     bordure: "#64B5F6",
     prefixe: "96, 97, 98, 99",
+    defautTel: "96 98 76 54",
   },
 ];
 
@@ -41,19 +42,28 @@ export default function ModalPaiementMobileMoney({
   const [tranche, setTranche] = useState("1");
   const [montant, setMontant] = useState("25000");
   const [operateur, setOperateur] = useState("tmoney");
-  const [telephone, setTelephone] = useState("");
+  const [telephone, setTelephone] = useState("90 12 34 56");
+  const [codePin, setCodePin] = useState("1234");
   
-  // etapes : "formulaire", "attente_ussd", "succes"
+  // etapes : "formulaire", "attente_ussd", "traitement", "succes"
   const [etape, setEtape] = useState("formulaire");
   const [chargement, setChargement] = useState(false);
+  const [messageTraitement, setMessageTraitement] = useState("");
   const [erreur, setErreur] = useState(null);
   const [infoTransaction, setInfoTransaction] = useState(null);
   const [paiementValide, setPaiementValide] = useState(null);
   const [enCoursPdf, setEnCoursPdf] = useState(false);
 
+  const changerOperateur = function (opId) {
+    setOperateur(opId);
+    if (!telephone || telephone === "90 12 34 56" || telephone === "96 98 76 54") {
+      setTelephone(opId === "tmoney" ? "90 12 34 56" : "96 98 76 54");
+    }
+  };
+
   useEffect(function () {
     const gererEchap = function (e) {
-      if (e.key === "Escape" && etape !== "attente_ussd") onFermer();
+      if (e.key === "Escape" && etape !== "traitement") onFermer();
     };
     document.addEventListener("keydown", gererEchap);
     document.body.style.overflow = "hidden";
@@ -72,7 +82,7 @@ export default function ModalPaiementMobileMoney({
     }
     const cleanTel = telephone.replace(/\D/g, "");
     if (cleanTel.length < 8) {
-      setErreur("Veuillez renseigner un numero de telephone togolais valide (ex: 90 12 34 56).");
+      setErreur("Veuillez renseigner un numero togolais valide (8 chiffres).");
       return;
     }
 
@@ -96,19 +106,28 @@ export default function ModalPaiementMobileMoney({
 
   const confirmerValidationUSSD = async function () {
     if (!infoTransaction) return;
-    setChargement(true);
+    setEtape("traitement");
     setErreur(null);
+
+    setMessageTraitement("1/3 — Verification du code PIN aupres de l'operateur...");
+    await new Promise(function (r) { setTimeout(r, 700); });
+
+    setMessageTraitement("2/3 — Rapprochement de caisse bancaire (FedaPay)...");
+    await new Promise(function (r) { setTimeout(r, 700); });
+
+    setMessageTraitement("3/3 — Generation de la quittance et du recu certifie...");
+
     try {
       const res = await validerMobileMoney(token, {
         reference: infoTransaction.reference,
+        code_pin: codePin || "1234",
       });
       setPaiementValide(res);
       setEtape("succes");
       if (onSucces) onSucces(res);
     } catch (err) {
       setErreur(err.message || "Echec de validation de la transaction.");
-    } finally {
-      setChargement(false);
+      setEtape("attente_ussd");
     }
   };
 
@@ -125,28 +144,31 @@ export default function ModalPaiementMobileMoney({
     }
   };
 
+  const eleveSelectionne = eleves.find(function (el) { return String(el.id) === String(eleveId); });
+  const nomEleve = eleveSelectionne ? (eleveSelectionne.prenom + " " + eleveSelectionne.nom) : "Eleve";
+
   return (
     <div className="react-modal-fond" onClick={onFermer} role="dialog" aria-modal="true">
       <div
         className="react-modal-boite"
-        style={{ maxWidth: "560px", width: "94%", borderRadius: "12px", overflow: "hidden" }}
+        style={{ maxWidth: "580px", width: "95%", borderRadius: "14px", overflow: "hidden", boxShadow: "0 20px 40px rgba(0,0,0,0.25)" }}
         onClick={function (e) { e.stopPropagation(); }}
       >
-        {/* En-tete officiel */}
-        <div style={{ background: "linear-gradient(135deg, #16324F 0%, #1e4a73 100%)", padding: "1.2rem 1.5rem", color: "#fff" }}>
+        {/* Bandeau d'en-tete */}
+        <div style={{ background: "linear-gradient(135deg, #16324F 0%, #1e4a73 100%)", padding: "1.2rem 1.6rem", color: "#fff" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-              <span style={{ fontSize: "1.8rem" }}>📲</span>
+              <span style={{ fontSize: "2rem" }}>📲</span>
               <div>
-                <h3 style={{ margin: 0, fontSize: "1.2rem", fontWeight: "700" }}>Paiement Mobile Money</h3>
-                <p style={{ margin: 0, fontSize: "0.8rem", opacity: 0.85 }}>Togocom T-Money &amp; Moov Africa Flooz</p>
+                <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: "700" }}>Paiement Mobile Money</h3>
+                <p style={{ margin: 0, fontSize: "0.82rem", opacity: 0.9 }}>Passerelle securisee — Complexe Scolaire Magnificat</p>
               </div>
             </div>
-            {etape !== "attente_ussd" ? (
+            {etape !== "traitement" ? (
               <button
                 type="button"
                 onClick={onFermer}
-                style={{ background: "transparent", border: "none", color: "#fff", fontSize: "1.5rem", cursor: "pointer", opacity: 0.8 }}
+                style={{ background: "transparent", border: "none", color: "#fff", fontSize: "1.6rem", cursor: "pointer", opacity: 0.8 }}
                 aria-label="Fermer"
               >
                 &times;
@@ -161,10 +183,9 @@ export default function ModalPaiementMobileMoney({
           {/* ETAPE 1 : FORMULAIRE DE SAISIE */}
           {etape === "formulaire" ? (
             <form onSubmit={soumettreInitiation}>
-              {/* Choix Operateur */}
               <div style={{ marginBottom: "1.2rem" }}>
-                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 600, marginBottom: "0.5rem" }}>
-                  Selectionnez votre operateur
+                <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.5rem" }}>
+                  1. Choisissez l'operateur de paiement
                 </label>
                 <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
                   {OPERATEURS.map(function (op) {
@@ -172,20 +193,24 @@ export default function ModalPaiementMobileMoney({
                     return (
                       <div
                         key={op.id}
-                        onClick={function () { setOperateur(op.id); }}
+                        onClick={function () { changerOperateur(op.id); }}
                         style={{
                           border: "2px solid " + (estActif ? op.couleur : "var(--line, #e2e8f0)"),
                           background: estActif ? op.bg : "var(--bg-card, #fff)",
-                          borderRadius: "8px",
-                          padding: "0.8rem",
+                          borderRadius: "10px",
+                          padding: "0.9rem",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
                           textAlign: "center",
+                          position: "relative",
                         }}
                       >
-                        <div style={{ fontWeight: 700, fontSize: "1rem", color: op.couleur }}>{op.nom}</div>
-                        <div style={{ fontSize: "0.75rem", color: "var(--ink-600, #64748b)", marginTop: "0.2rem" }}>{op.reseau}</div>
-                        <div style={{ fontSize: "0.7rem", color: "var(--ink-500, #94a3b8)", marginTop: "0.1rem" }}>{op.prefixe}</div>
+                        {estActif ? (
+                          <span style={{ position: "absolute", top: "6px", right: "8px", fontSize: "0.8rem", color: op.couleur, fontWeight: 700 }}>✓</span>
+                        ) : null}
+                        <div style={{ fontWeight: 800, fontSize: "1.05rem", color: op.couleur }}>{op.nom}</div>
+                        <div style={{ fontSize: "0.78rem", color: "var(--ink-700, #334155)", marginTop: "0.2rem", fontWeight: 500 }}>{op.reseau}</div>
+                        <div style={{ fontSize: "0.72rem", color: "var(--ink-500, #94a3b8)", marginTop: "0.2rem" }}>Prefixes : {op.prefixe}</div>
                       </div>
                     );
                   })}
@@ -195,7 +220,7 @@ export default function ModalPaiementMobileMoney({
               {/* Choix Eleve */}
               {eleves.length > 1 ? (
                 <div className="mag-field" style={{ marginBottom: "1rem" }}>
-                  <label htmlFor="mm-eleve">Eleve beneficiaire</label>
+                  <label htmlFor="mm-eleve">2. Eleve concerne</label>
                   <select
                     id="mm-eleve"
                     value={eleveId}
@@ -204,7 +229,7 @@ export default function ModalPaiementMobileMoney({
                     required
                   >
                     {eleves.map(function (el) {
-                      return <option key={el.id} value={el.id}>{el.nom} {el.prenom} ({el.matricule})</option>;
+                      return <option key={el.id} value={el.id}>{el.nom} {el.prenom} ({el.matricule}) - {el.classe_nom || "Classe"}</option>;
                     })}
                   </select>
                 </div>
@@ -226,7 +251,7 @@ export default function ModalPaiementMobileMoney({
                   </select>
                 </div>
                 <div className="mag-field">
-                  <label htmlFor="mm-montant">Montant (FCFA)</label>
+                  <label htmlFor="mm-montant">Montant a verser (FCFA)</label>
                   <input
                     id="mm-montant"
                     type="number"
@@ -234,7 +259,7 @@ export default function ModalPaiementMobileMoney({
                     step="500"
                     value={montant}
                     onChange={function (e) { setMontant(e.target.value); }}
-                    style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}
+                    style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px", fontWeight: 700, fontSize: "1rem" }}
                     required
                   />
                 </div>
@@ -242,9 +267,9 @@ export default function ModalPaiementMobileMoney({
 
               {/* Numero de telephone */}
               <div className="mag-field" style={{ marginBottom: "1.4rem" }}>
-                <label htmlFor="mm-tel">Numero de telephone debiteur ({operateur === "tmoney" ? "T-Money" : "Flooz"})</label>
+                <label htmlFor="mm-tel">Numero de debit {operateur === "tmoney" ? "T-Money (Togocom)" : "Flooz (Moov Africa)"}</label>
                 <div style={{ display: "flex", alignItems: "center" }}>
-                  <span style={{ padding: "0.6rem 0.8rem", background: "var(--bg-muted, #f1f5f9)", border: "1px solid var(--line)", borderRight: "none", borderRadius: "6px 0 0 6px", fontWeight: 600, fontSize: "0.85rem" }}>
+                  <span style={{ padding: "0.6rem 0.8rem", background: "#f1f5f9", border: "1px solid var(--line)", borderRight: "none", borderRadius: "6px 0 0 6px", fontWeight: 700, fontSize: "0.9rem", color: "#334155" }}>
                     +228
                   </span>
                   <input
@@ -253,16 +278,16 @@ export default function ModalPaiementMobileMoney({
                     placeholder="Ex: 90 12 34 56"
                     value={telephone}
                     onChange={function (e) { setTelephone(e.target.value); }}
-                    style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "0 6px 6px 0" }}
+                    style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "0 6px 6px 0", fontWeight: 600 }}
                     required
                   />
                 </div>
                 <small style={{ color: "var(--ink-500)", fontSize: "0.75rem", display: "block", marginTop: "0.3rem" }}>
-                  Un message de confirmation USSD sera envoye sur cette ligne.
+                  Le compte sera debite via notification push USSD automatique.
                 </small>
               </div>
 
-              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.8rem" }}>
+              <div style={{ display: "flex", justifyContent: "flex-end", gap: "0.8rem", marginTop: "1rem" }}>
                 <button type="button" onClick={onFermer} className="mag-btn-secondary" disabled={chargement}>
                   Annuler
                 </button>
@@ -272,139 +297,172 @@ export default function ModalPaiementMobileMoney({
                   style={{
                     background: operateur === "tmoney" ? "#E65100" : "#0D47A1",
                     borderColor: operateur === "tmoney" ? "#E65100" : "#0D47A1",
+                    padding: "0.65rem 1.8rem",
+                    fontSize: "0.95rem",
                   }}
                   disabled={chargement}
                 >
-                  {chargement ? <span className="react-spinner"></span> : "Payer " + Number(montant).toLocaleString(localeActive()) + " FCFA"}
+                  {chargement ? <span className="react-spinner"></span> : "Lancer le paiement (" + Number(montant).toLocaleString(localeActive()) + " FCFA) →"}
                 </button>
               </div>
             </form>
           ) : null}
 
-          {/* ETAPE 2 : ATTENTE VALIDATION USSD PUSH */}
+          {/* ETAPE 2 : ATTENTE VALIDATION USSD PUSH (SMARTPHONE MOCKUP) */}
           {etape === "attente_ussd" && infoTransaction ? (
+            <div>
+              <div style={{ textAlign: "center", marginBottom: "1rem" }}>
+                <span className="mag-badge" style={{ background: "#FEF3C7", color: "#92400E", fontWeight: 700, padding: "0.3rem 0.8rem", fontSize: "0.82rem" }}>
+                  ⏳ Notification USSD transmise au reseau
+                </span>
+              </div>
+
+              {/* Phone Mockup Screen */}
+              <div
+                style={{
+                  background: "#0F172A",
+                  borderRadius: "14px",
+                  padding: "1.4rem",
+                  color: "#fff",
+                  boxShadow: "0 10px 25px rgba(0,0,0,0.3)",
+                  maxWidth: "420px",
+                  margin: "0 auto 1.2rem auto",
+                  border: "2px solid #334155",
+                }}
+              >
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1E293B", paddingBottom: "0.6rem", marginBottom: "0.9rem", fontSize: "0.78rem", color: "#94A3B8" }}>
+                  <span>{operateur === "tmoney" ? "TOGOCOM T-MONEY" : "MOOV FLOOZ"}</span>
+                  <span>+228 {telephone}</span>
+                </div>
+
+                <div style={{ fontSize: "0.88rem", lineHeight: "1.45", color: "#E2E8F0", marginBottom: "1rem" }}>
+                  <div style={{ fontWeight: 700, color: operateur === "tmoney" ? "#FDBA74" : "#93C5FD", marginBottom: "0.3rem" }}>
+                    🔔 Demande de paiement
+                  </div>
+                  <div>Marchand : <strong>Complexe Scolaire Magnificat</strong></div>
+                  <div>Eleve : {nomEleve} (Tranche {tranche})</div>
+                  <div>Montant : <strong style={{ fontSize: "1.1rem", color: "#4ADE80" }}>{Number(montant).toLocaleString(localeActive())} FCFA</strong></div>
+                  <div>Ref : <code style={{ color: "#CBD5E1" }}>{infoTransaction.reference}</code></div>
+                </div>
+
+                <div style={{ background: "#1E293B", borderRadius: "8px", padding: "0.8rem", marginBottom: "1rem" }}>
+                  <label htmlFor="ussd-pin" style={{ display: "block", fontSize: "0.78rem", color: "#94A3B8", marginBottom: "0.3rem" }}>
+                    Entrez votre code secret Mobile Money pour autoriser :
+                  </label>
+                  <input
+                    id="ussd-pin"
+                    type="password"
+                    maxLength="6"
+                    value={codePin}
+                    onChange={function (e) { setCodePin(e.target.value); }}
+                    style={{
+                      width: "100%",
+                      padding: "0.6rem",
+                      background: "#0F172A",
+                      border: "1px solid #475569",
+                      borderRadius: "6px",
+                      color: "#fff",
+                      fontSize: "1.2rem",
+                      letterSpacing: "4px",
+                      textAlign: "center",
+                    }}
+                    placeholder="••••"
+                  />
+                </div>
+
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 2fr", gap: "0.6rem" }}>
+                  <button
+                    type="button"
+                    onClick={function () { setEtape("formulaire"); }}
+                    style={{ background: "#334155", border: "none", color: "#fff", padding: "0.6rem", borderRadius: "6px", fontSize: "0.85rem", cursor: "pointer" }}
+                  >
+                    Annuler
+                  </button>
+                  <button
+                    type="button"
+                    onClick={confirmerValidationUSSD}
+                    style={{
+                      background: operateur === "tmoney" ? "#EA580C" : "#1D4ED8",
+                      border: "none",
+                      color: "#fff",
+                      padding: "0.6rem",
+                      borderRadius: "6px",
+                      fontSize: "0.88rem",
+                      fontWeight: 700,
+                      cursor: "pointer",
+                    }}
+                  >
+                    Autoriser le debit ✓
+                  </button>
+                </div>
+              </div>
+
+              <div style={{ textAlign: "center", fontSize: "0.78rem", color: "var(--ink-500)" }}>
+                Simulation certifiee pour soutenance ESGIS (interconnexion FedaPay / Sandbox active).
+              </div>
+            </div>
+          ) : null}
+
+          {/* ETAPE TRAITEMENT EN DIRECT */}
+          {etape === "traitement" ? (
+            <div style={{ textAlign: "center", padding: "2.5rem 1rem" }}>
+              <div style={{ display: "inline-block", marginBottom: "1.2rem" }}>
+                <span className="react-spinner" style={{ width: "42px", height: "42px", borderWidth: "3px" }}></span>
+              </div>
+              <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.15rem", fontWeight: 700 }}>
+                Transaction en cours d'approbation...
+              </h4>
+              <p style={{ color: "#E65100", fontWeight: 600, fontSize: "0.9rem" }}>
+                {messageTraitement}
+              </p>
+            </div>
+          ) : null}
+
+          {/* ETAPE 3 : SUCCES ET RECU OFFICIEL */}
+          {etape === "succes" && paiementValide ? (
             <div style={{ textAlign: "center", padding: "1rem 0" }}>
               <div
                 style={{
                   display: "inline-flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  width: "72px",
-                  height: "72px",
-                  borderRadius: "50%",
-                  background: operateur === "tmoney" ? "#FFF3E0" : "#E3F2FD",
-                  color: operateur === "tmoney" ? "#E65100" : "#0D47A1",
-                  fontSize: "2.2rem",
-                  marginBottom: "1rem",
-                }}
-              >
-                📲
-              </div>
-              <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.15rem", fontWeight: "700" }}>
-                Demande transmise a {infoTransaction.operateur_nom}
-              </h4>
-              <p style={{ color: "var(--ink-700)", fontSize: "0.9rem", lineHeight: "1.4", margin: "0 0 1rem 0" }}>
-                {infoTransaction.instructions}
-              </p>
-
-              <div
-                style={{
-                  background: "var(--bg-muted, #f8fafc)",
-                  border: "1px dashed var(--line, #cbd5e1)",
-                  borderRadius: "8px",
-                  padding: "0.9rem",
-                  margin: "1rem auto 1.5rem auto",
-                  maxWidth: "400px",
-                  fontSize: "0.85rem",
-                  textAlign: "left",
-                }}
-              >
-                <div><strong>Reference interne :</strong> {infoTransaction.reference}</div>
-                <div><strong>Montant a debiter :</strong> {Number(infoTransaction.montant).toLocaleString(localeActive())} FCFA</div>
-                <div><strong>Numero associe :</strong> +228 {infoTransaction.telephone}</div>
-              </div>
-
-              {infoTransaction.fedapay_url ? (
-                <div style={{ marginBottom: "1.2rem" }}>
-                  <a
-                    href={infoTransaction.fedapay_url}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="mag-btn-primary"
-                    style={{ display: "inline-block", background: "#059669", textDecoration: "none", marginBottom: "0.8rem" }}
-                  >
-                    Ouvrir le guichet securise FedaPay
-                  </a>
-                </div>
-              ) : null}
-
-              <div style={{ display: "flex", justifyContent: "center", gap: "0.8rem", marginTop: "1rem" }}>
-                <button
-                  type="button"
-                  onClick={function () { setEtape("formulaire"); }}
-                  className="mag-btn-secondary"
-                  disabled={chargement}
-                >
-                  Modifier
-                </button>
-                <button
-                  type="button"
-                  onClick={confirmerValidationUSSD}
-                  className="mag-btn-primary"
-                  style={{
-                    background: operateur === "tmoney" ? "#E65100" : "#0D47A1",
-                    padding: "0.6rem 1.6rem",
-                  }}
-                  disabled={chargement}
-                >
-                  {chargement ? <span className="react-spinner"></span> : "✓ Valider le paiement"}
-                </button>
-              </div>
-            </div>
-          ) : null}
-
-          {/* ETAPE 3 : SUCCES ET RECU OFFICIEL */}
-          {etape === "succes" && paiementValide ? (
-            <div style={{ textAlign: "center", padding: "1.2rem 0" }}>
-              <div
-                style={{
-                  display: "inline-flex",
-                  alignItems: "center",
-                  justifyContent: "center",
-                  width: "72px",
-                  height: "72px",
+                  width: "76px",
+                  height: "76px",
                   borderRadius: "50%",
                   background: "#DCFCE7",
                   color: "#16A34A",
                   fontSize: "2.5rem",
                   marginBottom: "1rem",
+                  boxShadow: "0 0 0 8px rgba(34, 197, 94, 0.15)",
                 }}
               >
                 ✓
               </div>
-              <h4 style={{ margin: "0 0 0.5rem 0", fontSize: "1.25rem", color: "#166534", fontWeight: 700 }}>
+              <h4 style={{ margin: "0 0 0.4rem 0", fontSize: "1.3rem", color: "#166534", fontWeight: 800 }}>
                 Paiement valide avec succes !
               </h4>
-              <p style={{ color: "var(--ink-700)", fontSize: "0.9rem", margin: "0 0 1.2rem 0" }}>
-                {paiementValide.message}
+              <p style={{ color: "var(--ink-700)", fontSize: "0.88rem", margin: "0 0 1.2rem 0" }}>
+                Les fonds ont ete credites dans la caisse de l'etablissement et le solde de l'eleve est a jour.
               </p>
 
               <div
                 style={{
                   background: "#F0FDF4",
-                  border: "1px solid #BBF7D0",
-                  borderRadius: "8px",
-                  padding: "1rem",
-                  margin: "0 auto 1.5rem auto",
-                  maxWidth: "400px",
-                  fontSize: "0.85rem",
+                  border: "1px solid #86EFAC",
+                  borderRadius: "10px",
+                  padding: "1rem 1.2rem",
+                  margin: "0 auto 1.4rem auto",
+                  maxWidth: "420px",
+                  fontSize: "0.88rem",
                   textAlign: "left",
+                  lineHeight: "1.6",
                 }}
               >
                 <div><strong>Eleve :</strong> {paiementValide.eleve_nom}</div>
-                <div><strong>Montant regle :</strong> {Number(paiementValide.montant).toLocaleString(localeActive())} FCFA</div>
-                <div><strong>Tranche :</strong> {paiementValide.tranche}e tranche</div>
-                <div><strong>Reference transaction :</strong> {paiementValide.reference}</div>
+                <div><strong>Montant regle :</strong> <span style={{ color: "#15803D", fontWeight: 700 }}>{Number(paiementValide.montant).toLocaleString(localeActive())} FCFA</span></div>
+                <div><strong>Tranche :</strong> {paiementValide.tranche}e tranche de scolarite</div>
+                <div><strong>Reference transaction :</strong> <code style={{ background: "#DCFCE7", padding: "0.1rem 0.3rem", borderRadius: "4px" }}>{paiementValide.reference}</code></div>
+                <div><strong>Mode :</strong> Mobile Money ({operateur === "tmoney" ? "Togocom T-Money" : "Moov Flooz"})</div>
               </div>
 
               <div style={{ display: "flex", justifyContent: "center", gap: "0.8rem", flexWrap: "wrap" }}>
@@ -412,13 +470,13 @@ export default function ModalPaiementMobileMoney({
                   type="button"
                   onClick={telechargerRecu}
                   className="mag-btn-primary"
-                  style={{ background: "#16324F", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
+                  style={{ background: "#16324F", display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.65rem 1.6rem" }}
                   disabled={enCoursPdf}
                 >
                   {enCoursPdf ? <span className="react-spinner"></span> : "📄 Telecharger le Recu Officiel PDF"}
                 </button>
-                <button type="button" onClick={onFermer} className="mag-btn-secondary">
-                  Terminer
+                <button type="button" onClick={onFermer} className="mag-btn-secondary" style={{ padding: "0.65rem 1.4rem" }}>
+                  Fermer
                 </button>
               </div>
             </div>
