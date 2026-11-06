@@ -351,11 +351,37 @@ def valider_paiement_mobile_money(request):
 @permission_classes([AllowAny])
 def webhook_fedapay(request):
     """
-    Webhook public appele automatiquement par FedaPay lors de l'aboutissement d'un paiement.
+    Webhook public appele automatiquement par les agregateurs :
+    - PayGate Global Togo (identifier, status=0, tx_reference)
+    - FedaPay UEMOA (event='transaction.approved', entity.id)
     """
-    corps = request.data
+    corps = request.data or {}
+
+    # 1. Format PayGate Global Togo
+    identifier = corps.get("identifier")
+    paygate_status = corps.get("status")
+    if identifier and str(paygate_status) in ["0", "success", "approved"]:
+        tx = TransactionEnLigne.objects.filter(reference_interne=identifier).first()
+        if tx and tx.statut != TransactionEnLigne.STATUT_APPROUVEE:
+            parametres = Parametres.charger()
+            annee = parametres.annee_scolaire_active if parametres else "2026-2027"
+            p = Paiement.objects.create(
+                eleve=tx.eleve,
+                tranche=tx.tranche,
+                montant=tx.montant,
+                mode_paiement="mobile_money",
+                reference=f"PAYGATE-{identifier}",
+                annee_scolaire=annee,
+                enregistre_par=tx.initie_par,
+            )
+            tx.statut = TransactionEnLigne.STATUT_APPROUVEE
+            tx.paiement_genere = p
+            tx.save()
+            return Response({"succes": True, "statut": "approuvee", "message": "Paiement PayGate confirme avec succes."}, status=200)
+
+    # 2. Format FedaPay UEMOA
     event = corps.get("name") or corps.get("event")
-    entity = corps.get("entity", {})
+    entity = corps.get("entity", {}) if isinstance(corps.get("entity"), dict) else {}
     ref_passerelle = str(entity.get("id", ""))
     statut = entity.get("status")
 
@@ -376,6 +402,6 @@ def webhook_fedapay(request):
             tx.statut = TransactionEnLigne.STATUT_APPROUVEE
             tx.paiement_genere = p
             tx.save()
-            return Response({"status": "Paiement confirme avec succes."}, status=200)
+            return Response({"succes": True, "statut": "approuvee", "status": "Paiement confirme avec succes."}, status=200)
 
-    return Response({"status": "Evenement recu."}, status=200)
+    return Response({"succes": True, "statut": "recu", "status": "Evenement recu."}, status=200)

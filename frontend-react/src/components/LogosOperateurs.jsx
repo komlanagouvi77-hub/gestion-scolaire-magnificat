@@ -131,3 +131,4 @@ export function LogoFlooz({ taille = 40, avecTexte = true, style = {} }) {
     </div>
   );
 }
+

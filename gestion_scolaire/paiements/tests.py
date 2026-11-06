@@ -1,3 +1,4 @@
+import json
 from decimal import Decimal
 
 from django.core.exceptions import ValidationError
@@ -316,4 +317,133 @@ class RecuPaiementPdfApiTests(TestCase):
         total_du = sum(f.montant_du for f in FraisScolarite.objects.filter(classe=self.donnees["classe"], tranche=2))
         total_paye = sum(p.montant for p in Paiement.objects.filter(eleve=self.donnees["eleve"], tranche=2))
         self.assertEqual(total_du - total_paye, Decimal("0.00"))
+
+
+class MobileMoneyPasserelleTests(TestCase):
+    """Tests unitaires complets pour les flux Mobile Money (T-Money & Flooz)."""
+
+    def setUp(self):
+        self.donnees = _creer_jeu_de_donnees()
+        self.parent = Parent.objects.create_user(username="parent_mm", password="Test2026!")
+        self.parent.eleves.add(self.donnees["eleve"])
+
+        # Création d'un autre élève et autre parent
+        self.autre_classe = Classe.objects.create(nom="6e B", niveau="6e", annee_scolaire="2026-2027")
+        self.autre_eleve = Eleve.objects.create(
+            matricule="EL999", nom="Aziable", prenom="Paul",
+            date_naissance="2014-05-12", sexe="M", classe=self.autre_classe,
+        )
+        self.autre_parent = Parent.objects.create_user(username="autre_parent_mm", password="Test2026!")
+        self.autre_parent.eleves.add(self.autre_eleve)
+
+    def _obtenir_token(self, username, password):
+        resp = self.client.post(reverse("api_token_auth"), {"username": username, "password": password})
+        return resp.json()["token"]
+
+    def test_initier_paiement_mobile_money_parent_succes(self):
+        token = self._obtenir_token("parent_mm", "Test2026!")
+        resp = self.client.post(
+            "/api/paiements/mobile-money/initier/",
+            {
+                "eleve_id": self.donnees["eleve"].id,
+                "tranche": 1,
+                "montant": "25000",
+                "operateur": "tmoney",
+                "telephone": "90123456",
+            },
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        self.assertEqual(resp.status_code, 200)
+        self.assertTrue(resp.data["succes"])
+        self.assertTrue(resp.data["reference"].startswith("TX-TM-"))
+        self.assertEqual(resp.data["montant"], "25000")
+
+    def test_initier_paiement_avec_numero_invalide_est_rejete(self):
+        token = self._obtenir_token("parent_mm", "Test2026!")
+        resp = self.client.post(
+            "/api/paiements/mobile-money/initier/",
+            {
+                "eleve_id": self.donnees["eleve"].id,
+                "tranche": 1,
+                "montant": "25000",
+                "operateur": "flooz",
+                "telephone": "123",  # Numéro togolais invalide
+            },
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        self.assertEqual(resp.status_code, 400)
+        self.assertIn("8 chiffres togolais", resp.data["detail"])
+
+    def test_parent_ne_peut_pas_initier_paiement_pour_autre_enfant(self):
+        token = self._obtenir_token("parent_mm", "Test2026!")
+        resp = self.client.post(
+            "/api/paiements/mobile-money/initier/",
+            {
+                "eleve_id": self.autre_eleve.id,
+                "tranche": 1,
+                "montant": "25000",
+                "operateur": "tmoney",
+                "telephone": "90123456",
+            },
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        self.assertEqual(resp.status_code, 403)
+
+    def test_valider_paiement_mobile_money_genere_recu_officiel(self):
+        token = self._obtenir_token("parent_mm", "Test2026!")
+        # 1. Initier
+        resp_init = self.client.post(
+            "/api/paiements/mobile-money/initier/",
+            {
+                "eleve_id": self.donnees["eleve"].id,
+                "tranche": 1,
+                "montant": "30000",
+                "operateur": "flooz",
+                "telephone": "98765432",
+            },
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        ref = resp_init.data["reference"]
+
+        # 2. Valider
+        resp_val = self.client.post(
+            "/api/paiements/mobile-money/valider/",
+            {"reference": ref},
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        self.assertEqual(resp_val.status_code, 200)
+        self.assertTrue(resp_val.data["succes"])
+        self.assertIn("paiement_id", resp_val.data)
+
+        # 3. Vérifier la création effective du Paiement en BDD
+        paiement = Paiement.objects.get(pk=resp_val.data["paiement_id"])
+        self.assertEqual(paiement.montant, Decimal("30000"))
+        self.assertEqual(paiement.mode_paiement, "mobile_money")
+        self.assertIn(ref, paiement.reference)
+
+    def test_webhook_paygate_global_togo(self):
+        token = self._obtenir_token("parent_mm", "Test2026!")
+        resp_init = self.client.post(
+            "/api/paiements/mobile-money/initier/",
+            {
+                "eleve_id": self.donnees["eleve"].id,
+                "tranche": 2,
+                "montant": "15000",
+                "operateur": "tmoney",
+                "telephone": "91234567",
+            },
+            HTTP_AUTHORIZATION="Token " + token,
+        )
+        ref = resp_init.data["reference"]
+
+        # Simulation webhook PayGate (status 0 = succès)
+        resp_hook = self.client.post(
+            "/api/paiements/mobile-money/webhook/",
+            data=json.dumps({"identifier": ref, "status": 0, "tx_reference": "PG-TX-999"}),
+            content_type="application/json",
+        )
+        self.assertEqual(resp_hook.status_code, 200)
+        self.assertTrue(resp_hook.data["succes"])
+        self.assertEqual(resp_hook.data["statut"], "approuvee")
+
 
