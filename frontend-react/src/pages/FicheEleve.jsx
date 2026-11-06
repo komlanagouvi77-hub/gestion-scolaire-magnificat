@@ -128,7 +128,7 @@ export default function FicheEleve({ eleveId, token, role }) {
                   </div>
                   {p.telephone ? (
                     <a
-                      href={"https://wa.me/" + p.telephone.replace(/[^0-9]/g, "")}
+                      href={"https://wa.me/" + p.telephone.replace(/[^0-9]/g, "") + "?text=" + encodeURIComponent("Bonjour " + (p.nom || "") + ", je vous contacte depuis l'administration du Complexe Scolaire Le Magnificat (Lome) au sujet de votre enfant " + (eleve.nom || "") + " " + (eleve.prenom || "") + " (" + (eleve.classe_nom || "") + ").")}
                       target="_blank"
                       rel="noopener noreferrer"
                       className="btn-mag-outline"

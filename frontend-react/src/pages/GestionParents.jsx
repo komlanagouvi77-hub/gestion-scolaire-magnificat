@@ -168,7 +168,7 @@ export default function GestionParents({ token }) {
                         <div style={{ display: "flex", alignItems: "center", gap: "0.5rem" }}>
                           <span style={{ fontSize: "0.85rem" }}>{p.telephone}</span>
                           <a
-                            href={"https://wa.me/" + p.telephone.replace(/[^0-9]/g, "")}
+                            href={"https://wa.me/" + p.telephone.replace(/[^0-9]/g, "") + "?text=" + encodeURIComponent("Bonjour " + nomComplet + ", je vous contacte depuis la direction du Complexe Scolaire Le Magnificat (Lome).")}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="btn-mag-outline"

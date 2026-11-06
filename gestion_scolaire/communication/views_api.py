@@ -132,6 +132,21 @@ def correspondants_messagerie(request):
 
     correspondants, eleves = _correspondants_possibles(utilisateur)
     return Response({
-        "correspondants": [{"id": c.id, "nom": c.get_full_name() or c.username} for c in correspondants],
-        "eleves": [{"id": e.id, "nom": f"{e.nom} {e.prenom}"} for e in eleves],
+        "correspondants": [
+            {
+                "id": c.id,
+                "nom": c.get_full_name() or c.username,
+                "role": "enseignant" if hasattr(c, "enseignant") else "parent",
+                "telephone": getattr(c, "telephone", "") or "",
+            }
+            for c in correspondants
+        ],
+        "eleves": [
+            {
+                "id": e.id,
+                "nom": f"{e.nom} {e.prenom}",
+                "classe": str(e.classe) if e.classe else "",
+            }
+            for e in eleves
+        ],
     })

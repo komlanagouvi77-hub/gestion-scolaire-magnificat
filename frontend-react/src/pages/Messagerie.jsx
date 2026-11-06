@@ -72,6 +72,36 @@ export default function Messagerie({ token }) {
     return trouve ? trouve.nom : "";
   };
 
+  const destinataireActif = correspondants.find(function (c) { return String(c.id) === String(destinataireId); });
+  const eleveActif = eleves.find(function (e) { return String(e.id) === String(eleveId); });
+
+  const MODELES_MESSAGES = [
+    {
+      titre: "📅 Rendez-vous",
+      generer: function (nomEl, nomDest) {
+        return "Bonjour " + (nomDest || "") + ", je souhaite solliciter un court entretien avec vous concernant le suivi de l'eleve " + (nomEl || "votre enfant") + ". Quelles seraient vos disponibilites ? Cordialement.";
+      },
+    },
+    {
+      titre: "📝 Point travail",
+      generer: function (nomEl, nomDest) {
+        return "Bonjour " + (nomDest || "") + ", je vous ecris pour faire un point rapide sur le travail scolaire et les devoirs de l'eleve " + (nomEl || "votre enfant") + ". Cordialement.";
+      },
+    },
+    {
+      titre: "⚠️ Absence / Retard",
+      generer: function (nomEl, nomDest) {
+        return "Bonjour " + (nomDest || "") + ", nous avons constate une absence ou un retard pour l'eleve " + (nomEl || "votre enfant") + ". Merci de bien vouloir nous fournir un justificatif. Cordialement.";
+      },
+    },
+    {
+      titre: "🌟 Felicitations",
+      generer: function (nomEl, nomDest) {
+        return "Bonjour " + (nomDest || "") + ", nous tenions a vous feliciter pour les excellents progres et l'effort soutenu de l'eleve " + (nomEl || "votre enfant") + ". Bravo !";
+      },
+    },
+  ];
+
   if (statut === "chargement") return <><div className="mag-page-title"><span className="eyebrow">Communication</span> Messagerie</div><Spinner texte="Chargement..." /></>;
   if (statut === "refuse") return <><div className="mag-page-title"><span className="eyebrow">Communication</span> Messagerie</div><Alerte>Impossible de charger la messagerie.</Alerte></>;
 
@@ -87,17 +117,81 @@ export default function Messagerie({ token }) {
             <div className="mag-field">
               <label htmlFor="msg-eleve">A propos de l'eleve</label>
               <select id="msg-eleve" value={eleveId} onChange={function (e) { setEleveId(e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
-                <option value="">-- Choisir --</option>
-                {eleves.map(function (e) { return <option key={e.id} value={e.id}>{e.nom}</option>; })}
+                <option value="">-- Choisir l'eleve --</option>
+                {eleves.map(function (e) { return <option key={e.id} value={e.id}>{e.nom} {e.classe ? "(" + e.classe + ")" : ""}</option>; })}
               </select>
             </div>
             <div className="mag-field">
               <label htmlFor="msg-destinataire">Destinataire</label>
               <select id="msg-destinataire" value={destinataireId} onChange={function (e) { setDestinataireId(e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
-                <option value="">-- Choisir --</option>
-                {correspondants.map(function (c) { return <option key={c.id} value={c.id}>{c.nom}</option>; })}
+                <option value="">-- Choisir le destinataire --</option>
+                {correspondants.map(function (c) {
+                  return (
+                    <option key={c.id} value={c.id}>
+                      {c.nom} {c.role === "enseignant" ? "[Enseignant]" : "[Parent]"}
+                    </option>
+                  );
+                })}
               </select>
             </div>
+
+            {/* Passerelle WhatsApp Pro Togo */}
+            {destinataireActif && destinataireActif.telephone ? (
+              <div style={{ margin: "0.8rem 0 1rem 0", padding: "0.6rem 0.8rem", borderRadius: "8px", background: "#F0FDF4", border: "1px solid #BBF7D0", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: "0.5rem" }}>
+                <div style={{ fontSize: "0.8rem", color: "#166534" }}>
+                  <strong>WhatsApp (+228) :</strong> {destinataireActif.telephone}
+                </div>
+                <a
+                  href={"https://wa.me/" + destinataireActif.telephone.replace(/[^0-9]/g, "") + "?text=" + encodeURIComponent("Bonjour " + (destinataireActif.nom || "") + ", je fais suite a notre echange depuis le Complexe Scolaire Le Magnificat (Lome)" + (eleveActif ? " concernant l'eleve " + eleveActif.nom : "") + ".")}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-mag-outline"
+                  style={{
+                    fontSize: "0.76rem",
+                    padding: "0.22rem 0.6rem",
+                    color: "#16A34A",
+                    borderColor: "#16A34A",
+                    background: "#FFFFFF",
+                    textDecoration: "none",
+                    borderRadius: "6px",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.3rem",
+                    fontWeight: 600,
+                  }}
+                  title="Poursuivre la conversation sur WhatsApp"
+                >
+                  <span>💬</span> Poursuivre sur WhatsApp
+                </a>
+              </div>
+            ) : null}
+
+            {/* Modeles de messages officiels Togo */}
+            <div style={{ marginBottom: "0.8rem" }}>
+              <span style={{ fontSize: "0.78rem", fontWeight: 600, color: "var(--ink-600)", display: "block", marginBottom: "0.35rem" }}>
+                Modeles officiels rapides :
+              </span>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: "0.35rem" }}>
+                {MODELES_MESSAGES.map(function (m, idx) {
+                  return (
+                    <button
+                      key={idx}
+                      type="button"
+                      className="btn-mag-outline"
+                      style={{ fontSize: "0.72rem", padding: "0.2rem 0.5rem", borderRadius: "12px", background: "var(--card-bg, #fff)" }}
+                      onClick={function () {
+                        const nomEl = eleveActif ? eleveActif.nom : "votre enfant";
+                        const nomDest = destinataireActif ? destinataireActif.nom : "";
+                        setContenu(m.generer(nomEl, nomDest));
+                      }}
+                    >
+                      {m.titre}
+                    </button>
+                  );
+                })}
+              </div>
+            </div>
+
             <div className="mag-field">
               <label htmlFor="msg-contenu">Message</label>
               <textarea id="msg-contenu" value={contenu} onChange={function (e) { setContenu(e.target.value); }} required rows={4}
