@@ -229,6 +229,18 @@ PLATFORM_URL = config(
     )
 )
 
+# ==============================================================================
+# PASSERELLES DE PAIEMENT MOBILE MONEY (TOGO : T-MONEY & FLOOZ)
+# ==============================================================================
+# Option 1 : PayGate Global Togo (100% Togolais - paygateglobal.com)
+PAYGATE_AUTH_TOKEN = config('PAYGATE_AUTH_TOKEN', default='')
+
+# Option 2 : FedaPay UEMOA (fedapay.com)
+FEDAPAY_SECRET_KEY = config('FEDAPAY_SECRET_KEY', default='')
+FEDAPAY_PUBLIC_KEY = config('FEDAPAY_PUBLIC_KEY', default='')
+FEDAPAY_ENVIRONMENT = config('FEDAPAY_ENVIRONMENT', default='live')
+
+
 
 STATIC_URL = 'static/'
 STATICFILES_DIRS = [BASE_DIR / 'static']

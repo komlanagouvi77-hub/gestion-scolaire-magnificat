@@ -165,3 +165,4 @@ def obtenir_gestionnaire_paiement():
         return fedapay
 
     return None
+
