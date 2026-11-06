@@ -20,6 +20,7 @@ from comptes.models import Parametres
 from scolarite.models import Classe, Eleve
 from .models import FraisScolarite, Paiement, TransactionEnLigne
 from .serializers import FraisScolariteSerializer, PaiementSerializer
+from .passerelles import obtenir_gestionnaire_paiement
 
 
 class PaiementViewSet(viewsets.ModelViewSet):
@@ -251,52 +252,24 @@ def initier_paiement_mobile_money(request):
     prefixe_op = "TM" if operateur == "tmoney" else "FL"
     ref_interne = f"TX-{prefixe_op}-{code_alea}"
 
-    fedapay_key = getattr(settings, "FEDAPAY_SECRET_KEY", None) or os.environ.get("FEDAPAY_SECRET_KEY", "")
-    fedapay_env = getattr(settings, "FEDAPAY_ENVIRONMENT", None) or os.environ.get("FEDAPAY_ENVIRONMENT", "sandbox")
+    passerelle = obtenir_gestionnaire_paiement()
     fedapay_url = None
-    ref_passerelle = ""
+    ref_passerelle = f"PASS-{prefixe_op}-{code_alea}"
 
-    # Si une cle d'API FedaPay est configuree, creation de la transaction FedaPay
-    if fedapay_key:
-        api_host = "https://api.fedapay.com/v1" if fedapay_env == "live" else "https://sandbox-api.fedapay.com/v1"
-        payload_feda = {
-            "description": f"Scolarite {eleve.nom} {eleve.prenom} - T{tranche}",
-            "amount": int(montant),
-            "currency": {"iso": "XOF"},
-            "callback_url": request.build_absolute_uri("/app/#/paiements"),
-            "customer": {
-                "firstname": eleve.prenom,
-                "lastname": eleve.nom,
-                "email": utilisateur.email or "comptabilite@magnificat-scolaire.tg",
-                "phone_number": {"number": clean_tel, "country": "TG"},
-            },
-        }
-        try:
-            req = urllib.request.Request(
-                f"{api_host}/transactions",
-                data=json.dumps(payload_feda).encode("utf-8"),
-                headers={
-                    "Authorization": f"Bearer {fedapay_key}",
-                    "Content-Type": "application/json",
-                    "User-Agent": "Magnificat-Scolaire/1.0",
-                },
-                method="POST",
-            )
-            with urllib.request.urlopen(req, timeout=10) as resp:
-                res_json = json.loads(resp.read().decode("utf-8"))
-                fedapay_tx = res_json.get("v1/transaction") or res_json.get("transaction") or {}
-                ref_passerelle = str(fedapay_tx.get("id", ""))
-                tok_req = urllib.request.Request(
-                    f"{api_host}/transactions/{ref_passerelle}/token",
-                    data=b"{}",
-                    headers={"Authorization": f"Bearer {fedapay_key}", "Content-Type": "application/json"},
-                    method="POST",
-                )
-                with urllib.request.urlopen(tok_req, timeout=10) as tok_resp:
-                    tok_json = json.loads(tok_resp.read().decode("utf-8"))
-                    fedapay_url = tok_json.get("url")
-        except Exception:
-            ref_passerelle = f"FEDA-SANDBOX-{code_alea}"
+    if passerelle:
+        description_tx = f"Scolarite {eleve.nom} {eleve.prenom} - T{tranche}"
+        reponse = passerelle.initier_paiement(
+            reference=ref_interne,
+            montant=montant,
+            operateur=operateur,
+            telephone=clean_tel,
+            description=description_tx,
+        )
+        if reponse.succes:
+            if reponse.reference_passerelle:
+                ref_passerelle = reponse.reference_passerelle
+            if reponse.url_paiement:
+                fedapay_url = reponse.url_paiement
 
     transaction = TransactionEnLigne.objects.create(
         reference_interne=ref_interne,
