@@ -7,6 +7,7 @@ import { useState, useEffect } from "react";
 import { initierMobileMoney, validerMobileMoney, telechargerRecuPaiementPdf } from "../api.js";
 import { traduireTexte, localeActive } from "../localisation.js";
 import { Alerte } from "./Widgets.jsx";
+import { LogoTMoney, LogoFlooz } from "./LogosOperateurs.jsx";
 
 const OPERATEURS = [
   {
@@ -187,7 +188,7 @@ export default function ModalPaiementMobileMoney({
                 <label style={{ display: "block", fontSize: "0.85rem", fontWeight: 700, marginBottom: "0.5rem" }}>
                   1. Choisissez l'operateur de paiement
                 </label>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.8rem" }}>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.9rem" }}>
                   {OPERATEURS.map(function (op) {
                     const estActif = operateur === op.id;
                     return (
@@ -197,20 +198,52 @@ export default function ModalPaiementMobileMoney({
                         style={{
                           border: "2px solid " + (estActif ? op.couleur : "var(--line, #e2e8f0)"),
                           background: estActif ? op.bg : "var(--bg-card, #fff)",
-                          borderRadius: "10px",
-                          padding: "0.9rem",
+                          borderRadius: "12px",
+                          padding: "1rem 0.8rem",
                           cursor: "pointer",
                           transition: "all 0.2s ease",
-                          textAlign: "center",
+                          display: "flex",
+                          flexDirection: "column",
+                          alignItems: "center",
+                          justifyContent: "center",
                           position: "relative",
+                          boxShadow: estActif ? "0 4px 14px " + op.bg : "none",
                         }}
                       >
                         {estActif ? (
-                          <span style={{ position: "absolute", top: "6px", right: "8px", fontSize: "0.8rem", color: op.couleur, fontWeight: 700 }}>✓</span>
+                          <span
+                            style={{
+                              position: "absolute",
+                              top: "8px",
+                              right: "8px",
+                              width: "22px",
+                              height: "22px",
+                              borderRadius: "50%",
+                              background: op.couleur,
+                              color: "#fff",
+                              display: "flex",
+                              alignItems: "center",
+                              justifyContent: "center",
+                              fontSize: "0.75rem",
+                              fontWeight: 800,
+                              boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
+                            }}
+                          >
+                            ✓
+                          </span>
                         ) : null}
-                        <div style={{ fontWeight: 800, fontSize: "1.05rem", color: op.couleur }}>{op.nom}</div>
-                        <div style={{ fontSize: "0.78rem", color: "var(--ink-700, #334155)", marginTop: "0.2rem", fontWeight: 500 }}>{op.reseau}</div>
-                        <div style={{ fontSize: "0.72rem", color: "var(--ink-500, #94a3b8)", marginTop: "0.2rem" }}>Prefixes : {op.prefixe}</div>
+
+                        {/* VRAI LOGO OFFICIEL DE L'OPERATEUR */}
+                        <div style={{ marginBottom: "0.6rem" }}>
+                          {op.id === "tmoney" ? (
+                            <LogoTMoney taille={46} />
+                          ) : (
+                            <LogoFlooz taille={46} />
+                          )}
+                        </div>
+
+                        <div style={{ fontSize: "0.78rem", color: "var(--ink-700, #334155)", fontWeight: 700 }}>{op.reseau}</div>
+                        <div style={{ fontSize: "0.7rem", color: "var(--ink-500, #94a3b8)", marginTop: "0.2rem" }}>Prefixes : {op.prefixe}</div>
                       </div>
                     );
                   })}
@@ -330,9 +363,11 @@ export default function ModalPaiementMobileMoney({
                   border: "2px solid #334155",
                 }}
               >
-                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1E293B", paddingBottom: "0.6rem", marginBottom: "0.9rem", fontSize: "0.78rem", color: "#94A3B8" }}>
-                  <span>{operateur === "tmoney" ? "TOGOCOM T-MONEY" : "MOOV FLOOZ"}</span>
-                  <span>+228 {telephone}</span>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid #1E293B", paddingBottom: "0.6rem", marginBottom: "0.9rem" }}>
+                  <div style={{ background: "rgba(255,255,255,0.08)", padding: "4px 8px", borderRadius: "6px" }}>
+                    {operateur === "tmoney" ? <LogoTMoney taille={26} /> : <LogoFlooz taille={26} />}
+                  </div>
+                  <span style={{ fontSize: "0.82rem", color: "#94A3B8", fontWeight: 600 }}>+228 {telephone}</span>
                 </div>
 
                 <div style={{ fontSize: "0.88rem", lineHeight: "1.45", color: "#E2E8F0", marginBottom: "1rem" }}>
@@ -462,7 +497,10 @@ export default function ModalPaiementMobileMoney({
                 <div><strong>Montant regle :</strong> <span style={{ color: "#15803D", fontWeight: 700 }}>{Number(paiementValide.montant).toLocaleString(localeActive())} FCFA</span></div>
                 <div><strong>Tranche :</strong> {paiementValide.tranche}e tranche de scolarite</div>
                 <div><strong>Reference transaction :</strong> <code style={{ background: "#DCFCE7", padding: "0.1rem 0.3rem", borderRadius: "4px" }}>{paiementValide.reference}</code></div>
-                <div><strong>Mode :</strong> Mobile Money ({operateur === "tmoney" ? "Togocom T-Money" : "Moov Flooz"})</div>
+                <div style={{ display: "flex", alignItems: "center", gap: "0.5rem", marginTop: "0.4rem" }}>
+                  <strong>Mode :</strong>
+                  {operateur === "tmoney" ? <LogoTMoney taille={24} /> : <LogoFlooz taille={24} />}
+                </div>
               </div>
 
               <div style={{ display: "flex", justifyContent: "center", gap: "0.8rem", flexWrap: "wrap" }}>
