@@ -296,19 +296,7 @@ class DemandeInscriptionViewSet(viewsets.ModelViewSet):
         return super().list(request, *args, **kwargs)
 
     def create(self, request, *args, **kwargs):
-        try:
-            return super().create(request, *args, **kwargs)
-        except Exception as e:
-            import logging, traceback
-            logging.getLogger("django.request").exception("Erreur lors de la creation d'une demande d'acces: %s", e)
-            return Response(
-                {
-                    "detail": f"Erreur lors de la création de la demande : {str(e)}",
-                    "error_type": type(e).__name__,
-                    "traceback": traceback.format_exc(),
-                },
-                status=500,
-            )
+        return super().create(request, *args, **kwargs)
 
     @action(detail=True, methods=["post"], url_path="approuver")
     def approuver(self, request, pk=None):
