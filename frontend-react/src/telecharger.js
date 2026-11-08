@@ -52,7 +52,7 @@ export async function telechargerBlob(blob, nomFichier) {
   }, 5000);
 }
 
-export async function telechargerFichierProtege(url, token, nomFichier) {
+export async function recupererBlobProtege(url, token) {
   if (!url) {
     throw new Error("L'adresse de téléchargement est manquante.");
   }
@@ -79,5 +79,10 @@ export async function telechargerFichierProtege(url, token, nomFichier) {
     throw new Error("Le fichier reçu est vide.");
   }
 
+  return blob;
+}
+
+export async function telechargerFichierProtege(url, token, nomFichier) {
+  const blob = await recupererBlobProtege(url, token);
   await telechargerBlob(blob, nomFichier);
 }

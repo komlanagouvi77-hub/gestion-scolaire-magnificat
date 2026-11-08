@@ -4,7 +4,7 @@
 // bloquee pour tout role autre qu'Administrateur (voir PaiementViewSet
 // cote Django) : un Parent ne peut donc jamais se declarer "a jour" lui-meme.
 import { useState, useEffect } from "react";
-import { lister, creer, modifier, supprimer, obtenirParametres, telechargerRecuPaiementPdf } from "../api.js";
+import { lister, creer, modifier, supprimer, obtenirParametres, telechargerRecuPaiementPdf, obtenirRecuPaiementPdfBlob } from "../api.js";
 import { Alerte } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
@@ -13,6 +13,8 @@ import { traduireTexte, localeActive } from "../localisation.js";
 import BoutonSupprimer from "../components/BoutonSupprimer.jsx";
 import RecuPaiementModal from "../components/RecuPaiementModal.jsx";
 import ModalPaiementMobileMoney from "../components/ModalPaiementMobileMoney.jsx";
+import VisualiseurPdfModal from "../components/VisualiseurPdfModal.jsx";
+import { Eye, Download } from "lucide-react";
 
 const MODES_PAIEMENT = [
   { valeur: "especes", label: "Especes" },
@@ -38,6 +40,7 @@ export default function GestionPaiements({ token }) {
   const [parametres, setParametres] = useState(null);
   const [paiementPourRecu, setPaiementPourRecu] = useState(null);
   const [modalMobileMoney, setModalMobileMoney] = useState(false);
+  const [modalPdf, setModalPdf] = useState({ ouvert: false, blob: null, nomFichier: "", titreDoc: "" });
 
   const [champs, setChamps] = useState(CHAMPS_VIDES);
 
@@ -115,6 +118,25 @@ export default function GestionPaiements({ token }) {
       chargerTout();
     } catch (err) {
       setMessage({ type: "erreur", texte: "Suppression impossible." });
+    }
+  };
+
+  const previsualiserPdf = async function (p) {
+    try {
+      setEnCoursPdfId(p.id);
+      const nomEleve = (p.eleve_nom || "eleve").replace(/\s+/g, "_");
+      const nomFichier = "recu_officiel_" + nomEleve + "_" + p.id + ".pdf";
+      const blob = await obtenirRecuPaiementPdfBlob(p.id, token);
+      setModalPdf({
+        ouvert: true,
+        blob: blob,
+        nomFichier: nomFichier,
+        titreDoc: `Reçu officiel N°${p.id} — ${p.eleve_nom || "Élève"}`,
+      });
+    } catch (err) {
+      setMessage({ type: "erreur", texte: "Erreur aperçu PDF : " + (err.message || "") });
+    } finally {
+      setEnCoursPdfId(null);
     }
   };
 
@@ -216,16 +238,25 @@ export default function GestionPaiements({ token }) {
                     <td>{p.date_paiement || "-"}</td>
                     <td>{p.reference || "-"}</td>
                     <td style={{ whiteSpace: "nowrap" }}>
-                      <button type="button" className="mag-btn-lien" onClick={function () { setPaiementPourRecu(p); }}>Recu</button>
                       <button
                         type="button"
                         className="mag-btn-lien"
-                        style={{ fontWeight: 600, color: "var(--brand-blue, #1D4E89)" }}
+                        style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem", color: "var(--azur-500)", fontWeight: 600 }}
+                        onClick={function () { previsualiserPdf(p); }}
+                        disabled={enCoursPdfId === p.id}
+                        title="Aperçu et impression directe du reçu officiel"
+                      >
+                        <Eye size={13} /> {enCoursPdfId === p.id ? "..." : "Aperçu"}
+                      </button>
+                      <button
+                        type="button"
+                        className="mag-btn-lien"
+                        style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem", fontWeight: 600, color: "var(--brand-blue, #1D4E89)" }}
                         onClick={function () { telechargerDirectPdf(p); }}
                         disabled={enCoursPdfId === p.id}
-                        title="Telecharger le recu officiel PDF certifie ReportLab"
+                        title="Télécharger le reçu officiel PDF certifié ReportLab"
                       >
-                        {enCoursPdfId === p.id ? "PDF..." : "PDF"}
+                        <Download size={13} /> {enCoursPdfId === p.id ? "PDF..." : "PDF"}
                       </button>
                       <button type="button" className="mag-btn-lien" onClick={function () { commencerEdition(p); }}>Modifier →</button>
                       <BoutonSupprimer onClick={function () { supprimerPaiement(p); }} />
@@ -268,6 +299,15 @@ export default function GestionPaiements({ token }) {
           onFermer={function () { setPaiementPourRecu(null); }}
         />
       ) : null}
+
+      {/* Visualiseur Modal PDF officiel */}
+      <VisualiseurPdfModal
+        ouvert={modalPdf.ouvert}
+        onFermer={function () { setModalPdf({ ouvert: false, blob: null, nomFichier: "", titreDoc: "" }); }}
+        blob={modalPdf.blob}
+        nomFichier={modalPdf.nomFichier}
+        titreDoc={modalPdf.titreDoc}
+      />
     </>
   );
 }

@@ -7,7 +7,9 @@ import { lister, genererBulletinsLot, obtenirParametres, modifierParametresAvecL
 import { Alerte } from "../components/Widgets.jsx";
 import { traduireTexte } from "../localisation.js";
 import Spinner from "../components/Spinner.jsx";
-import { telechargerFichierProtege } from "../telecharger.js";
+import { telechargerFichierProtege, recupererBlobProtege } from "../telecharger.js";
+import VisualiseurPdfModal from "../components/VisualiseurPdfModal.jsx";
+import { Eye, Download } from "lucide-react";
 
 const TRIMESTRES = [
   { valeur: "1", label: "1er trimestre" },
@@ -32,6 +34,28 @@ function OngletGeneration({ token, role }) {
   const estAdmin = role === "administrateur";
 
   const [enCoursTelechargement, setEnCoursTelechargement] = useState(null);
+  const [modalPdf, setModalPdf] = useState({ ouvert: false, blob: null, nomFichier: "", titreDoc: "" });
+
+  const previsualiserBulletin = async function (bulletin) {
+    setEnCoursTelechargement(bulletin.id);
+    try {
+      const urlTelechargement = bulletin.fichier_pdf || ("/api/bulletins/" + bulletin.id + "/telecharger/");
+      const nomEleve = (bulletin.eleve_nom || "eleve_" + bulletin.eleve).replace(/[^a-zA-Z0-9_-]/g, "_");
+      const nomFichier = "bulletin_" + nomEleve + "_T" + bulletin.trimestre + ".pdf";
+      const blob = await recupererBlobProtege(urlTelechargement, token);
+      setModalPdf({
+        ouvert: true,
+        blob: blob,
+        nomFichier: nomFichier,
+        titreDoc: `Bulletin T${bulletin.trimestre} — ${bulletin.eleve_nom || "Élève"}`,
+      });
+    } catch (err) {
+      console.error("Erreur apercu bulletin:", err);
+      setMessage({ type: "erreur", texte: "Impossible d'afficher l'aperçu du bulletin : " + (err.message || "") });
+    } finally {
+      setEnCoursTelechargement(null);
+    }
+  };
 
   const telechargerBulletin = async function (bulletin) {
     setEnCoursTelechargement(bulletin.id);
@@ -229,15 +253,44 @@ function OngletGeneration({ token, role }) {
                       <td><span className="mag-badge">Trim. {b.trimestre}</span></td>
                       <td style={{ fontWeight: 600 }}>{b.moyenne_generale}/20</td>
                       <td>{b.rang ? b.rang + "e / " + b.effectif_classe : "-"}</td>
-                      <td>
+                      <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                         <button
                           type="button"
                           className="mag-btn-lien"
-                          style={{ background: "none", border: "none", cursor: "pointer", padding: 0 }}
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.25rem",
+                            marginRight: "0.85rem",
+                            color: "var(--azur-500)",
+                            fontWeight: 600,
+                          }}
+                          disabled={enCoursTelechargement === b.id}
+                          onClick={function () { previsualiserBulletin(b); }}
+                          title="Aperçu et impression directe"
+                        >
+                          <Eye size={14} /> Aperçu
+                        </button>
+                        <button
+                          type="button"
+                          className="mag-btn-lien"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.25rem",
+                            fontWeight: 600,
+                          }}
                           disabled={enCoursTelechargement === b.id}
                           onClick={function () { telechargerBulletin(b); }}
+                          title="Télécharger le bulletin PDF certifié"
                         >
-                          {enCoursTelechargement === b.id ? "Telechargement..." : "Telecharger →"}
+                          {enCoursTelechargement === b.id ? (
+                            <span style={{ color: "var(--azur-500)" }}>PDF...</span>
+                          ) : (
+                            <>
+                              <Download size={14} /> Télécharger
+                            </>
+                          )}
                         </button>
                       </td>
                     </tr>
@@ -248,6 +301,15 @@ function OngletGeneration({ token, role }) {
           </div>
         )
       ) : null}
+
+      {/* Visualiseur Modal PDF */}
+      <VisualiseurPdfModal
+        ouvert={modalPdf.ouvert}
+        onFermer={function () { setModalPdf({ ouvert: false, blob: null, nomFichier: "", titreDoc: "" }); }}
+        blob={modalPdf.blob}
+        nomFichier={modalPdf.nomFichier}
+        titreDoc={modalPdf.titreDoc}
+      />
     </>
   );
 }

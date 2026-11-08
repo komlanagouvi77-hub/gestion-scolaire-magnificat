@@ -3404,3 +3404,924 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   margin-bottom: 0.2rem;
 }
 
+
+
+/* ============================================================
+   AMELIORATIONS ERGONOMIQUES ULTRA PRO (SANS TOUCHER AU MEMOIRE)
+   1. Theme Sombre / Clair (Dark Mode)
+   2. Recherche rapide clavier (Ctrl + K)
+   3. Centre de notifications moderne & Cloche
+   4. Optimisation et apercu direct des PDF (Bulletins & Recus)
+   ============================================================ */
+
+/* 1. Mode Sombre / Dark Mode Variables & Overrides */
+html.dark, [data-theme="dark"] {
+  --paper-50: #0a1120;
+  --paper-100: #0f1a30;
+  --ink-900: #f8fafc;
+  --ink-600: #94a3b8;
+  --line: #1e2f50;
+  --azur-500: #d4af37;
+  --azur-300: #fde68a;
+  --indigo-950: #0d1e38;
+  --indigo-800: #132a4e;
+  --indigo-700: #3b82f6;
+  --green-600: #22c55e;
+  --red-600: #ef4444;
+}
+
+html.dark body {
+  background: var(--paper-50);
+  color: var(--ink-900);
+}
+
+html.dark .react-shell {
+  background: var(--paper-50);
+}
+
+html.dark .react-header {
+  background: #0f1a30;
+  border-bottom: 1px solid var(--line);
+}
+
+html.dark .react-header-ecole {
+  color: #f8fafc;
+}
+
+html.dark .react-header-espace {
+  color: #60a5fa;
+}
+
+html.dark .react-header-nom {
+  color: #f1f5f9;
+}
+
+html.dark .react-header-badge {
+  background: #172647;
+  color: #93c5fd;
+  border-color: #24385e;
+}
+
+html.dark .react-header-langue-zone {
+  border-color: var(--line);
+  background: #0d172a;
+}
+
+html.dark .react-header-langue {
+  color: #e2e8f0;
+}
+
+html.dark .mag-card {
+  background: #111d35;
+  border-color: var(--line);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.4);
+}
+
+html.dark .mag-card-titre,
+html.dark .mag-titre,
+html.dark .mag-section-titre,
+html.dark h1, html.dark h2, html.dark h3, html.dark h4 {
+  color: #f8fafc;
+}
+
+html.dark .mag-table {
+  background: #111d35;
+  color: #f1f5f9;
+}
+
+html.dark .mag-table th {
+  background: #0d182e;
+  color: #cbd5e1;
+  border-bottom-color: var(--line);
+}
+
+html.dark .mag-table td {
+  border-bottom-color: var(--line);
+  color: #e2e8f0;
+}
+
+html.dark .mag-table tr:hover td {
+  background: #152442;
+}
+
+html.dark .mag-table-striped tbody tr:nth-child(even) td {
+  background: #0f1a30;
+}
+
+html.dark .mag-input,
+html.dark input[type="text"],
+html.dark input[type="password"],
+html.dark input[type="email"],
+html.dark input[type="number"],
+html.dark input[type="date"],
+html.dark input[type="search"],
+html.dark select,
+html.dark textarea {
+  background: #0b1426;
+  border-color: #24385e;
+  color: #f8fafc;
+}
+
+html.dark .mag-input:focus,
+html.dark input:focus,
+html.dark select:focus,
+html.dark textarea:focus {
+  border-color: var(--azur-500);
+  background: #0e182e;
+}
+
+html.dark .mag-field label {
+  color: #cbd5e1;
+}
+
+html.dark .react-modal-boite,
+html.dark .mag-modal,
+html.dark .mag-modal-content {
+  background: #111d35;
+  color: #f1f5f9;
+  border-color: var(--line);
+}
+
+html.dark .react-kpi-card {
+  background: #111d35;
+  border-color: var(--line);
+}
+
+html.dark .react-suivi-kpi-titre {
+  color: #cbd5e1;
+}
+
+html.dark .react-suivi-kpi-sub {
+  color: #94a3b8;
+}
+
+html.dark .mag-filtre-bar {
+  background: #111d35;
+  border-color: var(--line);
+}
+
+html.dark .mag-btn-secondaire {
+  background: #172647;
+  color: #e2e8f0;
+  border-color: #24385e;
+}
+
+html.dark .mag-btn-secondaire:hover {
+  background: #1f335c;
+}
+
+/* Bouton Theme Toggle */
+.react-theme-toggle {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-900);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.react-theme-toggle:hover {
+  background: var(--paper-100);
+  transform: rotate(15deg);
+  border-color: var(--azur-500);
+}
+.react-theme-toggle-soleil {
+  color: #f59e0b;
+}
+.react-theme-toggle-lune {
+  color: #818cf8;
+}
+html.dark .react-theme-toggle {
+  border-color: #24385e;
+  color: #f8fafc;
+}
+html.dark .react-theme-toggle:hover {
+  background: #172647;
+}
+
+/* 2. Barre de Recherche Rapide dans le Header */
+.react-header-recherche {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.38rem 0.75rem;
+  background: var(--paper-50);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink-600);
+  cursor: pointer;
+  font-family: inherit;
+  font-size: 0.8rem;
+  transition: all 0.18s ease;
+}
+.react-header-recherche:hover {
+  border-color: var(--azur-500);
+  background: #fff;
+  color: var(--ink-900);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+}
+.react-header-recherche-icone {
+  color: var(--ink-600);
+}
+.react-header-recherche-kbd {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.68rem;
+  background: var(--paper-100);
+  color: var(--ink-600);
+  border: 1px solid var(--line);
+  padding: 0.1rem 0.35rem;
+  border-radius: 4px;
+  font-weight: 600;
+}
+html.dark .react-header-recherche {
+  background: #0b1426;
+  border-color: #24385e;
+  color: #94a3b8;
+}
+html.dark .react-header-recherche:hover {
+  background: #111d35;
+  border-color: var(--azur-500);
+  color: #f8fafc;
+}
+html.dark .react-header-recherche-kbd {
+  background: #172647;
+  border-color: #24385e;
+  color: #cbd5e1;
+}
+@media (max-width: 768px) {
+  .react-header-recherche-texte,
+  .react-header-recherche-kbd {
+    display: none;
+  }
+  .react-header-recherche {
+    padding: 0.4rem;
+    border-radius: 50%;
+  }
+}
+
+/* Command Palette Modal (Ctrl + K) */
+.react-cmd-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 9999;
+  background: rgba(10, 17, 32, 0.65);
+  backdrop-filter: blur(6px);
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 5rem 1rem 1rem;
+  animation: reactFadeIn 0.15s ease-out;
+}
+.react-cmd-boite {
+  width: 100%;
+  max-width: 620px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 20px 40px -15px rgba(0, 0, 0, 0.35), 0 0 0 1px rgba(0, 0, 0, 0.05);
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  animation: reactSlideDown 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+}
+html.dark .react-cmd-boite {
+  background: #111d35;
+  border-color: #24385e;
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.7);
+}
+.react-cmd-entete {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+}
+html.dark .react-cmd-entete {
+  border-bottom-color: #1e2f50;
+}
+.react-cmd-icone-recherche {
+  color: var(--ink-600);
+  flex-shrink: 0;
+}
+.react-cmd-input {
+  flex: 1;
+  background: transparent;
+  border: none;
+  outline: none;
+  font-family: inherit;
+  font-size: 0.95rem;
+  color: var(--ink-900);
+}
+html.dark .react-cmd-input {
+  color: #f8fafc;
+}
+.react-cmd-badge-esc {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.7rem;
+  padding: 0.15rem 0.4rem;
+  background: var(--paper-100);
+  border: 1px solid var(--line);
+  border-radius: 4px;
+  color: var(--ink-600);
+  cursor: pointer;
+}
+html.dark .react-cmd-badge-esc {
+  background: #172647;
+  border-color: #24385e;
+  color: #cbd5e1;
+}
+.react-cmd-liste {
+  max-height: 380px;
+  overflow-y: auto;
+  padding: 0.5rem;
+}
+.react-cmd-item {
+  display: flex;
+  align-items: center;
+  gap: 0.85rem;
+  padding: 0.65rem 0.85rem;
+  border-radius: 8px;
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+.react-cmd-item.actif {
+  background: var(--paper-100);
+}
+html.dark .react-cmd-item.actif {
+  background: #172647;
+}
+.react-cmd-item-icone {
+  width: 32px;
+  height: 32px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: rgba(14, 116, 144, 0.08);
+  color: var(--indigo-700);
+  flex-shrink: 0;
+}
+html.dark .react-cmd-item-icone {
+  background: #132244;
+  color: #60a5fa;
+}
+.react-cmd-item-texte {
+  flex: 1;
+  min-width: 0;
+}
+.react-cmd-item-titre {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+html.dark .react-cmd-item-titre {
+  color: #f8fafc;
+}
+.react-cmd-item-badge {
+  font-size: 0.68rem;
+  font-weight: 500;
+  padding: 0.1rem 0.45rem;
+  border-radius: 999px;
+  background: var(--paper-50);
+  border: 1px solid var(--line);
+  color: var(--ink-600);
+}
+html.dark .react-cmd-item-badge {
+  background: #0d172a;
+  border-color: #24385e;
+  color: #94a3b8;
+}
+.react-cmd-item-desc {
+  font-size: 0.74rem;
+  color: var(--ink-600);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-top: 0.15rem;
+}
+html.dark .react-cmd-item-desc {
+  color: #94a3b8;
+}
+.react-cmd-item-entree {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.8rem;
+  color: var(--azur-500);
+  font-weight: 700;
+}
+.react-cmd-vide {
+  text-align: center;
+  padding: 2.5rem 1rem;
+  color: var(--ink-600);
+}
+.react-cmd-vide-icone {
+  margin: 0 auto 0.6rem;
+  opacity: 0.4;
+}
+.react-cmd-vide p {
+  font-size: 0.9rem;
+  font-weight: 600;
+  margin: 0 0 0.3rem;
+  color: var(--ink-900);
+}
+html.dark .react-cmd-vide p {
+  color: #f8fafc;
+}
+.react-cmd-vide span {
+  font-size: 0.76rem;
+}
+.react-cmd-pied {
+  display: flex;
+  align-items: center;
+  gap: 1.2rem;
+  padding: 0.65rem 1rem;
+  border-top: 1px solid var(--line);
+  background: var(--paper-50);
+  font-size: 0.72rem;
+  color: var(--ink-600);
+}
+html.dark .react-cmd-pied {
+  background: #0d182e;
+  border-top-color: #1e2f50;
+  color: #94a3b8;
+}
+.react-cmd-aide kbd {
+  font-family: 'IBM Plex Mono', monospace;
+  padding: 0.1rem 0.3rem;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 3px;
+  font-weight: 600;
+}
+html.dark .react-cmd-aide kbd {
+  background: #172647;
+  border-color: #24385e;
+  color: #cbd5e1;
+}
+
+/* 3. Centre de Notifications Moderne */
+.react-notif-conteneur {
+  position: relative;
+}
+.react-notif-bouton {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  border: 1px solid var(--line);
+  background: transparent;
+  color: var(--ink-900);
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+.react-notif-bouton:hover, .react-notif-bouton.actif {
+  background: var(--paper-100);
+  border-color: var(--azur-500);
+  color: var(--azur-500);
+}
+html.dark .react-notif-bouton {
+  border-color: #24385e;
+  color: #f8fafc;
+}
+html.dark .react-notif-bouton:hover, html.dark .react-notif-bouton.actif {
+  background: #172647;
+}
+.react-notif-pastille {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 17px;
+  height: 17px;
+  padding: 0 4px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: #ffffff;
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.62rem;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border: 2px solid #ffffff;
+}
+html.dark .react-notif-pastille {
+  border-color: #0f1a30;
+}
+.react-notif-pulse {
+  position: absolute;
+  inset: -1px;
+  border-radius: 999px;
+  background: #ef4444;
+  opacity: 0.6;
+  animation: reactPulse 1.8s infinite;
+}
+.react-notif-menu {
+  position: absolute;
+  top: calc(100% + 8px);
+  right: 0;
+  width: 360px;
+  max-width: 90vw;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  box-shadow: 0 16px 36px rgba(0, 0, 0, 0.18);
+  z-index: 1000;
+  overflow: hidden;
+  animation: reactSlideDown 0.18s ease-out;
+}
+html.dark .react-notif-menu {
+  background: #111d35;
+  border-color: #24385e;
+  box-shadow: 0 20px 45px rgba(0, 0, 0, 0.55);
+}
+.react-notif-menu-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.1rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-50);
+}
+html.dark .react-notif-menu-entete {
+  background: #0d182e;
+  border-bottom-color: #1e2f50;
+}
+.react-notif-titre {
+  font-size: 0.9rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ink-900);
+}
+html.dark .react-notif-titre {
+  color: #f8fafc;
+}
+.react-notif-sous-titre {
+  font-size: 0.72rem;
+  color: var(--ink-600);
+}
+.react-notif-marquer-tout {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  background: none;
+  border: none;
+  color: var(--azur-500);
+  font-size: 0.74rem;
+  font-weight: 600;
+  cursor: pointer;
+  padding: 0.2rem 0.4rem;
+  border-radius: 4px;
+}
+.react-notif-marquer-tout:hover {
+  background: rgba(176, 138, 46, 0.1);
+}
+.react-notif-onglets {
+  display: flex;
+  border-bottom: 1px solid var(--line);
+  background: transparent;
+}
+html.dark .react-notif-onglets {
+  border-bottom-color: #1e2f50;
+}
+.react-notif-onglet {
+  flex: 1;
+  padding: 0.55rem;
+  background: none;
+  border: none;
+  border-bottom: 2px solid transparent;
+  font-size: 0.78rem;
+  font-weight: 600;
+  color: var(--ink-600);
+  cursor: pointer;
+}
+.react-notif-onglet.actif {
+  color: var(--indigo-700);
+  border-bottom-color: var(--azur-500);
+}
+html.dark .react-notif-onglet.actif {
+  color: #60a5fa;
+}
+.react-notif-liste {
+  max-height: 320px;
+  overflow-y: auto;
+}
+.react-notif-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  padding: 0.8rem 1rem;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: background 0.15s ease;
+}
+html.dark .react-notif-item {
+  border-bottom-color: #1a2948;
+}
+.react-notif-item:hover {
+  background: var(--paper-100);
+}
+html.dark .react-notif-item:hover {
+  background: #172647;
+}
+.react-notif-item.non-lue {
+  background: rgba(176, 138, 46, 0.04);
+}
+html.dark .react-notif-item.non-lue {
+  background: rgba(96, 165, 250, 0.06);
+}
+.react-notif-item-icone {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--paper-100);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  margin-top: 0.1rem;
+}
+html.dark .react-notif-item-icone {
+  background: #132244;
+}
+.react-notif-item-corps {
+  flex: 1;
+  min-width: 0;
+}
+.react-notif-item-ligne1 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.4rem;
+}
+.react-notif-item-titre {
+  font-size: 0.82rem;
+  font-weight: 600;
+  color: var(--ink-900);
+}
+html.dark .react-notif-item-titre {
+  color: #f8fafc;
+}
+.react-notif-point-bleu {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--azur-500);
+  flex-shrink: 0;
+}
+.react-notif-item-texte {
+  font-size: 0.75rem;
+  color: var(--ink-600);
+  margin: 0.2rem 0 0.3rem;
+  line-height: 1.35;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+html.dark .react-notif-item-texte {
+  color: #94a3b8;
+}
+.react-notif-item-date {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.25rem;
+  font-size: 0.68rem;
+  color: var(--ink-600);
+}
+.react-notif-vide {
+  text-align: center;
+  padding: 2.2rem 1rem;
+  color: var(--ink-600);
+}
+.react-notif-vide-icone {
+  margin: 0 auto 0.5rem;
+  opacity: 0.35;
+}
+.react-notif-vide p {
+  font-size: 0.85rem;
+  font-weight: 600;
+  margin: 0 0 0.2rem;
+  color: var(--ink-900);
+}
+html.dark .react-notif-vide p {
+  color: #f8fafc;
+}
+.react-notif-vide span {
+  font-size: 0.72rem;
+}
+.react-notif-menu-pied {
+  padding: 0.6rem 1rem;
+  background: var(--paper-50);
+  border-top: 1px solid var(--line);
+  text-align: center;
+}
+html.dark .react-notif-menu-pied {
+  background: #0d182e;
+  border-top-color: #1e2f50;
+}
+.react-notif-lien-voir-tout {
+  background: none;
+  border: none;
+  color: var(--indigo-700);
+  font-size: 0.75rem;
+  font-weight: 600;
+  cursor: pointer;
+}
+html.dark .react-notif-lien-voir-tout {
+  color: #60a5fa;
+}
+
+/* 4. Visualiseur PDF Modal & Optimisation */
+.react-pdf-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  background: rgba(10, 17, 32, 0.75);
+  backdrop-filter: blur(8px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+  animation: reactFadeIn 0.2s ease-out;
+}
+.react-pdf-boite {
+  width: 100%;
+  max-width: 960px;
+  height: 90vh;
+  background: #ffffff;
+  border-radius: 12px;
+  border: 1px solid var(--line);
+  box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  animation: reactSlideDown 0.2s ease-out;
+}
+html.dark .react-pdf-boite {
+  background: #111d35;
+  border-color: #24385e;
+}
+.react-pdf-entete {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.9rem 1.4rem;
+  border-bottom: 1px solid var(--line);
+  background: var(--paper-50);
+}
+html.dark .react-pdf-entete {
+  background: #0d182e;
+  border-bottom-color: #1e2f50;
+}
+.react-pdf-titre-zone {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+.react-pdf-icone-doc {
+  width: 36px;
+  height: 36px;
+  border-radius: 8px;
+  background: rgba(176, 138, 46, 0.12);
+  color: var(--azur-500);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.react-pdf-titre {
+  font-size: 0.98rem;
+  font-weight: 700;
+  margin: 0;
+  color: var(--ink-900);
+}
+html.dark .react-pdf-titre {
+  color: #f8fafc;
+}
+.react-pdf-nom-fichier {
+  font-family: 'IBM Plex Mono', monospace;
+  font-size: 0.72rem;
+  color: var(--ink-600);
+}
+html.dark .react-pdf-nom-fichier {
+  color: #94a3b8;
+}
+.react-pdf-actions {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+.react-pdf-btn-action {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: 6px;
+  border: 1px solid var(--line);
+  background: #ffffff;
+  color: var(--ink-900);
+  font-size: 0.78rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+html.dark .react-pdf-btn-action {
+  background: #172647;
+  border-color: #24385e;
+  color: #f8fafc;
+}
+.react-pdf-btn-action:hover {
+  border-color: var(--azur-500);
+  background: var(--paper-100);
+}
+html.dark .react-pdf-btn-action:hover {
+  background: #1f335c;
+}
+.react-pdf-btn-primaire {
+  background: var(--azur-500);
+  color: #ffffff;
+  border-color: var(--azur-500);
+}
+.react-pdf-btn-primaire:hover {
+  background: #967426;
+  border-color: #967426;
+}
+.react-pdf-btn-fermer {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 6px;
+  border: none;
+  background: transparent;
+  color: var(--ink-600);
+  cursor: pointer;
+  margin-left: 0.4rem;
+}
+.react-pdf-btn-fermer:hover {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+}
+.react-pdf-corps {
+  flex: 1;
+  background: #525659;
+  position: relative;
+}
+.react-pdf-iframe {
+  width: 100%;
+  height: 100%;
+  border: none;
+}
+.react-pdf-chargement {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: #ffffff;
+}
+.react-pdf-pied {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0.65rem 1.4rem;
+  background: var(--paper-50);
+  border-top: 1px solid var(--line);
+  font-size: 0.72rem;
+  color: var(--ink-600);
+}
+html.dark .react-pdf-pied {
+  background: #0d182e;
+  border-top-color: #1e2f50;
+  color: #94a3b8;
+}
+.react-pdf-badge-certifie {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+  color: var(--green-600);
+  font-weight: 600;
+}
+
+@keyframes reactPulse {
+  0% { transform: scale(0.95); opacity: 0.7; }
+  50% { transform: scale(1.3); opacity: 0; }
+  100% { transform: scale(0.95); opacity: 0; }
+}
+@keyframes reactSlideDown {
+  from { opacity: 0; transform: translateY(-8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+@keyframes reactFadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}

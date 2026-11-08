@@ -28,6 +28,7 @@ import GestionConges from "./pages/GestionConges.jsx";
 import SituationFinanciere from "./pages/SituationFinanciere.jsx";
 import FicheEleve from "./pages/FicheEleve.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
+import CommandPalette from "./components/CommandPalette.jsx";
 
 function lirePageDepuisUrl() {
   const hash = window.location.hash.replace(/^#\//, "");
@@ -45,6 +46,10 @@ export default function App() {
   const [langue, setLangue] = useState(function () {
     return localStorage.getItem("magnificat_langue") === "en" ? "en" : "fr";
   });
+  const [theme, setTheme] = useState(function () {
+    return localStorage.getItem("magnificat_theme") || "light";
+  });
+  const [paletteOuverte, setPaletteOuverte] = useState(false);
 
   const changerLangue = function (evenement) {
     const nouvelleLangue = evenement.target.value === "en" ? "en" : "fr";
@@ -52,9 +57,41 @@ export default function App() {
     setLangue(nouvelleLangue);
   };
 
+  const basculerTheme = function () {
+    setTheme(function (t) {
+      const nouveau = t === "dark" ? "light" : "dark";
+      localStorage.setItem("magnificat_theme", nouveau);
+      return nouveau;
+    });
+  };
+
   useEffect(function () {
     document.documentElement.lang = langue;
   }, [langue]);
+
+  useEffect(function () {
+    document.documentElement.classList.toggle("dark", theme === "dark");
+    document.documentElement.setAttribute("data-theme", theme);
+  }, [theme]);
+
+  // Raccourcis clavier globaux : Ctrl+K ou Cmd+K ou /
+  useEffect(function () {
+    const gererClavier = function (e) {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
+        e.preventDefault();
+        setPaletteOuverte(function (v) { return !v; });
+      } else if (
+        e.key === "/" &&
+        !["INPUT", "TEXTAREA", "SELECT"].includes((e.target && e.target.tagName) || "") &&
+        !(e.target && e.target.isContentEditable)
+      ) {
+        e.preventDefault();
+        setPaletteOuverte(true);
+      }
+    };
+    window.addEventListener("keydown", gererClavier);
+    return function () { window.removeEventListener("keydown", gererClavier); };
+  }, []);
 
   useEffect(function () {
     const gererChangement = function () { setPage(lirePageDepuisUrl()); };
@@ -195,15 +232,50 @@ export default function App() {
 
   return (
     <div className="react-shell">
-      <Sidebar pageActive={page} utilisateur={utilisateur} role={role} langue={langue} nomEcole={nomEcole} logoUrl={parametres ? parametres.logo : null} onDeconnexion={seDeconnecter} mobileOuvert={menuMobileOuvert} onFermerMobile={function () { setMenuMobileOuvert(false); }} />
+      <Sidebar
+        pageActive={page}
+        utilisateur={utilisateur}
+        role={role}
+        langue={langue}
+        nomEcole={nomEcole}
+        logoUrl={parametres ? parametres.logo : null}
+        onDeconnexion={seDeconnecter}
+        mobileOuvert={menuMobileOuvert}
+        onFermerMobile={function () { setMenuMobileOuvert(false); }}
+      />
       <div className="react-zone-principale">
-        <Header utilisateur={utilisateur} role={role} langue={langue} onChangerLangue={changerLangue} parametres={parametres} etapesOnboarding={etapesOnboarding} onDeconnexion={seDeconnecter} onBasculerMenu={function () { setMenuMobileOuvert(function (v) { return !v; }); }} />
+        <Header
+          token={token}
+          utilisateur={utilisateur}
+          role={role}
+          langue={langue}
+          onChangerLangue={changerLangue}
+          parametres={parametres}
+          etapesOnboarding={etapesOnboarding}
+          onDeconnexion={seDeconnecter}
+          onBasculerMenu={function () { setMenuMobileOuvert(function (v) { return !v; }); }}
+          theme={theme}
+          onBasculerTheme={basculerTheme}
+          onOuvrirPalette={function () { setPaletteOuverte(true); }}
+        />
         <main className="react-contenu" key={page}>
           <ErrorBoundary clePage={page}>
             {contenuPage}
           </ErrorBoundary>
         </main>
       </div>
+
+      {/* Palette de commande rapide Ctrl + K */}
+      <CommandPalette
+        ouvert={paletteOuverte}
+        onFermer={function () { setPaletteOuverte(false); }}
+        role={role}
+        langue={langue}
+        theme={theme}
+        onBasculerTheme={basculerTheme}
+        onChangerLangue={changerLangue}
+        onDeconnexion={seDeconnecter}
+      />
     </div>
   );
 }

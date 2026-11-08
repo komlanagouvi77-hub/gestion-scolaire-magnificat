@@ -9,8 +9,10 @@ import { useState, useEffect } from "react";
 import { lister, creer } from "../api.js";
 import { Alerte } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
-import { telechargerFichierProtege } from "../telecharger.js";
+import { telechargerFichierProtege, recupererBlobProtege } from "../telecharger.js";
 import { traduireTexte, localeActive } from "../localisation.js";
+import VisualiseurPdfModal from "../components/VisualiseurPdfModal.jsx";
+import { Eye, Download } from "lucide-react";
 
 const LABEL_TYPE_OBS = { positive: "Positive", negative: "Negative", neutre: "Neutre" };
 const CLASSE_TYPE_OBS = { positive: "mag-badge-succes", negative: "mag-badge-erreur", neutre: "mag-badge" };
@@ -31,6 +33,28 @@ export default function FicheEleve({ eleveId, token, role }) {
   const [visibleParent, setVisibleParent] = useState(true);
   const [enCours, setEnCours] = useState(false);
   const [enCoursTelechargement, setEnCoursTelechargement] = useState(null);
+  const [modalPdf, setModalPdf] = useState({ ouvert: false, blob: null, nomFichier: "", titreDoc: "" });
+
+  const previsualiserBulletin = async function (bulletin) {
+    setEnCoursTelechargement(bulletin.id);
+    try {
+      const urlTelechargement = bulletin.fichier_pdf || ("/api/bulletins/" + bulletin.id + "/telecharger/");
+      const nomEleve = eleve ? (eleve.nom + "_" + eleve.prenom).replace(/[^a-zA-Z0-9_-]/g, "_") : "eleve";
+      const nomFichier = "bulletin_" + nomEleve + "_T" + bulletin.trimestre + ".pdf";
+      const blob = await recupererBlobProtege(urlTelechargement, token);
+      setModalPdf({
+        ouvert: true,
+        blob: blob,
+        nomFichier: nomFichier,
+        titreDoc: `Bulletin Trimestre ${bulletin.trimestre} — ${eleve ? eleve.nom + " " + eleve.prenom : "Élève"}`,
+      });
+    } catch (err) {
+      console.error("Erreur apercu bulletin:", err);
+      setMessage({ type: "erreur", texte: "Impossible d'afficher l'aperçu du bulletin : " + (err.message || "") });
+    } finally {
+      setEnCoursTelechargement(null);
+    }
+  };
 
   // Un simple <a href={bulletin.fichier_pdf}> ne fonctionne pas : cette URL
   // pointe vers un endpoint protege (/api/bulletins/<id>/telecharger/) qui
@@ -203,11 +227,48 @@ export default function FicheEleve({ eleveId, token, role }) {
                   <td>Trim. {b.trimestre}</td>
                   <td style={{ fontWeight: 600 }}>{b.moyenne_generale}/20</td>
                   <td>{b.rang ? b.rang + " / " + b.effectif_classe : "-"}</td>
-                  <td>
+                  <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
                     {b.fichier_pdf ? (
-                      <button type="button" className="mag-btn-lien" onClick={function () { telechargerBulletin(b); }} disabled={enCoursTelechargement === b.id}>
-                        {enCoursTelechargement === b.id ? "Telechargement..." : "Telecharger →"}
-                      </button>
+                      <>
+                        <button
+                          type="button"
+                          className="mag-btn-lien"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.25rem",
+                            marginRight: "0.75rem",
+                            color: "var(--azur-500)",
+                            fontWeight: 600,
+                          }}
+                          onClick={function () { previsualiserBulletin(b); }}
+                          disabled={enCoursTelechargement === b.id}
+                          title="Aperçu et impression directe"
+                        >
+                          <Eye size={14} /> Aperçu
+                        </button>
+                        <button
+                          type="button"
+                          className="mag-btn-lien"
+                          style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: "0.25rem",
+                            fontWeight: 600,
+                          }}
+                          onClick={function () { telechargerBulletin(b); }}
+                          disabled={enCoursTelechargement === b.id}
+                          title="Télécharger le fichier PDF"
+                        >
+                          {enCoursTelechargement === b.id ? (
+                            <span style={{ color: "var(--azur-500)" }}>PDF...</span>
+                          ) : (
+                            <>
+                              <Download size={14} /> Télécharger
+                            </>
+                          )}
+                        </button>
+                      </>
                     ) : "-"}
                   </td>
                 </tr>
@@ -269,6 +330,15 @@ export default function FicheEleve({ eleveId, token, role }) {
           </tbody>
         </table>
       </div>
+
+      {/* Visualiseur Modal PDF officiel */}
+      <VisualiseurPdfModal
+        ouvert={modalPdf.ouvert}
+        onFermer={function () { setModalPdf({ ouvert: false, blob: null, nomFichier: "", titreDoc: "" }); }}
+        blob={modalPdf.blob}
+        nomFichier={modalPdf.nomFichier}
+        titreDoc={modalPdf.titreDoc}
+      />
     </>
   );
 }
