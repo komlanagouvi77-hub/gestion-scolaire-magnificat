@@ -1,5 +1,6 @@
 // src/components/ErrorBoundary.jsx
 import React from "react";
+import { AlertTriangle } from "lucide-react";
 
 export default class ErrorBoundary extends React.Component {
   constructor(props) {
@@ -47,7 +48,11 @@ export default class ErrorBoundary extends React.Component {
             border: "1px solid var(--line, #e2e8f0)",
           }}
         >
-          <div style={{ fontSize: "2.8rem", marginBottom: "0.8rem" }}>⚠️</div>
+          <div style={{ marginBottom: "0.8rem", display: "flex", justifyContent: "center" }}>
+            <div style={{ width: 56, height: 56, borderRadius: "50%", background: "#FEF2F2", display: "flex", alignItems: "center", justifyContent: "center", color: "#DC2626" }}>
+              <AlertTriangle size={32} />
+            </div>
+          </div>
           <h2 style={{ fontSize: "1.25rem", fontWeight: "700", color: "var(--ink-900, #0f172a)", marginBottom: "0.5rem" }}>
             Un problème inattendu est survenu
           </h2>

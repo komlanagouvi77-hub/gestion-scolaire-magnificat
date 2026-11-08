@@ -14,7 +14,7 @@ import BoutonSupprimer from "../components/BoutonSupprimer.jsx";
 import RecuPaiementModal from "../components/RecuPaiementModal.jsx";
 import ModalPaiementMobileMoney from "../components/ModalPaiementMobileMoney.jsx";
 import VisualiseurPdfModal from "../components/VisualiseurPdfModal.jsx";
-import { Eye, Download } from "lucide-react";
+import { Eye, Download, Smartphone } from "lucide-react";
 
 const MODES_PAIEMENT = [
   { valeur: "especes", label: "Especes" },
@@ -165,7 +165,7 @@ export default function GestionPaiements({ token }) {
           className="mag-btn-primary"
           style={{ background: "#E65100", borderColor: "#E65100", display: "inline-flex", alignItems: "center", gap: "0.5rem" }}
         >
-          <span>📲</span> {traduireTexte("Paiement Mobile Money (T-Money / Flooz)")}
+          <Smartphone size={15} /> {traduireTexte("Paiement Mobile Money (T-Money / Flooz)")}
         </button>
       </div>
 

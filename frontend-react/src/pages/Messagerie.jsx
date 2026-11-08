@@ -8,6 +8,7 @@ import { lister, creer, obtenirCorrespondantsMessagerie, recupererProfil } from 
 import { Alerte } from "../components/Widgets.jsx";
 import { localeActive } from "../localisation.js";
 import Spinner from "../components/Spinner.jsx";
+import { MessageCircle } from "lucide-react";
 
 export default function Messagerie({ token }) {
   const [messages, setMessages] = useState([]);
@@ -77,25 +78,25 @@ export default function Messagerie({ token }) {
 
   const MODELES_MESSAGES = [
     {
-      titre: "📅 Rendez-vous",
+      titre: "Entretien pédagogique",
       generer: function (nomEl, nomDest) {
         return "Bonjour " + (nomDest || "") + ", je souhaite solliciter un court entretien avec vous concernant le suivi de l'eleve " + (nomEl || "votre enfant") + ". Quelles seraient vos disponibilites ? Cordialement.";
       },
     },
     {
-      titre: "📝 Point travail",
+      titre: "Point sur le travail",
       generer: function (nomEl, nomDest) {
         return "Bonjour " + (nomDest || "") + ", je vous ecris pour faire un point rapide sur le travail scolaire et les devoirs de l'eleve " + (nomEl || "votre enfant") + ". Cordialement.";
       },
     },
     {
-      titre: "⚠️ Absence / Retard",
+      titre: "Notification absence / retard",
       generer: function (nomEl, nomDest) {
         return "Bonjour " + (nomDest || "") + ", nous avons constate une absence ou un retard pour l'eleve " + (nomEl || "votre enfant") + ". Merci de bien vouloir nous fournir un justificatif. Cordialement.";
       },
     },
     {
-      titre: "🌟 Felicitations",
+      titre: "Félicitations pour progrès",
       generer: function (nomEl, nomDest) {
         return "Bonjour " + (nomDest || "") + ", nous tenions a vous feliciter pour les excellents progres et l'effort soutenu de l'eleve " + (nomEl || "votre enfant") + ". Bravo !";
       },
@@ -161,7 +162,7 @@ export default function Messagerie({ token }) {
                   }}
                   title="Poursuivre la conversation sur WhatsApp"
                 >
-                  <span>💬</span> Poursuivre sur WhatsApp
+                  <MessageCircle size={14} /> Poursuivre sur WhatsApp
                 </a>
               </div>
             ) : null}

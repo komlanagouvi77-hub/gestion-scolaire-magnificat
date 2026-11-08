@@ -8,6 +8,7 @@ import { initierMobileMoney, validerMobileMoney, telechargerRecuPaiementPdf } fr
 import { traduireTexte, localeActive } from "../localisation.js";
 import { Alerte } from "./Widgets.jsx";
 import { LogoTMoney, LogoFlooz } from "./LogosOperateurs.jsx";
+import { Smartphone, Bell, FileText } from "lucide-react";
 
 const OPERATEURS = [
   {
@@ -159,7 +160,9 @@ export default function ModalPaiementMobileMoney({
         <div style={{ background: "linear-gradient(135deg, #16324F 0%, #1e4a73 100%)", padding: "1.2rem 1.6rem", color: "#fff" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-              <span style={{ fontSize: "2rem" }}>📲</span>
+              <div style={{ width: 44, height: 44, borderRadius: "10px", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <Smartphone size={24} color="#ffffff" />
+              </div>
               <div>
                 <h3 style={{ margin: 0, fontSize: "1.25rem", fontWeight: "700" }}>Paiement Mobile Money</h3>
                 <p style={{ margin: 0, fontSize: "0.82rem", opacity: 0.9 }}>Passerelle securisee — Complexe Scolaire Magnificat</p>
@@ -371,8 +374,8 @@ export default function ModalPaiementMobileMoney({
                 </div>
 
                 <div style={{ fontSize: "0.88rem", lineHeight: "1.45", color: "#E2E8F0", marginBottom: "1rem" }}>
-                  <div style={{ fontWeight: 700, color: operateur === "tmoney" ? "#FDBA74" : "#93C5FD", marginBottom: "0.3rem" }}>
-                    🔔 Demande de paiement
+                  <div style={{ fontWeight: 700, color: operateur === "tmoney" ? "#FDBA74" : "#93C5FD", marginBottom: "0.3rem", display: "inline-flex", alignItems: "center", gap: "0.35rem" }}>
+                    <Bell size={14} /> Demande de paiement
                   </div>
                   <div>Marchand : <strong>Complexe Scolaire Magnificat</strong></div>
                   <div>Eleve : {nomEleve} (Tranche {tranche})</div>
@@ -511,7 +514,13 @@ export default function ModalPaiementMobileMoney({
                   style={{ background: "#16324F", display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.65rem 1.6rem" }}
                   disabled={enCoursPdf}
                 >
-                  {enCoursPdf ? <span className="react-spinner"></span> : "📄 Telecharger le Recu Officiel PDF"}
+                  {enCoursPdf ? (
+                    <span className="react-spinner"></span>
+                  ) : (
+                    <>
+                      <FileText size={16} /> Télécharger le Reçu Officiel PDF
+                    </>
+                  )}
                 </button>
                 <button type="button" onClick={onFermer} className="mag-btn-secondary" style={{ padding: "0.65rem 1.4rem" }}>
                   Fermer

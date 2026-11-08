@@ -4,6 +4,7 @@ import { CarteStat, GraphiqueBarres } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import { traduireTexte, localeActive } from "../localisation.js";
 import ModalPaiementMobileMoney from "../components/ModalPaiementMobileMoney.jsx";
+import { Smartphone } from "lucide-react";
 
 function useListe(ressource, token) {
   const [donnees, setDonnees] = useState([]);
@@ -115,7 +116,7 @@ function CarteMesEnfants({ eleves, onPayer }) {
             className="mag-btn-primary"
             style={{ background: "#E65100", borderColor: "#E65100", fontSize: "0.8rem", padding: "0.4rem 0.9rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
           >
-            <span>📲</span> {traduireTexte("Payer scolarite (T-Money / Flooz)")}
+            <Smartphone size={14} /> {traduireTexte("Payer scolarite (T-Money / Flooz)")}
           </button>
         ) : null}
       </div>
@@ -139,10 +140,10 @@ function CarteMesEnfants({ eleves, onPayer }) {
                     type="button"
                     onClick={function () { onPayer(String(e.id)); }}
                     className="mag-btn-lien"
-                    style={{ fontSize: "0.8rem", color: "#E65100", fontWeight: 600, padding: "0.3rem 0.6rem", border: "1px solid #FFCC80", borderRadius: "6px", background: "#FFF8E1" }}
+                    style={{ fontSize: "0.8rem", color: "#E65100", fontWeight: 600, padding: "0.3rem 0.6rem", border: "1px solid #FFCC80", borderRadius: "6px", background: "#FFF8E1", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
                     title="Payer les frais de scolarite par Mobile Money"
                   >
-                    📲 Payer →
+                    <Smartphone size={13} /> Payer →
                   </button>
                 ) : null}
               </div>

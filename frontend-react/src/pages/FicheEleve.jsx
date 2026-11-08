@@ -12,7 +12,7 @@ import Spinner from "../components/Spinner.jsx";
 import { telechargerFichierProtege, recupererBlobProtege } from "../telecharger.js";
 import { traduireTexte, localeActive } from "../localisation.js";
 import VisualiseurPdfModal from "../components/VisualiseurPdfModal.jsx";
-import { Eye, Download } from "lucide-react";
+import { Eye, Download, MessageCircle } from "lucide-react";
 
 const LABEL_TYPE_OBS = { positive: "Positive", negative: "Negative", neutre: "Neutre" };
 const CLASSE_TYPE_OBS = { positive: "mag-badge-succes", negative: "mag-badge-erreur", neutre: "mag-badge" };
@@ -170,7 +170,7 @@ export default function FicheEleve({ eleveId, token, role }) {
                       }}
                       title="Contacter sur WhatsApp"
                     >
-                      <span>💬</span> WhatsApp
+                      <MessageCircle size={13} /> WhatsApp
                     </a>
                   ) : null}
                 </div>

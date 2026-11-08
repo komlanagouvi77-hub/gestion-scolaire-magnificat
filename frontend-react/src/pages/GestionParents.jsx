@@ -6,6 +6,7 @@ import Spinner from "../components/Spinner.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
 import useConfirmation from "../hooks/useConfirmation.js";
 import BoutonSupprimer from "../components/BoutonSupprimer.jsx";
+import { MessageCircle } from "lucide-react";
 
 export default function GestionParents({ token }) {
   const confirmation = useConfirmation();
@@ -185,7 +186,7 @@ export default function GestionParents({ token }) {
                             }}
                             title="Ouvrir une discussion WhatsApp"
                           >
-                            <span>💬</span> WhatsApp
+                            <MessageCircle size={13} /> WhatsApp
                           </a>
                         </div>
                       ) : (

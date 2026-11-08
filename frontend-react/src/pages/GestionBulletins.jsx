@@ -224,7 +224,7 @@ function OngletGeneration({ token, role }) {
             type="button" onClick={calculerPourClasse} disabled={enCoursCalcul}
             className="mag-btn-primary" style={{ width: "auto", padding: "0.65rem 1.8rem", marginTop: "1rem", background: "#B35900" }}
           >
-            {enCoursCalcul ? <span className="react-spinner"></span> : "⚡ Calculer les moyennes (" + elevesFiltres.length + " eleve" + (elevesFiltres.length !== 1 ? "s" : "") + ")"}
+            {enCoursCalcul ? <span className="react-spinner"></span> : "Calculer les moyennes (" + elevesFiltres.length + " eleve" + (elevesFiltres.length !== 1 ? "s" : "") + ")"}
           </button>
         </div>
       ) : null}

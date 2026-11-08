@@ -23,3 +23,4 @@ export default function ThemeToggle({ theme, onBasculerTheme, langue }) {
     </button>
   );
 }
+

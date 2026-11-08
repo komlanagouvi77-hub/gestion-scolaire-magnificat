@@ -7,6 +7,7 @@
 import { useState, useEffect } from "react";
 import { traduireTexte, localeActive } from "../localisation.js";
 import { telechargerRecuPaiementPdf, obtenirTokenStocke } from "../api.js";
+import { FileText } from "lucide-react";
 
 const LABEL_MODE = {
   especes: "Especes",
@@ -77,7 +78,7 @@ export default function RecuPaiementModal({ paiement, parametres, onFermer }) {
             onClick={telechargerPdfOfficiel}
             disabled={enCoursPdf}
           >
-            {enCoursPdf ? <span className="react-spinner" style={{ width: 14, height: 14 }}></span> : <span>📄</span>}
+            {enCoursPdf ? <span className="react-spinner" style={{ width: 14, height: 14 }}></span> : <FileText size={15} />}
             {enCoursPdf ? "Telechargement..." : "Recu Officiel (PDF ReportLab)"}
           </button>
           <button type="button" className="btn-mag-outline" style={{ width: "auto", padding: "0.5rem 1.2rem" }} onClick={function () { window.print(); }}>

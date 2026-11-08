@@ -230,7 +230,7 @@ export default function NotificationBell({ token, role, langue }) {
                     ? (langue === "en" ? "No unread notifications" : "Aucune notification non lue")
                     : (langue === "en" ? "No notifications yet" : "Aucune notification pour le moment")}
                 </p>
-                <span>{langue === "en" ? "You're all caught up! ✨" : "Vous êtes parfaitement à jour ! ✨"}</span>
+                <span>{langue === "en" ? "All notifications have been reviewed." : "Toutes les notifications ont été consultées."}</span>
               </div>
             ) : (
               listeAffichee.map((n) => {
@@ -281,3 +281,4 @@ export default function NotificationBell({ token, role, langue }) {
     </div>
   );
 }
+

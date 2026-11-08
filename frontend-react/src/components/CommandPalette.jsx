@@ -23,7 +23,7 @@ import {
   CheckCircle2,
   DollarSign,
   ShieldCheck,
-  Sparkles,
+  Compass,
 } from "lucide-react";
 
 export default function CommandPalette({
@@ -149,7 +149,7 @@ export default function CommandPalette({
       titre: langue === "en" ? "Setup Guide" : "Guide de Configuration de l'École",
       description: langue === "en" ? "Review school launch checklist" : "Consulter les étapes de mise en place de l'établissement",
       categorie: langue === "en" ? "Assistance" : "Assistance",
-      Icone: Sparkles,
+      Icone: Compass,
       action: () => {
         onOuvrirGuide();
         onFermer();
@@ -290,3 +290,4 @@ export default function CommandPalette({
     </div>
   );
 }
+

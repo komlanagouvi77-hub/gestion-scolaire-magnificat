@@ -5,6 +5,7 @@ import { obtenirSuiviSaisie, modifierParametres } from "../api.js";
 import { Alerte, CarteStat } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import { traduireTexte } from "../localisation.js";
+import { Download, Lock, Unlock, MessageCircle, Search } from "lucide-react";
 
 function PastilleStatut({ statut }) {
   const config = {
@@ -152,7 +153,7 @@ export default function SuiviSaisie({ token }) {
             style={{ fontSize: "0.82rem", padding: "0.45rem 0.9rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
             title="Exporter l'état de la saisie au format CSV Excel"
           >
-            <span>📥</span> Exporter rapport CSV
+            <Download size={14} /> Exporter rapport CSV
           </button>
           <button
             type="button"
@@ -165,14 +166,21 @@ export default function SuiviSaisie({ token }) {
               background: estVerrouille ? "#DC2626" : "#0284C7",
               borderColor: estVerrouille ? "#DC2626" : "#0284C7",
               width: "auto",
+              display: "inline-flex",
+              alignItems: "center",
+              gap: "0.4rem",
             }}
           >
             {actionEnCours ? (
               <span className="react-spinner"></span>
             ) : estVerrouille ? (
-              "🔓 Déverrouiller le T" + trimestre
+              <>
+                <Unlock size={14} /> Déverrouiller le T{trimestre}
+              </>
             ) : (
-              "🔒 Clôturer & Verrouiller T" + trimestre
+              <>
+                <Lock size={14} /> Clôturer & Verrouiller T{trimestre}
+              </>
             )}
           </button>
         </div>
@@ -202,11 +210,11 @@ export default function SuiviSaisie({ token }) {
             <div style={{ paddingTop: "1.2rem" }}>
               {estVerrouille ? (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", borderRadius: "8px", background: "#FEF2F2", color: "#DC2626", border: "1px solid #FECACA", fontSize: "0.85rem", fontWeight: 700 }}>
-                  🔒 Trimestre {trimestre} Clôturé (Lecture seule)
+                  <Lock size={14} /> Trimestre {trimestre} Clôturé (Lecture seule)
                 </span>
               ) : (
                 <span style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem", padding: "0.4rem 0.8rem", borderRadius: "8px", background: "#F0FDF4", color: "#16A34A", border: "1px solid #BBF7D0", fontSize: "0.85rem", fontWeight: 700 }}>
-                  🔓 Saisie Ouverte aux Enseignants
+                  <Unlock size={14} /> Saisie Ouverte aux Enseignants
                 </span>
               )}
             </div>
@@ -234,9 +242,9 @@ export default function SuiviSaisie({ token }) {
             {/* 4 Cartes KPIs de Pilotage */}
             <div className="mag-grid-4-auto" style={{ marginBottom: "1.5rem" }}>
               <CarteStat label="Total Attributions" valeur={resume.total} />
-              <CarteStat label="🟢 Saisie Terminée" valeur={resume.termine} />
-              <CarteStat label="🟡 En cours de saisie" valeur={resume.enCours} />
-              <CarteStat label="🔴 En retard / Non commencé" valeur={resume.pasCommence} />
+              <CarteStat label="Saisie Terminée" valeur={resume.termine} couleur="#16A34A" />
+              <CarteStat label="En cours de saisie" valeur={resume.enCours} couleur="#D97706" />
+              <CarteStat label="En retard / Non commencé" valeur={resume.pasCommence} couleur="#DC2626" />
             </div>
 
             {/* Filtres et Recherche rapide */}
@@ -245,7 +253,7 @@ export default function SuiviSaisie({ token }) {
                 <div>
                   <input
                     type="search"
-                    placeholder="🔍 Rechercher prof, classe, matière..."
+                    placeholder="Rechercher enseignant, classe, matière..."
                     value={recherche}
                     onChange={function (e) { setRecherche(e.target.value); }}
                     style={{ width: "100%", padding: "0.55rem 0.8rem", border: "1px solid var(--line)", borderRadius: "8px", fontSize: "0.85rem" }}
@@ -268,9 +276,9 @@ export default function SuiviSaisie({ token }) {
                     style={{ width: "100%", padding: "0.55rem 0.8rem", border: "1px solid var(--line)", borderRadius: "8px", fontSize: "0.85rem" }}
                   >
                     <option value="">Tous les statuts</option>
-                    <option value="pas_commence">🔴 En retard (Pas commencé)</option>
-                    <option value="en_cours">🟡 En cours</option>
-                    <option value="termine">🟢 Terminé</option>
+                    <option value="pas_commence">En retard (Non commencé)</option>
+                    <option value="en_cours">En cours de saisie</option>
+                    <option value="termine">Saisie terminée</option>
                   </select>
                 </div>
                 <div style={{ textAlign: "right", fontSize: "0.82rem", color: "var(--ink-600)" }}>
@@ -393,7 +401,7 @@ export default function SuiviSaisie({ token }) {
                                   }}
                                   title="Envoyer un rappel officiel sur WhatsApp à l'enseignant"
                                 >
-                                  <span>💬</span> Relancer
+                                  <MessageCircle size={13} /> Relancer
                                 </a>
                               ) : null}
                               <button

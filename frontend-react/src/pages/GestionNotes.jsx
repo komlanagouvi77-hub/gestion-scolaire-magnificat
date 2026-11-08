@@ -9,6 +9,7 @@ import { lister, creer, modifier, recupererProfil, obtenirParametres } from "../
 import { Alerte } from "../components/Widgets.jsx";
 import { traduireTexte } from "../localisation.js";
 import Spinner from "../components/Spinner.jsx";
+import { Lock, Info } from "lucide-react";
 
 const TRIMESTRES = [
   { valeur: "1", label: "1er trimestre" },
@@ -232,12 +233,14 @@ export default function GestionNotes({ token, role }) {
           ) : (
             <form onSubmit={soumettre} className="react-fade-in">
               {estVerrouille && !estAdmin ? (
-                <div style={{ marginBottom: "1.2rem", padding: "0.85rem 1.2rem", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "8px", color: "var(--ink-800)", fontSize: "0.9rem" }}>
-                  🔒 <strong>{traduireTexte("Trimestre verrouillé")} :</strong> {traduireTexte("Ce trimestre est clôturé par l'administration (consultation seule). Les notes déjà enregistrées sont affichées ci-dessous mais ne peuvent plus être modifiées.")}
+                <div style={{ marginBottom: "1.2rem", padding: "0.85rem 1.2rem", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "8px", color: "var(--ink-800)", fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <Lock size={16} color="#DC2626" />
+                  <span><strong>{traduireTexte("Trimestre verrouillé")} :</strong> {traduireTexte("Ce trimestre est clôturé par l'administration (consultation seule). Les notes déjà enregistrées sont affichées ci-dessous mais ne peuvent plus être modifiées.")}</span>
                 </div>
               ) : estVerrouille && estAdmin ? (
-                <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "rgba(234, 179, 8, 0.12)", border: "1px solid rgba(202, 138, 4, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "var(--ink-800)" }}>
-                  ℹ️ <strong>{traduireTexte("Trimestre verrouille")} :</strong> {traduireTexte("En tant qu'administrateur, vous disposez des droits de saisie et de correction exceptionnelle.")}
+                <div style={{ marginBottom: "1rem", padding: "0.75rem 1rem", background: "rgba(234, 179, 8, 0.12)", border: "1px solid rgba(202, 138, 4, 0.35)", borderRadius: "8px", fontSize: "0.85rem", color: "var(--ink-800)", display: "flex", alignItems: "center", gap: "0.5rem" }}>
+                  <Info size={16} color="#D97706" />
+                  <span><strong>{traduireTexte("Trimestre verrouille")} :</strong> {traduireTexte("En tant qu'administrateur, vous disposez des droits de saisie et de correction exceptionnelle.")}</span>
                 </div>
               ) : null}
               <div className="mag-table-wrap">
@@ -274,7 +277,7 @@ export default function GestionNotes({ token, role }) {
               </div>
               {estVerrouille && !estAdmin ? (
                 <div style={{ marginTop: "1.2rem", display: "inline-flex", alignItems: "center", gap: "0.5rem", padding: "0.6rem 1.4rem", background: "#f3f4f6", border: "1px solid #d1d5db", borderRadius: "6px", color: "#6b7280", fontSize: "0.9rem", fontWeight: "500" }}>
-                  🔒 {traduireTexte("Saisie clôturée (Trimestre verrouillé par l'administration)")}
+                  <Lock size={15} /> {traduireTexte("Saisie clôturée (Trimestre verrouillé par l'administration)")}
                 </div>
               ) : (
                 <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.6rem 1.8rem", marginTop: "1.2rem" }} disabled={enCours}>

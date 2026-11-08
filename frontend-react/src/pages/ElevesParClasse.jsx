@@ -10,6 +10,7 @@ import Spinner from "../components/Spinner.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
 import useConfirmation from "../hooks/useConfirmation.js";
 import BoutonSupprimer from "../components/BoutonSupprimer.jsx";
+import { Download } from "lucide-react";
 
 const ORDRE_NIVEAUX = ["6e", "5e", "4e", "3e", "2nde", "1ere", "Terminale"];
 
@@ -61,7 +62,11 @@ function BlocClasse({ classe, eleves, ouvertParDefaut, estAdmin, onModifier, onS
               disabled={enCoursExport}
               title="Exporter la liste nominative avec contacts au format CSV Excel"
             >
-              {enCoursExport ? "Export..." : "📥 CSV"}
+              {enCoursExport ? "Export..." : (
+                <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                  <Download size={12} /> CSV
+                </span>
+              )}
             </button>
           ) : null}
           <span className="react-bloc-classe-compte">{eleves.length} eleve{eleves.length > 1 ? "s" : ""}</span>
