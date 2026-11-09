@@ -78,10 +78,37 @@ class Command(BaseCommand):
         # Garantir le mot de passe pour les comptes de demonstration Enseignant et Parent
         for prof_demo in Enseignant.objects.filter(username__in=["demo_prof", "prof_math"]):
             prof_demo.set_password("DemoMagnificat2026!")
+            prof_demo.first_name = "T. G."
+            prof_demo.last_name = "DATEY-AMOUSSOU"
+            prof_demo.specialite = "Mathématiques"
             prof_demo.save()
         for parent_demo in Parent.objects.filter(username__in=["demo_parent", "parent1"]):
             parent_demo.set_password("DemoMagnificat2026!")
             parent_demo.save()
+
+        # Garantir les classes de reference pour la demonstration (6e, 3e, Terminale)
+        cl6, _ = Classe.objects.get_or_create(nom="6e A", defaults={"niveau": "6e", "annee_scolaire": "2026-2027"})
+        cl3, _ = Classe.objects.get_or_create(nom="3e A", defaults={"niveau": "3e", "annee_scolaire": "2026-2027"})
+        cl_term, _ = Classe.objects.get_or_create(nom="Terminale D", defaults={"niveau": "Terminale", "annee_scolaire": "2026-2027"})
+
+        # Attribuer les 3 classes a demo_prof
+        demo_prof_obj = Enseignant.objects.filter(username="demo_prof").first()
+        if demo_prof_obj:
+            demo_prof_obj.classes.add(cl6, cl3, cl_term)
+
+        # Garantir au moins 3 eleves par classe pour la saisie des notes et bulletins
+        if cl6.eleves.count() < 3:
+            Eleve.objects.get_or_create(matricule="DEMO-6E-001", defaults={"nom": "KODJO", "prenom": "Akossiwa Grace", "date_naissance": date(2015, 3, 21), "sexe": "F", "classe": cl6})
+            Eleve.objects.get_or_create(matricule="DEMO-6E-002", defaults={"nom": "AMEGAVI", "prenom": "Essi Marie", "date_naissance": date(2015, 7, 12), "sexe": "F", "classe": cl6})
+            Eleve.objects.get_or_create(matricule="DEMO-6E-003", defaults={"nom": "MENSAH", "prenom": "Komlan Jean", "date_naissance": date(2014, 11, 4), "sexe": "M", "classe": cl6})
+        if cl3.eleves.count() < 3:
+            Eleve.objects.get_or_create(matricule="DEMO-3E-001", defaults={"nom": "MENSAH", "prenom": "Afi Ama", "date_naissance": date(2012, 5, 10), "sexe": "F", "classe": cl3})
+            Eleve.objects.get_or_create(matricule="DEMO-3E-002", defaults={"nom": "AGBEVI", "prenom": "Koffi Emmanuel", "date_naissance": date(2012, 8, 14), "sexe": "M", "classe": cl3})
+            Eleve.objects.get_or_create(matricule="DEMO-3E-003", defaults={"nom": "LAWSON", "prenom": "Komi David", "date_naissance": date(2011, 11, 2), "sexe": "M", "classe": cl3})
+        if cl_term.eleves.count() < 3:
+            Eleve.objects.get_or_create(matricule="DEMO-TD-001", defaults={"nom": "EKLOU", "prenom": "Yawo Jean", "date_naissance": date(2008, 9, 30), "sexe": "M", "classe": cl_term})
+            Eleve.objects.get_or_create(matricule="DEMO-TD-002", defaults={"nom": "TETE", "prenom": "Ablamba Sophie", "date_naissance": date(2008, 4, 18), "sexe": "F", "classe": cl_term})
+            Eleve.objects.get_or_create(matricule="DEMO-TD-003", defaults={"nom": "FOLLY", "prenom": "Mawuli Paul", "date_naissance": date(2007, 12, 5), "sexe": "M", "classe": cl_term})
 
         # Filtrage strict des matieres pour tous les enseignants (specialite unique)
         try:
