@@ -52,11 +52,18 @@ function extraireMessageErreur(corps, repli) {
 
 export async function connecter(utilisateur, motDePasse) {
   const corps = "username=" + encodeURIComponent(utilisateur) + "&password=" + encodeURIComponent(motDePasse);
-  const resp = await fetch(API_BASE + "/token/", {
-    method: "POST",
-    headers: { "Content-Type": "application/x-www-form-urlencoded" },
-    body: corps,
-  });
+  let resp;
+  try {
+    resp = await fetch(API_BASE + "/token/", {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body: corps,
+    });
+  } catch (errReseau) {
+    throw new Error(
+      traduireTexte("Serveur temporairement inaccessible. Veuillez verifier que le serveur est demarre et reessayer.")
+    );
+  }
   if (!resp.ok) {
     throw new Error(traduireTexte("Identifiants incorrects."));
   }
@@ -71,7 +78,14 @@ async function requeteBrute(url, token, options) {
     options.body ? { "Content-Type": "application/json" } : {},
     options.headers || {}
   );
-  const resp = await fetch(url, Object.assign({}, options, { headers: entetes }));
+  let resp;
+  try {
+    resp = await fetch(url, Object.assign({}, options, { headers: entetes }));
+  } catch (errReseau) {
+    throw new Error(
+      traduireTexte("Erreur reseau : impossible de joindre le serveur. Verifiez votre connexion.")
+    );
+  }
 
   if (resp.status === 401) {
     effacerSession();
