@@ -135,6 +135,13 @@ class Command(BaseCommand):
         except Exception:
             pass
 
+        # Enrichissement automatique complet des profils ultra-pro
+        try:
+            from enrichir_comptes_demo import enrichir
+            enrichir()
+        except Exception as e:
+            self.stdout.write(self.style.WARNING(f"Note enrichissement: {e}"))
+
         # 3. Donnees de demonstration si demandees
         avec_demo = options.get("avec_demo") or os.environ.get("DEMO_DATA", "False") == "True"
         if avec_demo and not Eleve.objects.exists():
