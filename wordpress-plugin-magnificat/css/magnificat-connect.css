@@ -1,0 +1,202 @@
+/* Styles officiels du plugin Magnificat Connect pour WordPress */
+
+.mag-portail-widget {
+  background: #0A2540;
+  background-image: linear-gradient(135deg, #0A2540 0%, #1E3A8A 100%);
+  color: #FFFFFF;
+  padding: 32px 28px;
+  border-radius: 12px;
+  box-shadow: 0 10px 25px rgba(10, 37, 64, 0.25);
+  margin: 25px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.mag-badge-officiel {
+  display: inline-block;
+  background: rgba(212, 175, 55, 0.18);
+  border: 1px solid #D4AF37;
+  color: #F8E7A2;
+  font-size: 11px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+  padding: 4px 10px;
+  border-radius: 20px;
+  margin-bottom: 14px;
+}
+
+.mag-portail-titre {
+  color: #FFFFFF !important;
+  font-size: 24px !important;
+  font-weight: 700 !important;
+  margin: 0 0 10px 0 !important;
+}
+
+.mag-portail-desc {
+  color: #CBD5E1 !important;
+  font-size: 14px !important;
+  line-height: 1.6 !important;
+  margin-bottom: 22px !important;
+  max-width: 650px;
+}
+
+.mag-portail-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 12px;
+  margin-bottom: 22px;
+}
+
+.mag-btn-principal {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: #2563EB;
+  color: #FFFFFF !important;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 24px;
+  border-radius: 8px;
+  text-decoration: none !important;
+  border: 1px solid #3B82F6;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.mag-btn-principal:hover {
+  background-color: #1D4ED8;
+  color: #FFFFFF !important;
+  box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
+}
+
+.mag-btn-secondaire {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background-color: rgba(255, 255, 255, 0.08);
+  color: #FFFFFF !important;
+  font-weight: 600;
+  font-size: 14px;
+  padding: 12px 20px;
+  border-radius: 8px;
+  text-decoration: none !important;
+  border: 1px solid rgba(255, 255, 255, 0.2);
+  transition: all 0.2s ease;
+}
+
+.mag-btn-secondaire:hover {
+  background-color: rgba(255, 255, 255, 0.16);
+  color: #FFFFFF !important;
+}
+
+.mag-portail-profils {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.15);
+  padding-top: 16px;
+}
+
+.mag-profil-pill {
+  font-size: 11px;
+  font-weight: 600;
+  color: #94A3B8;
+  background: rgba(15, 23, 42, 0.5);
+  padding: 3px 10px;
+  border-radius: 4px;
+  border: 1px solid rgba(148, 163, 184, 0.2);
+}
+
+/* Formulaire de demande d'accès */
+.mag-form-conteneur {
+  background: #FFFFFF;
+  border: 1px solid #E2E8F0;
+  border-radius: 12px;
+  padding: 32px;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.04);
+  margin: 30px 0;
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+}
+
+.mag-form-entete h3 {
+  color: #0A2540;
+  font-size: 22px;
+  font-weight: 700;
+  margin: 0 0 8px 0;
+}
+
+.mag-form-entete p {
+  color: #64748B;
+  font-size: 14px;
+  margin-bottom: 24px;
+}
+
+.mag-grille-2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+@media (max-width: 640px) {
+  .mag-grille-2 {
+    grid-template-columns: 1fr;
+  }
+  .mag-form-conteneur {
+    padding: 20px;
+  }
+}
+
+.mag-champ-groupe {
+  margin-bottom: 16px;
+}
+
+.mag-champ-groupe label {
+  display: block;
+  font-size: 13px;
+  font-weight: 600;
+  color: #334155;
+  margin-bottom: 6px;
+}
+
+.mag-input {
+  width: 100% !important;
+  padding: 10px 14px !important;
+  border: 1px solid #CBD5E1 !important;
+  border-radius: 6px !important;
+  font-size: 14px !important;
+  color: #0F172A !important;
+  background-color: #F8FAFC !important;
+  box-sizing: border-box !important;
+  transition: border-color 0.15s ease;
+}
+
+.mag-input:focus {
+  outline: none !important;
+  border-color: #2563EB !important;
+  background-color: #FFFFFF !important;
+  box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1) !important;
+}
+
+.mag-actions-form {
+  margin-top: 24px;
+}
+
+.mag-alerte {
+  padding: 14px 18px;
+  border-radius: 8px;
+  font-size: 14px;
+  line-height: 1.5;
+  margin-top: 20px;
+}
+
+.mag-alerte-succes {
+  background-color: #F0FDF4;
+  border: 1px solid #86EFAC;
+  color: #166534;
+}
+
+.mag-alerte-erreur {
+  background-color: #FEF2F2;
+  border: 1px solid #FCA5A5;
+  color: #991B1B;
+}
