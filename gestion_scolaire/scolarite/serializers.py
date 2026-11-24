@@ -31,7 +31,7 @@ class EleveSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Eleve
-        fields = ["id", "matricule", "nom", "prenom", "date_naissance", "sexe", "classe", "classe_nom", "parents_details", "enseignants_details"]
+        fields = ["id", "matricule", "nom", "prenom", "date_naissance", "sexe", "classe", "classe_nom", "photo", "parents_details", "enseignants_details"]
 
     def get_classe_nom(self, eleve) -> str | None:
         return str(eleve.classe) if eleve.classe else None

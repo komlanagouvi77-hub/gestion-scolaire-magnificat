@@ -4,7 +4,7 @@
 // administrateur, cette page permet aussi de creer, modifier et
 // supprimer des eleves.
 import { useState, useEffect, useMemo } from "react";
-import { lister, creer, modifier, supprimer, telechargerClasseCsv } from "../api.js";
+import { lister, creer, modifier, supprimer, telechargerClasseCsv, recupererProfil } from "../api.js";
 import { Alerte } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import ConfirmModal from "../components/ConfirmModal.jsx";
@@ -84,23 +84,31 @@ function BlocClasse({ classe, eleves, ouvertParDefaut, estAdmin, onModifier, onS
               </tr>
             </thead>
             <tbody>
-              {eleves.map(function (el) {
-                return (
-                  <tr key={el.id}>
-                    <td>{el.matricule}</td>
-                    <td><button type="button" className="mag-btn-lien" onClick={function () { window.location.hash = "/fiche-eleve/" + el.id; }}>{el.nom}</button></td>
-                    <td>{el.prenom}</td>
-                    <td>{el.sexe === "F" ? "Feminin" : el.sexe === "M" ? "Masculin" : "-"}</td>
-                    <td>{el.date_naissance || "-"}</td>
-                    {estAdmin ? (
-                      <td style={{ whiteSpace: "nowrap" }}>
-                        <button type="button" className="mag-btn-lien" onClick={function () { onModifier(el); }}>Modifier →</button>
-                        <BoutonSupprimer onClick={function () { onSupprimer(el); }} />
-                      </td>
-                    ) : null}
-                  </tr>
-                );
-              })}
+              {eleves.length === 0 ? (
+                <tr>
+                  <td colSpan={estAdmin ? 6 : 5} style={{ textAlign: "center", padding: "1.2rem", color: "var(--ink-500)", fontStyle: "italic" }}>
+                    Aucun élève inscrit dans cette classe pour le moment.
+                  </td>
+                </tr>
+              ) : (
+                eleves.map(function (el) {
+                  return (
+                    <tr key={el.id}>
+                      <td>{el.matricule}</td>
+                      <td><button type="button" className="mag-btn-lien" onClick={function () { window.location.hash = "/fiche-eleve/" + el.id; }}>{el.nom}</button></td>
+                      <td>{el.prenom}</td>
+                      <td>{el.sexe === "F" ? "Feminin" : el.sexe === "M" ? "Masculin" : "-"}</td>
+                      <td>{el.date_naissance || "-"}</td>
+                      {estAdmin ? (
+                        <td style={{ whiteSpace: "nowrap" }}>
+                          <button type="button" className="mag-btn-lien" onClick={function () { onModifier(el); }}>Modifier →</button>
+                          <BoutonSupprimer onClick={function () { onSupprimer(el); }} />
+                        </td>
+                      ) : null}
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -129,10 +137,17 @@ export default function ElevesParClasse({ token, role }) {
 
   const chargerTout = function () {
     setStatut("chargement");
-    Promise.all([lister("eleves", token), lister("classes", token)])
+    const requetes = [lister("eleves", token), lister("classes", token)];
+    if (role === "enseignant") requetes.push(recupererProfil(token));
+    Promise.all(requetes)
       .then(function (resultats) {
         setEleves(resultats[0]);
-        setClasses(resultats[1]);
+        let cls = resultats[1] || [];
+        if (role === "enseignant" && resultats[2] && Array.isArray(resultats[2].classes)) {
+          const idsAssignees = new Set(resultats[2].classes.map(function (c) { return c.id; }));
+          cls = cls.filter(function (c) { return idsAssignees.has(c.id); });
+        }
+        setClasses(cls);
         setStatut("ok");
       })
       .catch(function () {
@@ -243,9 +258,8 @@ export default function ElevesParClasse({ token, role }) {
     });
 
     const resultat = classes
-      .filter(function (c) { return parClasseId[c.id]; })
       .map(function (c) {
-        return { classe: c, eleves: parClasseId[c.id] };
+        return { classe: c, eleves: parClasseId[c.id] || [] };
       });
 
     resultat.sort(function (a, b) {

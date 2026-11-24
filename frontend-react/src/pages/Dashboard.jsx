@@ -1,5 +1,5 @@
 import { useState, useEffect, useMemo } from "react";
-import { lister, obtenirStatistiquesGlobales } from "../api.js";
+import { lister, obtenirStatistiquesGlobales, recupererProfil } from "../api.js";
 import { CarteStat, GraphiqueBarres } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
 import { traduireTexte, localeActive } from "../localisation.js";
@@ -227,6 +227,20 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
   const cours = useListe((estEnseignant || estParent) ? "cours" : null, token);
   const [statsGlobales, setStatsGlobales] = useState(null);
   const [enfantMobileMoney, setEnfantMobileMoney] = useState(null);
+  const [profilUtilisateur, setProfilUtilisateur] = useState(null);
+
+  useEffect(function () {
+    if (token) {
+      recupererProfil(token).then(setProfilUtilisateur).catch(function () {});
+    }
+  }, [token]);
+
+  const classesAssignees = useMemo(function () {
+    if (estEnseignant && profilUtilisateur && Array.isArray(profilUtilisateur.classes)) {
+      return profilUtilisateur.classes;
+    }
+    return [];
+  }, [estEnseignant, profilUtilisateur]);
 
   useEffect(function () {
     if (estAdmin && token) {
@@ -240,16 +254,18 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
 
   const repartitionParClasse = useMemo(function () {
     const compteurs = {};
+    if (estEnseignant && classesAssignees.length > 0) {
+      classesAssignees.forEach(function (c) {
+        const nomCourt = (c.nom || "").split(" (")[0];
+        if (nomCourt) compteurs[nomCourt] = 0;
+      });
+    }
     eleves.donnees.forEach(function (el) {
-      // Nom court (sans l'annee scolaire entre parentheses, deja affichee
-      // dans l'en-tete) : le libelle complet ("Classe (2026-2027)") est
-      // trop large pour l'axe du graphique des qu'il y a plusieurs classes,
-      // ce qui faisait se chevaucher les etiquettes.
       const cle = (el.classe_nom || "Sans classe").split(" (")[0];
       compteurs[cle] = (compteurs[cle] || 0) + 1;
     });
     return Object.entries(compteurs).map(function (entree) { return { label: entree[0], valeur: entree[1] }; });
-  }, [eleves.donnees]);
+  }, [eleves.donnees, estEnseignant, classesAssignees]);
 
   const repartitionGenre = useMemo(function () {
     let filles = 0, garcons = 0;
@@ -269,9 +285,10 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
 
   let statCards;
   if (estEnseignant) {
+    const nbClasses = classesAssignees.length > 0 ? classesAssignees.length : repartitionParClasse.length;
     statCards = [
       { label: "Mes eleves", valeur: eleves.donnees.length, lien: "eleves" },
-      { label: "Mes classes", valeur: repartitionParClasse.length, lien: "eleves" },
+      { label: "Mes classes", valeur: nbClasses, lien: "eleves" },
       { label: "Absences signalees", valeur: absences.donnees.length, lien: "absences" },
     ];
   } else if (estParent) {

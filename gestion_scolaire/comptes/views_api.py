@@ -357,9 +357,13 @@ class DemandeInscriptionViewSet(viewsets.ModelViewSet):
                 if mats:
                     compte.matieres.set(mats)
             if not compte.classes.exists():
-                classes_dispos = Classe.objects.all()
-                if classes_dispos.exists():
-                    compte.classes.set(classes_dispos[:3])
+                classes_cible = Classe.objects.filter(nom__in=["6e A", "5e A", "4e A"])
+                if classes_cible.exists():
+                    compte.classes.set(classes_cible)
+                else:
+                    classes_dispos = Classe.objects.all()
+                    if classes_dispos.exists():
+                        compte.classes.set(classes_dispos[:3])
         else:
             from scolarite.models import Eleve
             compte = Parent(

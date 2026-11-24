@@ -3,7 +3,7 @@
 // (cachet, signature, signataire — reellement integres au PDF genere,
 // pas de simple apercu decoratif).
 import { useState, useEffect, useMemo } from "react";
-import { lister, genererBulletinsLot, obtenirParametres, modifierParametresAvecLogo } from "../api.js";
+import { lister, genererBulletinsLot, obtenirParametres, modifierParametresAvecLogo, recupererProfil } from "../api.js";
 import { Alerte } from "../components/Widgets.jsx";
 import { traduireTexte } from "../localisation.js";
 import Spinner from "../components/Spinner.jsx";
@@ -76,7 +76,7 @@ function OngletGeneration({ token, role }) {
     setStatut("chargement");
     const appels = estAdmin
       ? [lister("bulletins", token), lister("eleves", token), lister("classes", token), obtenirParametres(token)]
-      : [lister("bulletins", token)];
+      : [lister("bulletins", token), recupererProfil(token), obtenirParametres(token)];
     Promise.all(appels)
       .then(function (resultats) {
         setBulletins(resultats[0]);
@@ -84,6 +84,12 @@ function OngletGeneration({ token, role }) {
           setEleves(resultats[1]);
           setClasses(resultats[2]);
           setParametres(resultats[3]);
+        } else {
+          const profil = resultats[1] || {};
+          if (Array.isArray(profil.classes)) {
+            setClasses(profil.classes);
+          }
+          setParametres(resultats[2]);
         }
         setStatut("ok");
       })
