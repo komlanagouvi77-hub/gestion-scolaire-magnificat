@@ -96,20 +96,6 @@ class Command(BaseCommand):
         if demo_prof_obj:
             demo_prof_obj.classes.add(cl6, cl3, cl_term)
 
-        # Garantir au moins 3 eleves par classe pour la saisie des notes et bulletins
-        if cl6.eleves.count() < 3:
-            Eleve.objects.get_or_create(matricule="DEMO-6E-001", defaults={"nom": "KODJO", "prenom": "Akossiwa Grace", "date_naissance": date(2015, 3, 21), "sexe": "F", "classe": cl6})
-            Eleve.objects.get_or_create(matricule="DEMO-6E-002", defaults={"nom": "AMEGAVI", "prenom": "Essi Marie", "date_naissance": date(2015, 7, 12), "sexe": "F", "classe": cl6})
-            Eleve.objects.get_or_create(matricule="DEMO-6E-003", defaults={"nom": "MENSAH", "prenom": "Komlan Jean", "date_naissance": date(2014, 11, 4), "sexe": "M", "classe": cl6})
-        if cl3.eleves.count() < 3:
-            Eleve.objects.get_or_create(matricule="DEMO-3E-001", defaults={"nom": "MENSAH", "prenom": "Afi Ama", "date_naissance": date(2012, 5, 10), "sexe": "F", "classe": cl3})
-            Eleve.objects.get_or_create(matricule="DEMO-3E-002", defaults={"nom": "AGBEVI", "prenom": "Koffi Emmanuel", "date_naissance": date(2012, 8, 14), "sexe": "M", "classe": cl3})
-            Eleve.objects.get_or_create(matricule="DEMO-3E-003", defaults={"nom": "LAWSON", "prenom": "Komi David", "date_naissance": date(2011, 11, 2), "sexe": "M", "classe": cl3})
-        if cl_term.eleves.count() < 3:
-            Eleve.objects.get_or_create(matricule="DEMO-TD-001", defaults={"nom": "EKLOU", "prenom": "Yawo Jean", "date_naissance": date(2008, 9, 30), "sexe": "M", "classe": cl_term})
-            Eleve.objects.get_or_create(matricule="DEMO-TD-002", defaults={"nom": "TETE", "prenom": "Ablamba Sophie", "date_naissance": date(2008, 4, 18), "sexe": "F", "classe": cl_term})
-            Eleve.objects.get_or_create(matricule="DEMO-TD-003", defaults={"nom": "FOLLY", "prenom": "Mawuli Paul", "date_naissance": date(2007, 12, 5), "sexe": "M", "classe": cl_term})
-
         # Filtrage strict des matieres pour tous les enseignants (specialite unique)
         try:
             import unicodedata

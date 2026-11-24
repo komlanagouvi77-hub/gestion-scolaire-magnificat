@@ -277,6 +277,25 @@ def enrichir():
             defaults={"valeur": Decimal("15.50"), "enseignant": prof_math}
         )
 
+        # Terminale D : Saisie complete en Maths (demo_prof)
+        for el, note_comp, note_dev, note_interro in [
+            (e_sophie, Decimal("18.50"), Decimal("17.50"), Decimal("19.00")),
+            (e_yawo, Decimal("14.00"), Decimal("14.50"), Decimal("14.00")),
+            (e_paul, Decimal("13.00"), Decimal("12.50"), Decimal("16.00")),
+        ]:
+            Note.objects.update_or_create(
+                eleve=el, matiere=maths, trimestre=1, type_evaluation="composition",
+                defaults={"valeur": note_comp, "enseignant": prof_math}
+            )
+            Note.objects.update_or_create(
+                eleve=el, matiere=maths, trimestre=1, type_evaluation="devoir",
+                defaults={"valeur": note_dev, "enseignant": prof_math}
+            )
+            Note.objects.update_or_create(
+                eleve=el, matiere=maths, trimestre=1, type_evaluation="interrogation",
+                defaults={"valeur": note_interro, "enseignant": prof_math}
+            )
+
         print("Notes et evaluations enregistrees.")
 
         # 9. BULLETINS OFFICIELS
