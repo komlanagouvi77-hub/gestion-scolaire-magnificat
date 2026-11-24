@@ -255,7 +255,10 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
         3: "Troisième Trimestre",
     }.get(bulletin.trimestre, f"Trimestre {bulletin.trimestre}")
 
-    url_verification = f"https://gestion-scolaire-magnificat-vcov.onrender.com/verifier/bulletin/{bulletin.id}/"
+    racine_url = getattr(settings, "PLATFORM_URL", "https://gestion-scolaire-magnificat-vcov.onrender.com/app/").rstrip("/")
+    if racine_url.endswith("/app"):
+        racine_url = racine_url[:-4]
+    url_verification = f"{racine_url}/verifier/bulletin/{bulletin.id}/"
 
     # --- 1. EN-TETE OFFICIEL ---
     # Logo gauche
@@ -625,13 +628,19 @@ def generer_pdf_bulletin(bulletin, notes_par_matiere, stats_classe, appreciation
     )
     qr_bottom = _creer_qr_code(url_verification, taille=1.35 * cm)
 
+    qr_id_p = Paragraph(
+        f"<font size='5.5' color='#475569'><b>N° CERTIFIÉ : #{bulletin.id}</b></font>",
+        ParagraphStyle("QrId", alignment=TA_CENTER, leading=6, fontName="Helvetica-Bold")
+    )
+
     cell_discipline = Table(
         [
             [disc_p],
             [qr_bottom],
+            [qr_id_p],
         ],
         colWidths=[6.0 * cm],
-        rowHeights=[1.45 * cm, 1.45 * cm],
+        rowHeights=[1.45 * cm, 1.25 * cm, 0.25 * cm],
     )
     cell_discipline.setStyle(TableStyle([
         ("VALIGN", (0, 0), (-1, -1), "MIDDLE"),

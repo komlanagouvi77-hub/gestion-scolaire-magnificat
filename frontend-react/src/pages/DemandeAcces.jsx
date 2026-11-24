@@ -149,20 +149,20 @@ function IconeCheck() {
   );
 }
 
-// Suggestions courantes pour la spécialité d'un enseignant
+// Suggestions courantes pour la spécialité d'un enseignant (bilingue FR / EN)
 const SPECIALITES_SUGGESTIONS = [
-  "Mathématiques",
-  "Français",
-  "Anglais",
-  "SVT",
-  "Physique-Chimie",
-  "Histoire-Géographie",
-  "Philosophie",
-  "Informatique",
-  "EPS",
-  "Éducation Civique",
-  "Allemand",
-  "Espagnol",
+  { fr: "Mathématiques", en: "Mathematics" },
+  { fr: "Français", en: "French" },
+  { fr: "Anglais", en: "English" },
+  { fr: "SVT", en: "Life & Earth Sciences (SVT)" },
+  { fr: "Physique-Chimie", en: "Physics & Chemistry" },
+  { fr: "Histoire-Géographie", en: "History & Geography" },
+  { fr: "Philosophie", en: "Philosophy" },
+  { fr: "Informatique", en: "Computer Science" },
+  { fr: "EPS", en: "Physical Education (PE)" },
+  { fr: "Éducation Civique", en: "Civic Education" },
+  { fr: "Allemand", en: "German" },
+  { fr: "Espagnol", en: "Spanish" },
 ];
 
 // Identifiants interdits
@@ -201,7 +201,7 @@ function ChampFlottant({
 
   return (
     <div style={{ marginBottom: "1.2rem" }}>
-      <div className={"react-champ-flottant" + (flotte ? " actif" : "") + classeEtat} style={{ marginBottom: 0 }}>
+      <div className={"react-champ-flottant" + (flotte ? " actif" : "") + (focalise ? " focalise" : "") + classeEtat} style={{ marginBottom: 0 }}>
         <span className="react-icone-champ">{icone}</span>
         <input
           ref={inputRef}
@@ -375,26 +375,72 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
     if (pasDeDonneesPerso && !estTrivial) scoreMdp++;
   }
 
-  let labelForce = t("Très faible");
+  let labelForce = langue === "en" ? "Very weak" : "Très faible";
   let couleurForce = "#dc2626";
   let pourcentageForce = "15%";
   if (scoreMdp === 2) {
-    labelForce = t("Faible");
+    labelForce = langue === "en" ? "Weak" : "Faible";
     couleurForce = "#ea580c";
     pourcentageForce = "35%";
   } else if (scoreMdp === 3) {
-    labelForce = t("Moyen");
+    labelForce = langue === "en" ? "Medium" : "Moyen";
     couleurForce = "#0284c7";
     pourcentageForce = "60%";
   } else if (scoreMdp === 4) {
-    labelForce = t("Robuste");
+    labelForce = langue === "en" ? "Strong" : "Robuste";
     couleurForce = "#059669";
     pourcentageForce = "85%";
   } else if (scoreMdp >= 5) {
-    labelForce = t("Ultra sécurisé");
+    labelForce = langue === "en" ? "Very strong" : "Ultra sécurisé";
     couleurForce = "#16a34a";
     pourcentageForce = "100%";
   }
+
+  // Dictionnaire d'erreurs bilingue
+  const msgErr = function (cle) {
+    const DICT = {
+      prenom_requis: { fr: "Le prénom est obligatoire.", en: "First name is required." },
+      prenom_min: { fr: "Le prénom doit comporter au moins 2 lettres.", en: "First name must have at least 2 letters." },
+      prenom_max: { fr: "Le prénom ne peut pas dépasser 40 caractères.", en: "First name cannot exceed 40 characters." },
+      prenom_alpha: { fr: "Le prénom ne doit contenir que des lettres alphabétiques.", en: "First name must only contain letters." },
+      prenom_repete: { fr: "Le prénom contient des lettres répétées anormales (ex: 'aaa').", en: "First name contains abnormal repeated letters." },
+      nom_requis: { fr: "Le nom de famille est obligatoire.", en: "Last name is required." },
+      nom_min: { fr: "Le nom de famille doit comporter au moins 2 lettres.", en: "Last name must have at least 2 letters." },
+      nom_max: { fr: "Le nom de famille ne peut pas dépasser 40 caractères.", en: "Last name cannot exceed 40 characters." },
+      nom_alpha: { fr: "Le nom ne doit contenir que des lettres alphabétiques.", en: "Last name must only contain letters." },
+      nom_repete: { fr: "Le nom contient des lettres répétées anormales (ex: 'aaa').", en: "Last name contains abnormal repeated letters." },
+      email_invalide: { fr: "Format d'adresse email invalide (ex: jean.dupont@gmail.com).", en: "Invalid email format (e.g. john.smith@gmail.com)." },
+      tel_requis: { fr: "Le numéro de téléphone est obligatoire pour la validation administrative.", en: "Mobile phone is required for administrative verification." },
+      tel_min: { fr: "Le numéro de téléphone doit comporter au moins 8 chiffres.", en: "Phone number must have at least 8 digits." },
+      tel_max: { fr: "Le numéro de téléphone ne peut pas dépasser 15 chiffres.", en: "Phone number cannot exceed 15 digits." },
+      tel_repete: { fr: "Numéro invalide (chiffres identiques répétés).", en: "Invalid number (identical repeated digits)." },
+      tel_fictif: { fr: "Ce numéro semble fictif. Veuillez renseigner votre véritable numéro.", en: "This number appears fictitious. Please enter your real phone number." },
+      user_requis: { fr: "Le nom d'utilisateur est obligatoire.", en: "Username is required." },
+      user_min: { fr: "L'identifiant doit comporter au moins 3 caractères.", en: "Username must have at least 3 characters." },
+      user_max: { fr: "L'identifiant ne peut pas dépasser 25 caractères.", en: "Username cannot exceed 25 characters." },
+      user_format: { fr: "L'identifiant doit commencer et finir par une lettre ou un chiffre (lettres minuscules, chiffres, points ou tirets).", en: "Username must start and end with a letter or digit (lowercase, digits, dots or hyphens)." },
+      user_symboles: { fr: "Les symboles consécutifs (comme '..' ou '--') ne sont pas autorisés.", en: "Consecutive symbols (like '..' or '--') are not allowed." },
+      user_reserve: { fr: "Cet identifiant est réservé à l'administration du système.", en: "This username is reserved for system administration." },
+      mdp_requis: { fr: "Le mot de passe est obligatoire.", en: "Password is required." },
+      mdp_min: { fr: "Le mot de passe doit comporter au moins 8 caractères.", en: "Password must have at least 8 characters." },
+      mdp_regles: { fr: "Le mot de passe doit inclure au moins une majuscule, une minuscule et un chiffre.", en: "Password must include at least uppercase, lowercase, and a digit." },
+      mdp_special: { fr: "Le mot de passe doit inclure au moins un caractère spécial (@, #, !, $, etc.).", en: "Password must include at least one special character (@, #, !, $, etc.)." },
+      mdp_trivial: { fr: "Ce mot de passe est trop facile à deviner. Choisissez un mot de passe sécurisé.", en: "This password is too easy to guess. Choose a stronger password." },
+      mdp_user: { fr: "Le mot de passe ne doit pas contenir votre nom d'utilisateur.", en: "Password must not contain your username." },
+      mdp_nom: { fr: "Le mot de passe ne doit pas contenir votre nom ou prénom.", en: "Password must not contain your name." },
+      confirm_requis: { fr: "Veuillez confirmer votre mot de passe.", en: "Please confirm your password." },
+      confirm_diff: { fr: "Les mots de passe ne correspondent pas.", en: "Passwords do not match." },
+      spec_requis: { fr: "Veuillez renseigner votre matière ou spécialité d'enseignement.", en: "Please enter your teaching subject or specialty." },
+      spec_min: { fr: "La spécialité doit comporter au moins 2 lettres.", en: "Specialty must have at least 2 letters." },
+      spec_alpha: { fr: "La spécialité ne doit comporter que des lettres (ex: Mathématiques).", en: "Specialty must contain only letters (e.g. Mathematics)." },
+      mat_requis: { fr: "Veuillez indiquer le ou les matricules (ou noms complets) de vos enfants inscrits.", en: "Please enter your child's student ID(s) or full name(s)." },
+      mat_min: { fr: "Veuillez préciser au moins un élève (ex: EL001 ou Koffi AGOUVI).", en: "Please specify at least one student (e.g. EL001 or John Smith)." },
+      consent_requis: { fr: "Vous devez accepter la politique de confidentialité pour transmettre votre demande.", en: "You must accept the privacy policy to submit your request." },
+    };
+    const entree = DICT[cle];
+    if (!entree) return cle;
+    return langue === "en" ? entree.en : entree.fr;
+  };
 
   // --- VALIDATION STRICTE ET INTÉGRALE DES CHAMPS ---
   const validerChamps = function () {
@@ -403,29 +449,29 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
     // 1. Prénom
     const pTrim = firstName.trim();
     if (!pTrim) {
-      errs.firstName = "Le prénom est obligatoire.";
+      errs.firstName = msgErr("prenom_requis");
     } else if (pTrim.length < 2) {
-      errs.firstName = "Le prénom doit comporter au moins 2 lettres.";
+      errs.firstName = msgErr("prenom_min");
     } else if (pTrim.length > 40) {
-      errs.firstName = "Le prénom ne peut pas dépasser 40 caractères.";
+      errs.firstName = msgErr("prenom_max");
     } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(pTrim)) {
-      errs.firstName = "Le prénom ne doit contenir que des lettres alphabétiques.";
+      errs.firstName = msgErr("prenom_alpha");
     } else if (/(.)\1\1/.test(pTrim)) {
-      errs.firstName = "Le prénom contient des lettres répétées anormales (ex: 'aaa').";
+      errs.firstName = msgErr("prenom_repete");
     }
 
     // 2. Nom de famille
     const nTrim = lastName.trim();
     if (!nTrim) {
-      errs.lastName = "Le nom de famille est obligatoire.";
+      errs.lastName = msgErr("nom_requis");
     } else if (nTrim.length < 2) {
-      errs.lastName = "Le nom de famille doit comporter au moins 2 lettres.";
+      errs.lastName = msgErr("nom_min");
     } else if (nTrim.length > 40) {
-      errs.lastName = "Le nom de famille ne peut pas dépasser 40 caractères.";
+      errs.lastName = msgErr("nom_max");
     } else if (!/^[a-zA-ZÀ-ÿ\s'-]+$/.test(nTrim)) {
-      errs.lastName = "Le nom ne doit contenir que des lettres alphabétiques.";
+      errs.lastName = msgErr("nom_alpha");
     } else if (/(.)\1\1/.test(nTrim)) {
-      errs.lastName = "Le nom contient des lettres répétées anormales (ex: 'aaa').";
+      errs.lastName = msgErr("nom_repete");
     }
 
     // 3. Email (facultatif mais ultra-strict si renseigné)
@@ -433,89 +479,89 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
     if (emTrim) {
       const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,10}$/;
       if (!emailRegex.test(emTrim)) {
-        errs.email = "Format d'adresse email invalide (ex: jean.dupont@gmail.com).";
+        errs.email = msgErr("email_invalide");
       }
     }
 
     // 4. Téléphone mobile (obligatoire pour contact administratif)
     const tTrim = telephone.trim();
     if (!tTrim) {
-      errs.telephone = "Le numéro de téléphone est obligatoire pour la validation administrative.";
+      errs.telephone = msgErr("tel_requis");
     } else {
       const chiffres = tTrim.replace(/\D/g, "");
       if (chiffres.length < 8) {
-        errs.telephone = "Le numéro de téléphone doit comporter au moins 8 chiffres.";
+        errs.telephone = msgErr("tel_min");
       } else if (chiffres.length > 15) {
-        errs.telephone = "Le numéro de téléphone ne peut pas dépasser 15 chiffres.";
+        errs.telephone = msgErr("tel_max");
       } else if (new Set(chiffres.split("")).size === 1) {
-        errs.telephone = "Numéro invalide (chiffres identiques répétés).";
+        errs.telephone = msgErr("tel_repete");
       } else if (["12345678", "87654321", "01234567", "98765432"].includes(chiffres)) {
-        errs.telephone = "Ce numéro semble fictif. Veuillez renseigner votre véritable numéro.";
+        errs.telephone = msgErr("tel_fictif");
       }
     }
 
     // 5. Nom d'utilisateur souhaité
     const uTrim = username.trim().toLowerCase();
     if (!uTrim) {
-      errs.username = "Le nom d'utilisateur est obligatoire.";
+      errs.username = msgErr("user_requis");
     } else if (uTrim.length < 3) {
-      errs.username = "L'identifiant doit comporter au moins 3 caractères.";
+      errs.username = msgErr("user_min");
     } else if (uTrim.length > 25) {
-      errs.username = "L'identifiant ne peut pas dépasser 25 caractères.";
+      errs.username = msgErr("user_max");
     } else if (!/^[a-z0-9][a-z0-9._-]{1,23}[a-z0-9]$/.test(uTrim)) {
-      errs.username = "L'identifiant doit commencer et finir par une lettre ou un chiffre (lettres minuscules, chiffres, points ou tirets).";
+      errs.username = msgErr("user_format");
     } else if (uTrim.includes("..") || uTrim.includes("--") || uTrim.includes("__")) {
-      errs.username = "Les symboles consécutifs (comme '..' ou '--') ne sont pas autorisés.";
+      errs.username = msgErr("user_symboles");
     } else if (IDENTIFIANTS_RESERVES.has(uTrim)) {
-      errs.username = "Cet identifiant est réservé à l'administration du système.";
+      errs.username = msgErr("user_reserve");
     }
 
     // 6. Mot de passe
     if (!password) {
-      errs.password = "Le mot de passe est obligatoire.";
+      errs.password = msgErr("mdp_requis");
     } else if (password.length < 8) {
-      errs.password = "Le mot de passe doit comporter au moins 8 caractères.";
+      errs.password = msgErr("mdp_min");
     } else if (!aMajuscule || !aMinuscule || !aChiffre) {
-      errs.password = "Le mot de passe doit inclure au moins une majuscule, une minuscule et un chiffre.";
+      errs.password = msgErr("mdp_regles");
     } else if (!aSpecial) {
-      errs.password = "Le mot de passe doit inclure au moins un caractère spécial (@, #, !, $, etc.).";
+      errs.password = msgErr("mdp_special");
     } else if (estTrivial) {
-      errs.password = "Ce mot de passe est trop facile à deviner. Choisissez un mot de passe sécurisé.";
+      errs.password = msgErr("mdp_trivial");
     } else if (contientUsername) {
-      errs.password = "Le mot de passe ne doit pas contenir votre nom d'utilisateur.";
+      errs.password = msgErr("mdp_user");
     } else if (contientPrenom || contientNom) {
-      errs.password = "Le mot de passe ne doit pas contenir votre nom ou prénom.";
+      errs.password = msgErr("mdp_nom");
     }
 
     // 7. Confirmation du mot de passe
     if (!confirmPassword) {
-      errs.confirmPassword = "Veuillez confirmer votre mot de passe.";
+      errs.confirmPassword = msgErr("confirm_requis");
     } else if (password && confirmPassword !== password) {
-      errs.confirmPassword = "Les mots de passe ne correspondent pas.";
+      errs.confirmPassword = msgErr("confirm_diff");
     }
 
     // 8. Spécialité ou Enfants selon le profil
     if (typeCompte === "enseignant") {
       const specTrim = specialite.trim();
       if (!specTrim) {
-        errs.specialite = "Veuillez renseigner votre matière ou spécialité d'enseignement.";
+        errs.specialite = msgErr("spec_requis");
       } else if (specTrim.length < 2) {
-        errs.specialite = "La spécialité doit comporter au moins 2 lettres.";
+        errs.specialite = msgErr("spec_min");
       } else if (/[0-9]/.test(specTrim)) {
-        errs.specialite = "La spécialité ne doit comporter que des lettres (ex: Mathématiques).";
+        errs.specialite = msgErr("spec_alpha");
       }
     } else {
       const matTrim = matriculesEnfants.trim();
       if (!matTrim) {
-        errs.matriculesEnfants = "Veuillez indiquer le ou les matricules (ou noms complets) de vos enfants inscrits.";
+        errs.matriculesEnfants = msgErr("mat_requis");
       } else if (matTrim.length < 2) {
-        errs.matriculesEnfants = "Veuillez préciser au moins un élève (ex: EL001 ou Koffi AGOUVI).";
+        errs.matriculesEnfants = msgErr("mat_min");
       }
     }
 
     // 9. Consentement obligatoire
     if (!consentement) {
-      errs.consentement = "Vous devez accepter la politique de confidentialité pour transmettre votre demande.";
+      errs.consentement = msgErr("consent_requis");
     }
 
     return errs;
@@ -647,7 +693,7 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 style={{ width: "100%", height: "100%", objectFit: identiteEcole.logo ? "cover" : "contain", padding: identiteEcole.logo ? 0 : "6px" }}
               />
             </div>
-            <h1>Demande transmise avec succès</h1>
+            <h1>{langue === "en" ? "Request Submitted Successfully" : "Demande transmise avec succès"}</h1>
             <p className="react-panneau-tagline">{nomEcoleAffiche}</p>
           </div>
         </div>
@@ -655,24 +701,24 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
           <div className="react-login-formulaire-carte react-demande-succes-carte">
             <div className="react-demande-succes-icone">✓</div>
             <h2 style={{ color: "var(--green-600)", textAlign: "center", marginBottom: "0.5rem" }}>
-              Demande enregistrée
+              {langue === "en" ? "Request Recorded" : "Demande enregistrée"}
             </h2>
             <p className="react-login-sous-titre" style={{ textAlign: "center", marginBottom: "1.5rem", lineHeight: "1.5" }}>
-              Votre demande d'accès a été transmise avec chiffrement de bout en bout à l'administration de l'établissement.
-              Elle sera examinée par la direction. Une fois validée, vous pourrez vous connecter immédiatement
-              avec votre identifiant et votre mot de passe.
+              {langue === "en"
+                ? "Your access request has been sent with end-to-end encryption to the school administration. It will be reviewed by the school board. Once approved, you can log in immediately with your username and password."
+                : "Votre demande d'accès a été transmise avec chiffrement de bout en bout à l'administration de l'établissement. Elle sera examinée par la direction. Une fois validée, vous pourrez vous connecter immédiatement avec votre identifiant et votre mot de passe."}
             </p>
             <div className="react-securite-carte" style={{ marginBottom: "1.5rem" }}>
               <div className="react-securite-en-tete">
                 <div className="react-securite-badge-icone"><IconeBouclier /></div>
                 <div className="react-securite-titre-bloc">
-                  <strong>Confidentialité préservée</strong>
-                  <span>Votre mot de passe a été haché de manière irréversible</span>
+                  <strong>{langue === "en" ? "Confidentiality Preserved" : "Confidentialité préservée"}</strong>
+                  <span>{langue === "en" ? "Your password has been irreversibly hashed" : "Votre mot de passe a été haché de manière irréversible"}</span>
                 </div>
               </div>
             </div>
             <a href="#/" className="mag-btn-primary" style={{ display: "block", textAlign: "center", textDecoration: "none" }}>
-              Retour à la page de connexion
+              {langue === "en" ? "Back to login page" : "Retour à la page de connexion"}
             </a>
           </div>
         </div>
@@ -694,12 +740,28 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
             />
           </div>
           <h1>{nomEcoleAffiche}</h1>
-          <p className="react-panneau-tagline">Portail officiel d'accès à la plateforme scolaire</p>
+          <p className="react-panneau-tagline">
+            {langue === "en"
+              ? "Official school management portal"
+              : "Portail officiel d'accès à la plateforme scolaire"}
+          </p>
           <ul className="react-panneau-liste">
-            <li><span className="react-panneau-icone"><IconeLivre /></span>Formulaire d'inscription sécurisé</li>
-            <li><span className="react-panneau-icone"><IconeCadenas /></span>Mot de passe haché et strictement confidentiel</li>
-            <li><span className="react-panneau-icone"><IconePersonne /></span>Validation manuelle par la direction</li>
-            <li><span className="react-panneau-icone"><IconeBouclier /></span>Conformité protection des données personnelles</li>
+            <li>
+              <span className="react-panneau-icone"><IconeLivre /></span>
+              {langue === "en" ? "Secure registration form" : "Formulaire d'inscription sécurisé"}
+            </li>
+            <li>
+              <span className="react-panneau-icone"><IconeCadenas /></span>
+              {langue === "en" ? "Hashed and strictly confidential password" : "Mot de passe haché et strictement confidentiel"}
+            </li>
+            <li>
+              <span className="react-panneau-icone"><IconePersonne /></span>
+              {langue === "en" ? "Manual review by school board" : "Validation manuelle par la direction"}
+            </li>
+            <li>
+              <span className="react-panneau-icone"><IconeBouclier /></span>
+              {langue === "en" ? "Personal data protection compliance" : "Conformité protection des données personnelles"}
+            </li>
           </ul>
           <div className="react-panneau-pied">Adidogome — Lome, Togo</div>
         </div>
@@ -766,11 +828,11 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 type="text"
                 valeur={firstName}
                 requis={true}
-                placeholder="Ex: Jean-Luc"
+                placeholder={langue === "en" ? "e.g. John-Luc" : "Ex: Jean-Luc"}
                 onChange={gererChangementPrenom}
                 onBlur={formaterPrenomApresSaisie}
                 erreur={(touches.firstName && erreurs.firstName) || erreursBackend.firstName}
-                succesMsg={!erreurs.firstName && firstName ? "Prénom valide" : null}
+                succesMsg={!erreurs.firstName && firstName ? (langue === "en" ? "Valid first name" : "Prénom valide") : null}
                 icone={<IconePersonne />}
               />
               <ChampFlottant
@@ -780,11 +842,11 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 type="text"
                 valeur={lastName}
                 requis={true}
-                placeholder="Ex: DUPONT"
+                placeholder={langue === "en" ? "e.g. DUPONT" : "Ex: DUPONT"}
                 onChange={gererChangementNom}
                 onBlur={formaterNomApresSaisie}
                 erreur={(touches.lastName && erreurs.lastName) || erreursBackend.lastName}
-                succesMsg={!erreurs.lastName && lastName ? "Nom valide" : null}
+                succesMsg={!erreurs.lastName && lastName ? (langue === "en" ? "Valid last name" : "Nom valide") : null}
                 icone={<IconePersonne />}
               />
             </div>
@@ -796,11 +858,11 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 label={langue === "en" ? "Email (Optional)" : "Email (facultatif)"}
                 type="email"
                 valeur={email}
-                placeholder="Ex: jean.dupont@gmail.com"
+                placeholder={langue === "en" ? "e.g. john.dupont@gmail.com" : "Ex: jean.dupont@gmail.com"}
                 onChange={gererChangementEmail}
                 onBlur={function () { marquerTouche("email"); }}
                 erreur={(touches.email && erreurs.email) || erreursBackend.email}
-                succesMsg={!erreurs.email && email ? "Adresse valide" : null}
+                succesMsg={!erreurs.email && email ? (langue === "en" ? "Valid email address" : "Adresse valide") : null}
                 icone={<IconeArrobase />}
               />
               <ChampFlottant
@@ -810,11 +872,11 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 type="tel"
                 valeur={telephone}
                 requis={true}
-                placeholder="Ex: +228 90 12 34 56"
+                placeholder={langue === "en" ? "e.g. +228 90 12 34 56" : "Ex: +228 90 12 34 56"}
                 onChange={gererChangementTelephone}
                 onBlur={function () { marquerTouche("telephone"); }}
                 erreur={(touches.telephone && erreurs.telephone) || erreursBackend.telephone}
-                succesMsg={!erreurs.telephone && telephone ? "Numéro valide" : null}
+                succesMsg={!erreurs.telephone && telephone ? (langue === "en" ? "Valid phone number" : "Numéro valide") : null}
                 icone={<IconeTelephone />}
               />
             </div>
@@ -831,12 +893,12 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
               type="text"
               valeur={username}
               requis={true}
-              placeholder="Ex: j.dupont (minuscules, 3 à 25 car.)"
+              placeholder={langue === "en" ? "e.g. j.dupont (lowercase, 3-25 chars)" : "Ex: j.dupont (minuscules, 3 à 25 car.)"}
               autoCompleteValeur="off"
               onChange={gererChangementUsername}
               onBlur={function () { marquerTouche("username"); }}
               erreur={(touches.username && erreurs.username) || erreursBackend.username}
-              succesMsg={!erreurs.username && username ? "Identifiant conforme" : null}
+              succesMsg={!erreurs.username && username ? (langue === "en" ? "Valid username" : "Identifiant conforme") : null}
               icone={<IconePersonne />}
             />
 
@@ -848,12 +910,12 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 type={motDePasseVisible ? "text" : "password"}
                 valeur={password}
                 requis={true}
-                placeholder="8+ car. avec majuscule & symbole"
+                placeholder={langue === "en" ? "8+ chars with uppercase & symbol" : "8+ car. avec majuscule & symbole"}
                 autoCompleteValeur="new-password"
                 onChange={function (e) { setPassword(e.target.value); }}
                 onBlur={function () { marquerTouche("password"); }}
                 erreur={(touches.password && erreurs.password) || erreursBackend.password}
-                succesMsg={!erreurs.password && password && scoreMdp >= 4 ? "Mot de passe robuste" : null}
+                succesMsg={!erreurs.password && password && scoreMdp >= 4 ? (langue === "en" ? "Strong password" : "Mot de passe robuste") : null}
                 icone={<IconeCadenas />}
                 boutonAction={
                   <button
@@ -871,16 +933,16 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
               <ChampFlottant
                 inputRef={inputRefs.confirmPassword}
                 nomChamp="champ_confirm_secret"
-                label={langue === "en" ? "Confirm password" : "Confirmer le mot de passe"}
+                label={langue === "en" ? "Confirm password" : "Confirmer mot de passe"}
                 type={confirmerVisible ? "text" : "password"}
                 valeur={confirmPassword}
                 requis={true}
-                placeholder="Retapez exactement le mot de passe"
+                placeholder={langue === "en" ? "Retype exact password" : "Retapez exactement le mot de passe"}
                 autoCompleteValeur="new-password"
                 onChange={function (e) { setConfirmPassword(e.target.value); }}
                 onBlur={function () { marquerTouche("confirmPassword"); }}
                 erreur={touches.confirmPassword && erreurs.confirmPassword}
-                succesMsg={confirmPassword && password && confirmPassword === password ? "✓ Mots de passe identiques" : null}
+                succesMsg={confirmPassword && password && confirmPassword === password ? (langue === "en" ? "✓ Passwords match" : "✓ Mots de passe identiques") : null}
                 icone={<IconeCadenas />}
                 boutonAction={
                   <button
@@ -900,7 +962,7 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
             {password.length > 0 ? (
               <div className="react-force-mdp-box">
                 <div className="react-force-mdp-info">
-                  <span style={{ color: "var(--ink-700)" }}>Niveau de sécurité :</span>
+                  <span style={{ color: "var(--ink-700)" }}>{langue === "en" ? "Security level:" : "Niveau de sécurité :"}</span>
                   <span style={{ color: couleurForce, fontWeight: "700" }}>{labelForce}</span>
                 </div>
                 <div className="react-force-mdp-barre-fond">
@@ -911,19 +973,19 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 </div>
                 <div className="react-force-criteres">
                   <div className={"react-critere-item" + (aAuMoins8 ? " valide" : "")}>
-                    {aAuMoins8 ? <IconeCheck /> : "○"} 8 caractères minimum
+                    {aAuMoins8 ? <IconeCheck /> : "○"} {langue === "en" ? "8 characters minimum" : "8 caractères minimum"}
                   </div>
                   <div className={"react-critere-item" + (aMajuscule && aMinuscule ? " valide" : "")}>
-                    {aMajuscule && aMinuscule ? <IconeCheck /> : "○"} Majuscule et minuscule
+                    {aMajuscule && aMinuscule ? <IconeCheck /> : "○"} {langue === "en" ? "Uppercase and lowercase" : "Majuscule et minuscule"}
                   </div>
                   <div className={"react-critere-item" + (aChiffre ? " valide" : "")}>
-                    {aChiffre ? <IconeCheck /> : "○"} Au moins 1 chiffre (0-9)
+                    {aChiffre ? <IconeCheck /> : "○"} {langue === "en" ? "At least 1 digit (0-9)" : "Au moins 1 chiffre (0-9)"}
                   </div>
                   <div className={"react-critere-item" + (aSpecial ? " valide" : "")}>
-                    {aSpecial ? <IconeCheck /> : "○"} Caractère spécial (@, #, !)
+                    {aSpecial ? <IconeCheck /> : "○"} {langue === "en" ? "Special character (@, #, !)" : "Caractère spécial (@, #, !)"}
                   </div>
                   <div className={"react-critere-item" + (pasDeDonneesPerso && !estTrivial ? " valide" : "")}>
-                    {pasDeDonneesPerso && !estTrivial ? <IconeCheck /> : "○"} Distinct du nom & prénom
+                    {pasDeDonneesPerso && !estTrivial ? <IconeCheck /> : "○"} {langue === "en" ? "Different from name & username" : "Distinct du nom & prénom"}
                   </div>
                 </div>
               </div>
@@ -951,24 +1013,26 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                   }}
                   onBlur={function () { marquerTouche("specialite"); }}
                   erreur={touches.specialite && erreurs.specialite}
-                  succesMsg={!erreurs.specialite && specialite ? "Discipline renseignée" : null}
+                  succesMsg={!erreurs.specialite && specialite ? (langue === "en" ? "Discipline entered" : "Discipline renseignée") : null}
                   icone={<IconeValise />}
-                  placeholder="Ex: Mathématiques, SVT, Français..."
+                  placeholder={langue === "en" ? "e.g. Mathematics, Science, French..." : "Ex: Mathématiques, SVT, Français..."}
                 />
-                {/* Suggestions cliquables */}
+                {/* Suggestions cliquables bilingues */}
                 <div className="react-specialites-pills">
-                  {SPECIALITES_SUGGESTIONS.map(function (mat) {
+                  {SPECIALITES_SUGGESTIONS.map(function (item) {
+                    const libelle = langue === "en" ? item.en : item.fr;
+                    const estActif = specialite === item.fr || specialite === item.en;
                     return (
                       <button
-                        key={mat}
+                        key={item.fr}
                         type="button"
-                        className={"react-specialite-pill" + (specialite === mat ? " actif" : "")}
+                        className={"react-specialite-pill" + (estActif ? " actif" : "")}
                         onClick={function () {
-                          setSpecialite(mat);
+                          setSpecialite(libelle);
                           marquerTouche("specialite");
                         }}
                       >
-                        {mat}
+                        {libelle}
                       </button>
                     );
                   })}
@@ -986,7 +1050,7 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                     setProfession(propre);
                   }}
                   icone={<IconeValise />}
-                  placeholder="Ex: Comptable, Commerçant..."
+                  placeholder={langue === "en" ? "e.g. Accountant, Merchant..." : "Ex: Comptable, Commerçant..."}
                 />
                 <ChampFlottant
                   inputRef={inputRefs.matriculesEnfants}
@@ -998,38 +1062,46 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                   onChange={function (e) { setMatriculesEnfants(e.target.value); }}
                   onBlur={function () { marquerTouche("matriculesEnfants"); }}
                   erreur={touches.matriculesEnfants && erreurs.matriculesEnfants}
-                  succesMsg={!erreurs.matriculesEnfants && matriculesEnfants ? "Élève(s) renseigné(s)" : null}
+                  succesMsg={!erreurs.matriculesEnfants && matriculesEnfants ? (langue === "en" ? "Student(s) entered" : "Élève(s) renseigné(s)") : null}
                   icone={<IconeFamille />}
-                  placeholder="Ex: EL001 ou Nom complet de l'enfant"
+                  placeholder={langue === "en" ? "e.g. EL001 or Student Full Name" : "Ex: EL001 ou Nom complet de l'enfant"}
                 />
               </div>
             )}
 
-            {/* Section 4 : Garantie Institutionnelle de Confidentialité & Sécurité Ultra Pro */}
+            {/* Section 4 : Garantie Institutionnelle de Confidentialité & Sécurité Ultra Pro (Bilingue) */}
             <div className="react-securite-carte">
               <div className="react-securite-en-tete">
                 <div className="react-securite-badge-icone">
                   <IconeBouclier />
                 </div>
                 <div className="react-securite-titre-bloc">
-                  <strong>Garantie Institutionnelle de Confidentialité & Sécurité</strong>
-                  <span>Cadre certifié de protection des données scolaires et personnelles</span>
+                  <strong>
+                    {langue === "en"
+                      ? "Institutional Privacy & Security Guarantee"
+                      : "Garantie Institutionnelle de Confidentialité & Sécurité"}
+                  </strong>
+                  <span>
+                    {langue === "en"
+                      ? "Certified framework for school and personal data protection"
+                      : "Cadre certifié de protection des données scolaires et personnelles"}
+                  </span>
                 </div>
               </div>
 
               {/* Badges de confiance */}
               <div className="react-securite-badges-ligne">
                 <span className="react-securite-badge-pill">
-                  <IconeCle /> Chiffrement TLS 256-bit
+                  <IconeCle /> {langue === "en" ? "TLS 256-bit Encryption" : "Chiffrement TLS 256-bit"}
                 </span>
                 <span className="react-securite-badge-pill">
-                  <IconeCadenas /> Hachage PBKDF2 Salé
+                  <IconeCadenas /> {langue === "en" ? "Salted PBKDF2 Hashing" : "Hachage PBKDF2 Salé"}
                 </span>
                 <span className="react-securite-badge-pill">
-                  <IconeBouclier /> Validation Humaine
+                  <IconeBouclier /> {langue === "en" ? "Human Verification" : "Validation Humaine"}
                 </span>
                 <span className="react-securite-badge-pill">
-                  <IconeDocument /> Secret Professionnel
+                  <IconeDocument /> {langue === "en" ? "Professional Confidentiality" : "Secret Professionnel"}
                 </span>
               </div>
 
@@ -1039,7 +1111,12 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                     <IconeCheck />
                   </div>
                   <div className="react-securite-point-texte">
-                    <strong>Hachage cryptographique fort :</strong> Votre mot de passe est converti de manière irréversible par algorithme cryptographique dès l'envoi. Il n'est jamais stocké en clair et demeure strictement inaccessible, même aux administrateurs.
+                    <strong>
+                      {langue === "en" ? "Strong cryptographic hashing: " : "Hachage cryptographique fort : "}
+                    </strong>
+                    {langue === "en"
+                      ? "Your password is irreversibly converted via cryptographic algorithm upon submission. It is never stored in plain text and remains strictly inaccessible, even to administrators."
+                      : "Votre mot de passe est converti de manière irréversible par algorithme cryptographique dès l'envoi. Il n'est jamais stocké en clair et demeure strictement inaccessible, même aux administrateurs."}
                   </div>
                 </li>
                 <li>
@@ -1047,7 +1124,12 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                     <IconeCheck />
                   </div>
                   <div className="react-securite-point-texte">
-                    <strong>Contrôle d'accès et validation humaine :</strong> Pour garantir l'intégrité de l'établissement, chaque inscription fait l'objet d'un examen minutieux par la direction avant toute activation.
+                    <strong>
+                      {langue === "en" ? "Access control and human verification: " : "Contrôle d'accès et validation humaine : "}
+                    </strong>
+                    {langue === "en"
+                      ? "To preserve institutional integrity, each registration undergoes a rigorous review by the administration prior to activation."
+                      : "Pour garantir l'intégrité de l'établissement, chaque inscription fait l'objet d'un examen minutieux par la direction avant toute activation."}
                   </div>
                 </li>
                 <li>
@@ -1055,7 +1137,12 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                     <IconeCheck />
                   </div>
                   <div className="react-securite-point-texte">
-                    <strong>Secret professionnel et finalité exclusive :</strong> Vos coordonnées et liens de parenté sont réservés exclusivement à la communication scolaire de l'établissement. Zéro revente, zéro démarchage, zéro communication à des tiers.
+                    <strong>
+                      {langue === "en" ? "Professional secrecy & exclusive purpose: " : "Secret professionnel et finalité exclusive : "}
+                    </strong>
+                    {langue === "en"
+                      ? "Your contact details and family relationships are reserved exclusively for school communications. Zero resale, zero soliciting, zero third-party disclosure."
+                      : "Vos coordonnées et liens de parenté sont réservés exclusivement à la communication scolaire de l'établissement. Zéro revente, zéro démarchage, zéro communication à des tiers."}
                   </div>
                 </li>
               </ul>
@@ -1066,7 +1153,11 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 onClick={function () { setModalCharteOuverte(true); }}
               >
                 <IconeDocument />
-                <span>Consulter la Charte Intégrale de Confidentialité & Protection des Données</span>
+                <span>
+                  {langue === "en"
+                    ? "View Complete Privacy Policy & Data Protection Charter"
+                    : "Consulter la Charte Intégrale de Confidentialité & Protection des Données"}
+                </span>
               </button>
             </div>
 
@@ -1089,7 +1180,14 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 }}
               />
               <label htmlFor="case-consentement" className="react-consentement-label">
-                <strong>Je certifie sur l'honneur l'exactitude des renseignements fournis</strong> et j'accepte le traitement de mes données dans le cadre exclusif de la scolarité au Complexe Scolaire Magnificat.
+                <strong>
+                  {langue === "en"
+                    ? "I solemnly certify the accuracy of the information provided"
+                    : "Je certifie sur l'honneur l'exactitude des renseignements fournis"}
+                </strong>{" "}
+                {langue === "en"
+                  ? "and I consent to the processing of my data exclusively for schooling purposes at Complexe Scolaire Magnificat."
+                  : "et j'accepte le traitement de mes données dans le cadre exclusif de la scolarité au Complexe Scolaire Magnificat."}
               </label>
             </div>
             {touches.consentement && erreurs.consentement ? (
@@ -1126,15 +1224,19 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
               <div className="react-charte-header-gauche">
                 <IconeBouclier />
                 <div>
-                  <h3 className="react-charte-titre">Charte de Confidentialité</h3>
-                  <p className="react-charte-sous-titre">{nomEcoleAffiche} — Protection des Données Scolaires</p>
+                  <h3 className="react-charte-titre">
+                    {langue === "en" ? "Privacy & Data Protection Charter" : "Charte de Confidentialité"}
+                  </h3>
+                  <p className="react-charte-sous-titre">
+                    {nomEcoleAffiche} — {langue === "en" ? "School Data Protection" : "Protection des Données Scolaires"}
+                  </p>
                 </div>
               </div>
               <button
                 type="button"
                 className="react-charte-fermer-btn"
                 onClick={function () { setModalCharteOuverte(false); }}
-                aria-label="Fermer la charte"
+                aria-label={langue === "en" ? "Close charter" : "Fermer la charte"}
               >
                 ✕
               </button>
@@ -1142,37 +1244,47 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
 
             <div className="react-charte-corps">
               <div className="react-charte-article">
-                <h4>1. Responsable de Traitement & Cadre d'Application</h4>
+                <h4>{langue === "en" ? "1. Data Controller & Scope" : "1. Responsable de Traitement & Cadre d'Application"}</h4>
                 <p>
-                  Les données à caractère personnel recueillies sur ce portail sont traitées sous la responsabilité exclusive de la Direction du <strong>{nomEcoleAffiche}</strong>, dans le cadre de sa mission d'enseignement, de suivi pédagogique et de gestion des relations entre parents, enseignants et administration.
+                  {langue === "en"
+                    ? <span>Personal data collected on this portal is processed under the exclusive authority of the Administration of <strong>{nomEcoleAffiche}</strong>, within its educational mission, academic follow-up, and management of communication between parents, teachers, and administration.</span>
+                    : <span>Les données à caractère personnel recueillies sur ce portail sont traitées sous la responsabilité exclusive de la Direction du <strong>{nomEcoleAffiche}</strong>, dans le cadre de sa mission d'enseignement, de suivi pédagogique et de gestion des relations entre parents, enseignants et administration.</span>}
                 </p>
               </div>
 
               <div className="react-charte-article">
-                <h4>2. Chiffrement & Sécurité des Identifiants</h4>
+                <h4>{langue === "en" ? "2. Encryption & Credential Security" : "2. Chiffrement & Sécurité des Identifiants"}</h4>
                 <p>
-                  Conformément aux normes les plus strictes de sécurité informatique, votre mot de passe fait l'objet d'un hachage cryptographique irréversible (PBKDF2 avec sel unique). Il n'est conservé à aucun moment en texte clair sur nos serveurs. Ni le personnel administratif, ni les développeurs, ni la direction générale n'ont la capacité technique d'en prendre connaissance.
+                  {langue === "en"
+                    ? "In accordance with strict cybersecurity standards, your password undergoes irreversible cryptographic hashing (salted PBKDF2). It is never stored in plain text on our servers. Neither administrative staff, nor developers, nor school directors have the technical ability to view it."
+                    : "Conformément aux normes les plus strictes de sécurité informatique, votre mot de passe fait l'objet d'un hachage cryptographique irréversible (PBKDF2 avec sel unique). Il n'est conservé à aucun moment en texte clair sur nos serveurs. Ni le personnel administratif, ni les développeurs, ni la direction générale n'ont la capacité technique d'en prendre connaissance."}
                 </p>
               </div>
 
               <div className="react-charte-article">
-                <h4>3. Secret Professionnel & Non-Divulgation</h4>
+                <h4>{langue === "en" ? "3. Professional Secrecy & Non-Disclosure" : "3. Secret Professionnel & Non-Divulgation"}</h4>
                 <p>
-                  Toutes les informations déclarées (noms, prénoms, numéros de téléphone, adresses électroniques, spécialités d'enseignement ou filiation d'élèves) sont couvertes par le secret professionnel. Elles ne sont ni louées, ni vendues, ni communiquées à aucun organisme commercial ou tiers non autorisé.
+                  {langue === "en"
+                    ? "All submitted information (full names, telephone numbers, email addresses, teaching disciplines, or student affiliations) is covered by professional confidentiality. It is neither leased, sold, nor communicated to any commercial entity or unauthorized third party."
+                    : "Toutes les informations déclarées (noms, prénoms, numéros de téléphone, adresses électroniques, spécialités d'enseignement ou filiation d'élèves) sont couvertes par le secret professionnel. Elles ne sont ni louées, ni vendues, ni communiquées à aucun organisme commercial ou tiers non autorisé."}
                 </p>
               </div>
 
               <div className="react-charte-article">
-                <h4>4. Validation Administrative Préalable</h4>
+                <h4>{langue === "en" ? "4. Prior Administrative Review" : "4. Validation Administrative Préalable"}</h4>
                 <p>
-                  L'ouverture d'un compte sur la plateforme n'est pas automatique : elle requiert la vérification manuelle et systématique des informations transmises par la direction de l'école. Cette mesure assure que seuls les membres légitimes de la communauté éducative accèdent aux notes, bulletins et données confidentielles des élèves.
+                  {langue === "en"
+                    ? "Account activation on the platform is never automatic: it requires thorough manual review of submitted details by the school administration. This measure ensures that only verified members of the educational community access grades, report cards, and confidential records."
+                    : "L'ouverture d'un compte sur la plateforme n'est pas automatique : elle requiert la vérification manuelle et systématique des informations transmises par la direction de l'école. Cette mesure assure que seuls les membres légitimes de la communauté éducative accèdent aux notes, bulletins et données confidentielles des élèves."}
                 </p>
               </div>
 
               <div className="react-charte-article">
-                <h4>5. Droits d'Accès, de Rectification et de Suppression</h4>
+                <h4>{langue === "en" ? "5. Rights to Access, Rectification & Deletion" : "5. Droits d'Accès, de Rectification et de Suppression"}</h4>
                 <p>
-                  Vous bénéficiez d'un droit permanent d'accès, de rectification et de mise à jour des données vous concernant. Pour toute demande relative à vos données ou pour l'exercice de vos droits, vous pouvez contacter directement le secrétariat général de l'établissement.
+                  {langue === "en"
+                    ? "You retain permanent rights to access, rectify, and update your personal data. For any inquiry regarding your personal data or to exercise your privacy rights, please contact the school administration office directly."
+                    : "Vous bénéficiez d'un droit permanent d'accès, de rectification et de mise à jour des données vous concernant. Pour toute demande relative à vos données ou pour l'exercice de vos droits, vous pouvez contacter directement le secrétariat général de l'établissement."}
                 </p>
               </div>
             </div>
@@ -1184,7 +1296,7 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 style={{ width: "auto", padding: "0.55rem 1.4rem" }}
                 onClick={function () { setModalCharteOuverte(false); }}
               >
-                J'ai pris connaissance de la charte
+                {langue === "en" ? "I have read and agree to the charter" : "J'ai pris connaissance de la charte"}
               </button>
             </div>
           </div>

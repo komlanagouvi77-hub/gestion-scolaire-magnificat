@@ -45,7 +45,11 @@ if not SECRET_KEY or SECRET_KEY in _CLES_SECRETES_INSECURES or len(SECRET_KEY) <
     SECRET_KEY = secrets.token_urlsafe(50)
 
 
-ALLOWED_HOSTS = config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1').split(',')
+ALLOWED_HOSTS = [h.strip() for h in config('DJANGO_ALLOWED_HOSTS', default='localhost,127.0.0.1,testserver').split(',') if h.strip()]
+if 'testserver' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('testserver')
+if DEBUG and '*' not in ALLOWED_HOSTS:
+    ALLOWED_HOSTS.append('*')
 RENDER_EXTERNAL_HOSTNAME = config('RENDER_EXTERNAL_HOSTNAME', default='')
 if RENDER_EXTERNAL_HOSTNAME:
     ALLOWED_HOSTS.append(RENDER_EXTERNAL_HOSTNAME)
@@ -111,11 +115,13 @@ MIDDLEWARE = [
 # pas utilise, mais sans ca un deploiement separe front/back serait bloque
 # par le navigateur. Domaines a autoriser via la variable d'environnement
 # DJANGO_CORS_ALLOWED_ORIGINS (liste separee par des virgules).
+CORS_ALLOW_ALL_ORIGINS = config('DJANGO_CORS_ALLOW_ALL', default=True, cast=bool)
 CORS_ALLOWED_ORIGINS = [
     origine.strip()
     for origine in config('DJANGO_CORS_ALLOWED_ORIGINS', default='http://localhost:5173,http://127.0.0.1:5173').split(',')
     if origine.strip()
 ]
+CORS_ALLOW_CREDENTIALS = True
 
 ROOT_URLCONF = 'config.urls'
 

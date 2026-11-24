@@ -381,9 +381,9 @@ export default function SuiviSaisie({ token }) {
                           </td>
                           <td style={{ textAlign: "center" }}>
                             <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                              {ligne.statut !== "termine" && telClean ? (
+                              {ligne.statut !== "termine" ? (
                                 <a
-                                  href={"https://wa.me/" + telClean + "?text=" + msgRelance}
+                                  href={telClean ? ("https://wa.me/" + telClean + "?text=" + msgRelance) : ("https://wa.me/?text=" + msgRelance)}
                                   target="_blank"
                                   rel="noopener noreferrer"
                                   className="btn-mag-outline"

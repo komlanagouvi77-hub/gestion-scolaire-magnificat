@@ -69,7 +69,7 @@ function ChampFlottant({ id, label, type, valeur, onChange, icone, requis, bouto
   const [focalise, setFocalise] = useState(false);
   const flotte = focalise || valeur.length > 0;
   return (
-    <div className={"react-champ-flottant" + (flotte ? " actif" : "")}>
+    <div className={"react-champ-flottant" + (flotte ? " actif" : "") + (focalise ? " focalise" : "")}>
       <span className="react-icone-champ">{icone}</span>
       <input
         id={id} type={type} value={valeur} required={requis}

@@ -55,9 +55,48 @@ Dans votre page d'accueil ou en bas de page :
    ```
 3. Publiez la page. Les parents peuvent désormais remplir leur formulaire depuis votre site WordPress et la demande arrive directement dans votre administration Django !
 
+### C. Afficher le flux des annonces officielles
+Dans votre page d'accueil ou page "Actualités" :
+```text
+[magnificat_annonces]
+```
+
+### D. Afficher le bandeau des indicateurs clés
+```text
+[magnificat_statistiques]
+```
+
+### E. Formulaire de vérification d'un bulletin certifié (QR Code)
+```text
+[magnificat_verifier_bulletin]
+```
+
+### F. Afficher l'agenda et le calendrier scolaire officiel
+```text
+[magnificat_agenda]
+```
+*(ou `[magnificat_calendrier]`)*
+
+### G. Site vitrine institutionnel complet clé-en-main
+Pour afficher l'intégralité du site vitrine institutionnel officiel :
+```text
+[magnificat_site_vitrine]
+```
+*(ou `[magnificat_accueil]`)*
+
 ---
 
-## 4. Ajouter le Bouton "Portail Scolaire" dans le Menu du Site
+## 4. Modèle de Page Dédié (Pleine Largeur)
+
+Le plugin inclut également un modèle de page dédié officiel :
+1. Créez une page WordPress nommée par exemple **Accueil** ou **Complexe Scolaire Magnificat**.
+2. Dans le panneau latéral droit, sous **Attributs de page > Modèle**, sélectionnez :
+   **Site Vitrine Officiel - Complexe Scolaire Magnificat**
+3. Enregistrez et publiez : votre site dispose instantanément du site vitrine institutionnel officiel complet sans interférence des styles de votre thème WordPress.
+
+---
+
+## 5. Ajouter le Bouton "Portail Scolaire" dans le Menu du Site
 
 1. Dans l'administration WordPress, allez dans **Apparence > Menus**.
 2. Dans la colonne de gauche, déroulez l'onglet **Liens personnalisés**.
@@ -65,3 +104,4 @@ Dans votre page d'accueil ou en bas de page :
    - **URL** : `https://gestion-scolaire-magnificat-vcov.onrender.com/app/`
    - **Texte du lien** : `Espace École` *(ou `Portail Familles`)*
 4. Cliquez sur **Ajouter au menu**, puis sur **Enregistrer le menu**.
+

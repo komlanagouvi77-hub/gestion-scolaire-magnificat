@@ -1026,75 +1026,129 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   color: var(--ink-600);
 }
 
+/* --- CHAMP OUTLINED MATERIAL DESIGN (NOTCH SUR LA BORDURE) --- */
 .react-champ-flottant {
   position: relative;
-  margin-bottom: 1.4rem;
+  margin-bottom: 1.6rem;
 }
 .react-champ-flottant input {
   width: 100%;
-  padding: 1.15rem 2.7rem 0.5rem 2.7rem;
-  border: 1px solid var(--line);
+  height: 52px;
+  padding: 0 2.85rem 0 2.85rem;
+  border: 1.5px solid #CBD5E1;
   border-radius: 8px;
-  background: var(--paper-100);
-  font-family: 'Inter', sans-serif;
-  font-size: 0.95rem;
-  transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease;
+  background: #FFFFFF;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  font-size: 0.96rem;
+  color: #0F172A;
+  box-sizing: border-box;
+  transition: border-color 0.2s cubic-bezier(0.4, 0, 0.2, 1), box-shadow 0.2s cubic-bezier(0.4, 0, 0.2, 1);
 }
 .react-champ-flottant input:focus {
   outline: none;
-  border-color: var(--azur-500);
-  background: #fff;
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+  border-color: #1A73E8;
+  border-width: 2px;
+  padding-left: calc(2.85rem - 0.5px);
+  padding-right: calc(2.85rem - 0.5px);
+  box-shadow: 0 0 0 1px #1A73E8, 0 2px 8px rgba(26, 115, 232, 0.12);
+  background: #FFFFFF;
 }
 .react-champ-flottant label {
   position: absolute;
-  left: 2.7rem;
+  left: 2.75rem;
+  right: 2.6rem; /* Empêche strictement de déborder ou de toucher le bouton oeil */
   top: 50%;
   transform: translateY(-50%);
-  font-size: 0.95rem;
-  color: var(--ink-600);
+  font-size: 0.86rem; /* Taille équilibrée et élégante */
+  color: #64748B;
   pointer-events: none;
-  transition: all 0.16s ease;
+  transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
   background: transparent;
+  padding: 0 6px;
+  border-radius: 4px;
+  line-height: 1;
+  z-index: 2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  box-sizing: border-box;
 }
+/* Découpe de la ligne supérieure (notch) lorsque le champ est actif ou rempli */
 .react-champ-flottant.actif label {
-  top: 0.55rem;
-  transform: translateY(0);
-  font-size: 0.68rem;
+  top: 0;
+  left: 0.85rem; /* Aligné avec finesse sur la bordure supérieure gauche */
+  right: auto;
+  max-width: calc(100% - 1.7rem);
+  transform: translateY(-50%);
+  font-size: 0.74rem;
   font-weight: 600;
-  letter-spacing: 0.03em;
-  color: var(--indigo-700);
-  text-transform: uppercase;
+  color: #1E3A8A;
+  background: #FFFFFF;
+  letter-spacing: 0.01em;
+  overflow: visible;
+}
+/* Focus actif vibrant (bleu Google / éducation) */
+.react-champ-flottant.focalise label,
+.react-champ-flottant:focus-within label {
+  color: #1A73E8;
+  background: #FFFFFF;
+  font-weight: 700;
 }
 .react-champ-flottant .react-icone-champ {
   position: absolute;
-  left: 0.85rem;
+  left: 1rem;
   top: 50%;
   transform: translateY(-50%);
-  color: var(--ink-600);
+  color: #64748B;
   display: flex;
-  transition: color 0.16s ease;
+  transition: color 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 3;
 }
-.react-champ-flottant.actif .react-icone-champ {
-  color: var(--azur-500);
+.react-champ-flottant.actif .react-icone-champ,
+.react-champ-flottant:focus-within .react-icone-champ {
+  color: #1A73E8;
 }
 .react-champ-flottant .react-bouton-oeil {
   position: absolute;
-  right: 0.7rem;
+  right: 0.8rem;
   top: 50%;
   transform: translateY(-50%);
   background: none;
   border: none;
-  color: var(--ink-600);
+  color: #64748B;
   cursor: pointer;
-  padding: 0.3rem;
+  padding: 0.35rem;
   display: flex;
-  border-radius: 4px;
+  border-radius: 6px;
   transition: color 0.15s ease, background-color 0.15s ease;
+  z-index: 3;
 }
 .react-champ-flottant .react-bouton-oeil:hover {
-  color: var(--azur-500);
-  background: var(--paper-100);
+  color: #1A73E8;
+  background: #F1F5F9;
+}
+
+/* Support Thème Sombre */
+.react-theme-sombre .react-champ-flottant input {
+  background: #0F172A;
+  border-color: #334155;
+  color: #F8FAFC;
+}
+.react-theme-sombre .react-champ-flottant input:focus {
+  border-color: #38BDF8;
+  box-shadow: 0 0 0 1px #38BDF8, 0 2px 10px rgba(56, 189, 248, 0.2);
+}
+.react-theme-sombre .react-champ-flottant label {
+  color: #94A3B8;
+}
+.react-theme-sombre .react-champ-flottant.actif label {
+  background: #1E293B;
+  color: #93C5FD;
+}
+.react-theme-sombre .react-champ-flottant.focalise label,
+.react-theme-sombre .react-champ-flottant:focus-within label {
+  color: #38BDF8;
+  background: #1E293B;
 }
 
 @media (max-width: 900px) {
@@ -2974,6 +3028,10 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   box-shadow: 0 0 0 3px rgba(220, 38, 38, 0.15) !important;
 }
 .react-champ-flottant.erreur label {
+  color: #dc2626 !important;
+}
+.react-champ-flottant.erreur.actif label {
+  background-color: #fef2f2 !important;
   color: #dc2626 !important;
 }
 .react-champ-flottant.erreur .react-icone-champ {

@@ -8,7 +8,7 @@ import { initierMobileMoney, validerMobileMoney, telechargerRecuPaiementPdf } fr
 import { traduireTexte, localeActive } from "../localisation.js";
 import { Alerte } from "./Widgets.jsx";
 import { LogoTMoney, LogoFlooz } from "./LogosOperateurs.jsx";
-import { Smartphone, Bell, FileText } from "lucide-react";
+import { Smartphone, Bell, FileText, Share2 } from "lucide-react";
 
 const OPERATEURS = [
   {
@@ -131,6 +131,30 @@ export default function ModalPaiementMobileMoney({
       setErreur(err.message || "Echec de validation de la transaction.");
       setEtape("attente_ussd");
     }
+  };
+
+  const partagerWhatsAppRecu = function () {
+    if (!paiementValide) return;
+    const nomEleve = paiementValide.eleve_nom || "l'élève";
+    const montant = Number(paiementValide.montant || 0).toLocaleString(localeActive());
+    const tranche = paiementValide.tranche ? paiementValide.tranche + "e tranche" : "Frais de scolarité";
+    const ref = paiementValide.reference ? " (Réf: " + paiementValide.reference + ")" : "";
+    const opNom = operateur === "tmoney" ? "T-Money (Togocom)" : "Flooz (Moov Africa)";
+    const msg =
+      "*COMPLEXE SCOLAIRE PRIVÉ LAÏQUE MAGNIFICAT*\n" +
+      "*QUITTANCE DE PAIEMENT MOBILE MONEY*\n\n" +
+      "Confirmation officielle de versement :\n" +
+      "• Élève : *" + nomEleve + "*\n" +
+      "• Montant : *" + montant + " FCFA*\n" +
+      "• Affectation : " + tranche + ref + "\n" +
+      "• Mode : " + opNom + "\n" +
+      "• Statut : *Payé & Validé*\n\n" +
+      "Ce reçu numérique officiel fait foi de règlement auprès du secrétariat.\n" +
+      "_Direction des Affaires Financières — Lomé (Togo)_";
+
+    const telDest = telephone ? telephone.replace(/\D/g, "") : "";
+    const url = (telDest ? "https://wa.me/" + telDest + "?text=" : "https://wa.me/?text=") + encodeURIComponent(msg);
+    window.open(url, "_blank");
   };
 
   const telechargerRecu = async function () {
@@ -521,6 +545,24 @@ export default function ModalPaiementMobileMoney({
                       <FileText size={16} /> Télécharger le Reçu Officiel PDF
                     </>
                   )}
+                </button>
+                                <button
+                  type="button"
+                  onClick={partagerWhatsAppRecu}
+                  className="mag-btn-secondary"
+                  style={{
+                    background: "#16A34A",
+                    color: "#FFFFFF",
+                    borderColor: "#16A34A",
+                    display: "inline-flex",
+                    alignItems: "center",
+                    gap: "0.5rem",
+                    padding: "0.65rem 1.4rem",
+                    fontWeight: 700,
+                  }}
+                  title="Envoyer la quittance officielle par WhatsApp au numéro du parent"
+                >
+                  <Share2 size={16} /> Envoyer par WhatsApp
                 </button>
                 <button type="button" onClick={onFermer} className="mag-btn-secondary" style={{ padding: "0.65rem 1.4rem" }}>
                   Fermer

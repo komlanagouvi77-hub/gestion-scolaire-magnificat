@@ -8,7 +8,8 @@ echo.
 echo [1/4] Positionnement dans le dossier du projet...
 cd /d "%~dp0"
 
-echo [2/4] Verification et deverrouillage des periodes de demonstration...
+echo [2/4] Application des migrations et initialisation de demonstration...
+venv\Scripts\python.exe gestion_scolaire\manage.py migrate --noinput
 venv\Scripts\python.exe gestion_scolaire\manage.py initialiser_systeme --avec-demo
 
 echo [3/4] Ouverture automatique du navigateur sur http://127.0.0.1:8000/app/ ...
@@ -22,5 +23,5 @@ echo  - Vous pouvez reduire cette fenetre noire dans la barre des taches.
 echo  - NE LA FERMEZ PAS pendant votre soutenance.
 echo ======================================================================
 echo.
-venv\Scripts\python.exe gestion_scolaire\manage.py runserver 127.0.0.1:8000
+venv\Scripts\python.exe gestion_scolaire\manage.py runserver 0.0.0.0:8000
 pause

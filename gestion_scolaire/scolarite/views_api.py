@@ -7,7 +7,7 @@ from rest_framework import viewsets
 from rest_framework.decorators import action, api_view, parser_classes, permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import MultiPartParser
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, inline_serializer, OpenApiTypes
@@ -361,6 +361,69 @@ class BulletinViewSet(viewsets.ModelViewSet):
         reponse["Content-Disposition"] = f'attachment; filename="{nom_fichier}"'
         reponse["Access-Control-Expose-Headers"] = "Content-Disposition"
         return reponse
+
+    @action(detail=True, methods=["get"], permission_classes=[AllowAny], url_path="verifier")
+    def verifier(self, request, pk=None):
+        """
+        Action publique pour verifier l'authenticite d'un bulletin (pour WordPress et QR Code).
+        Renvoie un certificat numerique complet au format JSON.
+        """
+        try:
+            bulletin = Bulletin.objects.select_related("eleve", "eleve__classe").get(pk=pk)
+        except (Bulletin.DoesNotExist, ValueError):
+            return Response(
+                {
+                    "valide": False,
+                    "detail": "Aucun bulletin officiel ne correspond à ce numéro d'identification.",
+                },
+                status=404,
+            )
+
+        from comptes.models import Parametres
+        from scolarite.services import _recalculer_classement
+        parametres = Parametres.charger()
+
+        stats = {}
+        if bulletin.eleve and bulletin.eleve.classe:
+            try:
+                stats = _recalculer_classement(bulletin.eleve.classe, bulletin.trimestre)
+            except Exception:
+                stats = {}
+
+        effectif = stats.get("effectif") or (bulletin.eleve.classe.eleves.count() if bulletin.eleve and bulletin.eleve.classe else 0)
+        rang_str = f"{bulletin.rang}e / {effectif}" if bulletin.rang else "Non classé"
+        if bulletin.rang == 1:
+            rang_str = f"1er / {effectif}"
+
+        moyenne_val = float(bulletin.moyenne_generale) if bulletin.moyenne_generale is not None else None
+        decision = bulletin.decision_conseil
+        if not decision:
+            if moyenne_val is not None and moyenne_val >= 16:
+                decision = "Félicitations du Conseil de Classe"
+            elif moyenne_val is not None and moyenne_val >= 14:
+                decision = "Tableau d'Honneur"
+            elif moyenne_val is not None and moyenne_val >= 10:
+                decision = "Passage en classe supérieure"
+            else:
+                decision = "Doit redoubler d'efforts"
+
+        return Response({
+            "valide": True,
+            "bulletin_id": bulletin.id,
+            "matricule": bulletin.eleve.matricule if bulletin.eleve else "N/A",
+            "eleve_nom": f"{bulletin.eleve.nom} {bulletin.eleve.prenom}" if bulletin.eleve else "Élève Inconnu",
+            "classe": bulletin.eleve.classe.nom if (bulletin.eleve and bulletin.eleve.classe) else "N/A",
+            "niveau": bulletin.eleve.classe.niveau if (bulletin.eleve and bulletin.eleve.classe) else "",
+            "trimestre": bulletin.trimestre,
+            "annee_scolaire": getattr(parametres, "annee_scolaire_active", "2026-2027"),
+            "moyenne_generale": moyenne_val,
+            "rang": rang_str,
+            "decision_conseil": decision,
+            "date_generation": bulletin.date_generation.isoformat() if bulletin.date_generation else None,
+            "nom_ecole": parametres.nom_ecole or "Complexe Scolaire Privé Laïque Magnificat",
+            "devise": getattr(parametres, "devise", "") or "Travail - Discipline - Succès",
+            "url_officielle": request.build_absolute_uri(f"/verifier/bulletin/{bulletin.id}/"),
+        })
 
 
 class CoursViewSet(viewsets.ModelViewSet):

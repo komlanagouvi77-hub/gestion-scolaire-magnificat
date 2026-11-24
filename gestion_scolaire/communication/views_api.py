@@ -1,7 +1,7 @@
 from rest_framework import viewsets
 from rest_framework.decorators import api_view, permission_classes
 from rest_framework.exceptions import PermissionDenied
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 from rest_framework import serializers
 from drf_spectacular.utils import extend_schema, inline_serializer
@@ -15,10 +15,12 @@ class AnnonceViewSet(viewsets.ModelViewSet):
     """
     Tout utilisateur connecte voit les annonces qui le concernent
     (tous / enseignants / parents selon son role).
+    Les visiteurs publics (WordPress vitrine) voient les annonces publiques ("tous").
     Seul un Administrateur peut creer/modifier/supprimer une annonce.
     """
 
     serializer_class = AnnonceSerializer
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def get_queryset(self):
         utilisateur = self.request.user
@@ -28,7 +30,7 @@ class AnnonceViewSet(viewsets.ModelViewSet):
             return Annonce.objects.filter(destinataires__in=["tous", "enseignants"])
         if hasattr(utilisateur, "parent"):
             return Annonce.objects.filter(destinataires__in=["tous", "parents"])
-        return Annonce.objects.none()
+        return Annonce.objects.filter(destinataires="tous")
 
     def perform_create(self, serializer):
         if not hasattr(self.request.user, "administrateur"):
@@ -48,16 +50,29 @@ class AnnonceViewSet(viewsets.ModelViewSet):
 
 class EvenementViewSet(viewsets.ModelViewSet):
     """
-    Calendrier scolaire (jours feries, vacances, evenements).
-    Lecture : tout utilisateur connecte. Ecriture : Administrateur uniquement.
+    Calendrier scolaire officiel (vacances, rentrées, examens, congés).
+    Lecture publique : accessible aux visiteurs WordPress, parents et enseignants.
+    Écriture : réservée aux Administrateurs.
     """
 
-    queryset = Evenement.objects.all()
+    queryset = Evenement.objects.all().order_by("date_debut")
     serializer_class = EvenementSerializer
-    permission_classes = [EstAdministrateurOuLectureSeule]
+    permission_classes = [IsAuthenticatedOrReadOnly]
 
     def perform_create(self, serializer):
+        if not hasattr(self.request.user, "administrateur"):
+            raise PermissionDenied("Seul un administrateur peut ajouter un événement.")
         serializer.save(cree_par=self.request.user)
+
+    def perform_update(self, serializer):
+        if not hasattr(self.request.user, "administrateur"):
+            raise PermissionDenied("Seul un administrateur peut modifier un événement.")
+        serializer.save()
+
+    def perform_destroy(self, instance):
+        if not hasattr(self.request.user, "administrateur"):
+            raise PermissionDenied("Seul un administrateur peut supprimer un événement.")
+        instance.delete()
 
 
 class MessageViewSet(viewsets.ModelViewSet):

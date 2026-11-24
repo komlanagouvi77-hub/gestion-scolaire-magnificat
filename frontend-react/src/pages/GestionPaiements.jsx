@@ -14,7 +14,7 @@ import BoutonSupprimer from "../components/BoutonSupprimer.jsx";
 import RecuPaiementModal from "../components/RecuPaiementModal.jsx";
 import ModalPaiementMobileMoney from "../components/ModalPaiementMobileMoney.jsx";
 import VisualiseurPdfModal from "../components/VisualiseurPdfModal.jsx";
-import { Eye, Download, Smartphone } from "lucide-react";
+import { Eye, Download, Smartphone, Share2 } from "lucide-react";
 
 const MODES_PAIEMENT = [
   { valeur: "especes", label: "Especes" },
@@ -140,6 +140,29 @@ export default function GestionPaiements({ token }) {
     }
   };
 
+
+  const partagerWhatsApp = function (p) {
+    const nomEleve = p.eleve_nom || "l'élève";
+    const montant = Number(p.montant || 0).toLocaleString(localeActive());
+    const tranche = p.tranche ? p.tranche + "e tranche" : "Frais de scolarité";
+    const dateP = p.date_paiement || new Date().toISOString().split("T")[0];
+    const ref = p.reference ? " (Réf: " + p.reference + ")" : "";
+    const msg =
+      "*COMPLEXE SCOLAIRE PRIVÉ LAÏQUE MAGNIFICAT*\n" +
+      "*QUITTANCE OFFICIELLE DE PAIEMENT*\n\n" +
+      "Confirmation de règlement de frais scolaires :\n" +
+      "• Élève : *" + nomEleve + "*\n" +
+      "• Montant : *" + montant + " FCFA*\n" +
+      "• Affectation : " + tranche + ref + "\n" +
+      "• Date : " + dateP + "\n" +
+      "• Mode : " + p.mode_paiement + "\n\n" +
+      "Le versement a été enregistré avec succès dans le système de gestion officiel.\n" +
+      "_Direction des Affaires Financières — Lomé (Togo)_";
+
+    const url = "https://wa.me/?text=" + encodeURIComponent(msg);
+    window.open(url, "_blank");
+  };
+
   const telechargerDirectPdf = async function (p) {
     try {
       setEnCoursPdfId(p.id);
@@ -257,6 +280,15 @@ export default function GestionPaiements({ token }) {
                         title="Télécharger le reçu officiel PDF certifié ReportLab"
                       >
                         <Download size={13} /> {enCoursPdfId === p.id ? "PDF..." : "PDF"}
+                      </button>
+                      <button
+                        type="button"
+                        className="mag-btn-lien"
+                        style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem", fontWeight: 600, color: "#16A34A" }}
+                        onClick={function () { partagerWhatsApp(p); }}
+                        title="Transmettre la quittance officielle sur WhatsApp au parent"
+                      >
+                        <Share2 size={13} /> WhatsApp
                       </button>
                       <button type="button" className="mag-btn-lien" onClick={function () { commencerEdition(p); }}>Modifier →</button>
                       <BoutonSupprimer onClick={function () { supprimerPaiement(p); }} />
