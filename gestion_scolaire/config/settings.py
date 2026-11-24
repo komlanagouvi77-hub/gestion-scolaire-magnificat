@@ -143,11 +143,25 @@ TEMPLATES = [
 WSGI_APPLICATION = 'config.wsgi.application'
 
 
-if config('DATABASE_URL', default=''):
+import socket
+from urllib.parse import urlparse
+
+_db_url = config('DATABASE_URL', default='').strip()
+_db_active = False
+
+if _db_url:
+    try:
+        parsed = urlparse(_db_url)
+        if parsed.hostname:
+            socket.gethostbyname(parsed.hostname)
+            _db_active = True
+    except (socket.gaierror, socket.herror, Exception):
+        _db_active = False
+
+if _db_active:
     # Fourni automatiquement par Render (et la plupart des hebergeurs cloud) :
     # une seule variable au lieu de DB_NAME/DB_USER/... separes.
     import dj_database_url
-    _db_url = config('DATABASE_URL')
     _ssl_require = (not DEBUG) or ('render.com' in _db_url)
     DATABASES = {
         'default': dj_database_url.config(
