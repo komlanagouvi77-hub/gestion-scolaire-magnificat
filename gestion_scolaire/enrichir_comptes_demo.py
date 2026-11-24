@@ -237,11 +237,11 @@ def enrichir():
         print(f"Parent {demo_parent.username} configure avec 2 enfants : Afi (3e) et Komlan (6e).")
 
         # 8. NOTES & EVALUATIONS
-        # Saisie complete pour 3e A en Maths (demo_prof) -> progression 100% (Termine)
-        for el, note_comp, note_dev in [
-            (e_afi, Decimal("17.50"), Decimal("16.00")),
-            (e_koffi, Decimal("14.00"), Decimal("13.50")),
-            (e_lawson, Decimal("12.00"), Decimal("11.50")),
+        # Saisie complete pour 3e A en Maths (demo_prof)
+        for el, note_comp, note_dev, note_interro in [
+            (e_afi, Decimal("17.50"), Decimal("16.00"), Decimal("18.50")),
+            (e_koffi, Decimal("14.00"), Decimal("13.50"), Decimal("15.00")),
+            (e_lawson, Decimal("12.00"), Decimal("11.50"), Decimal("13.00")),
         ]:
             Note.objects.update_or_create(
                 eleve=el, matiere=maths, trimestre=1, type_evaluation="composition",
@@ -250,6 +250,10 @@ def enrichir():
             Note.objects.update_or_create(
                 eleve=el, matiere=maths, trimestre=1, type_evaluation="devoir",
                 defaults={"valeur": note_dev, "enseignant": prof_math}
+            )
+            Note.objects.update_or_create(
+                eleve=el, matiere=maths, trimestre=1, type_evaluation="interrogation",
+                defaults={"valeur": note_interro, "enseignant": prof_math}
             )
 
         # Autres matieres pour Afi Ama (pour son bulletin complet)
@@ -267,21 +271,30 @@ def enrichir():
                 defaults={"valeur": val_dev, "enseignant": p_item}
             )
 
-        # 6e A : Saisie partielle en Maths (demo_prof) -> progression En cours
-        Note.objects.update_or_create(
-            eleve=e_komlan, matiere=maths, trimestre=1, type_evaluation="devoir",
-            defaults={"valeur": Decimal("14.00"), "enseignant": prof_math}
-        )
-        Note.objects.update_or_create(
-            eleve=e_grace, matiere=maths, trimestre=1, type_evaluation="devoir",
-            defaults={"valeur": Decimal("15.50"), "enseignant": prof_math}
-        )
-
-        # Terminale D : Saisie complete en Maths (demo_prof)
+        # 6e A : Saisie complete en Maths (demo_prof)
         for el, note_comp, note_dev, note_interro in [
-            (e_sophie, Decimal("18.50"), Decimal("17.50"), Decimal("19.00")),
-            (e_yawo, Decimal("14.00"), Decimal("14.50"), Decimal("14.00")),
-            (e_paul, Decimal("13.00"), Decimal("12.50"), Decimal("16.00")),
+            (e_komlan, Decimal("14.50"), Decimal("13.50"), Decimal("15.00")),
+            (e_grace, Decimal("17.00"), Decimal("15.00"), Decimal("16.50")),
+            (e_essi, Decimal("14.00"), Decimal("12.50"), Decimal("13.00")),
+        ]:
+            Note.objects.update_or_create(
+                eleve=el, matiere=maths, trimestre=1, type_evaluation="composition",
+                defaults={"valeur": note_comp, "enseignant": prof_math}
+            )
+            Note.objects.update_or_create(
+                eleve=el, matiere=maths, trimestre=1, type_evaluation="devoir",
+                defaults={"valeur": note_dev, "enseignant": prof_math}
+            )
+            Note.objects.update_or_create(
+                eleve=el, matiere=maths, trimestre=1, type_evaluation="interrogation",
+                defaults={"valeur": note_interro, "enseignant": prof_math}
+            )
+
+        # Terminale D : Saisie complete en Maths avec valeurs bien distinctes (demo_prof)
+        for el, note_comp, note_dev, note_interro in [
+            (e_sophie, Decimal("18.50"), Decimal("17.00"), Decimal("19.00")),
+            (e_yawo, Decimal("16.00"), Decimal("14.50"), Decimal("12.50")),
+            (e_paul, Decimal("13.50"), Decimal("11.50"), Decimal("15.00")),
         ]:
             Note.objects.update_or_create(
                 eleve=el, matiere=maths, trimestre=1, type_evaluation="composition",

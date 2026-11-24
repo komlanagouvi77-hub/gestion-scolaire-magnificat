@@ -136,49 +136,121 @@ export default function FicheEleve({ eleveId, token, role }) {
         </div>
       </div>
 
-      {eleve.parents_details && eleve.parents_details.length > 0 ? (
+      {role === "parent" ? (
         <div className="mag-card react-fade-in" style={{ marginBottom: "1.8rem" }}>
-          <div className="mag-stat-label" style={{ marginBottom: "0.8rem" }}>Parents / Contacts d'urgence</div>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
-            {eleve.parents_details.map(function (p) {
-              return (
-                <div key={p.id} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.6rem 1rem", border: "1px solid var(--line)", borderRadius: "8px", background: "var(--card-bg, #fff)" }}>
-                  <span className="mag-avatar" style={{ width: "32px", height: "32px", fontSize: "0.85rem" }}>
-                    {(p.nom || "?").charAt(0).toUpperCase()}
-                  </span>
-                  <div>
-                    <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{p.nom}</div>
-                    <div style={{ fontSize: "0.8rem", color: "var(--ink-600)" }}>{p.telephone || "Aucun numero"}</div>
-                  </div>
-                  {p.telephone ? (
-                    <a
-                      href={"https://wa.me/" + p.telephone.replace(/[^0-9]/g, "") + "?text=" + encodeURIComponent("Bonjour " + (p.nom || "") + ", je vous contacte depuis l'administration du Complexe Scolaire Le Magnificat (Lome) au sujet de votre enfant " + (eleve.nom || "") + " " + (eleve.prenom || "") + " (" + (eleve.classe_nom || "") + ").")}
-                      target="_blank"
-                      rel="noopener noreferrer"
+          <div className="mag-stat-label" style={{ marginBottom: "0.8rem" }}>
+            Équipe pédagogique / Contacts des enseignants
+          </div>
+          {eleve.enseignants_details && eleve.enseignants_details.length > 0 ? (
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+              {eleve.enseignants_details.map(function (prof) {
+                const telClean = (prof.telephone || "").replace(/[^0-9]/g, "");
+                return (
+                  <div key={prof.id} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.7rem 1.1rem", border: "1px solid var(--line)", borderRadius: "8px", background: "var(--card-bg, #fff)" }}>
+                    <span className="mag-avatar" style={{ width: "34px", height: "34px", fontSize: "0.85rem", background: "rgba(2, 132, 199, 0.1)", color: "#0284C7", fontWeight: 700 }}>
+                      {(prof.nom || "?").charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <div style={{ fontWeight: 700, fontSize: "0.92rem", color: "var(--ink-900)" }}>{prof.nom}</div>
+                      <div style={{ fontSize: "0.78rem", color: "#0284C7", fontWeight: 600 }}>{prof.specialite || "Enseignant"}</div>
+                      <div style={{ fontSize: "0.78rem", color: "var(--ink-500)" }}>{prof.telephone || "Numéro non renseigné"}</div>
+                    </div>
+                    {telClean ? (
+                      <a
+                        href={"https://wa.me/" + telClean + "?text=" + encodeURIComponent("Bonjour " + (prof.nom || "") + ", je vous contacte en tant que parent de " + (eleve.nom || "") + " " + (eleve.prenom || "") + " (" + (eleve.classe_nom || "") + ") au sujet du suivi scolaire de mon enfant.")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-mag-outline"
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "0.25rem 0.65rem",
+                          color: "#16A34A",
+                          borderColor: "#16A34A",
+                          textDecoration: "none",
+                          borderRadius: "4px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.25rem",
+                          marginLeft: "0.5rem",
+                          fontWeight: 700,
+                        }}
+                        title="Échanger sur WhatsApp"
+                      >
+                        <MessageCircle size={13} /> WhatsApp
+                      </a>
+                    ) : null}
+                    <button
+                      type="button"
+                      onClick={function () { window.location.hash = "/messagerie"; }}
                       className="btn-mag-outline"
                       style={{
                         fontSize: "0.75rem",
-                        padding: "0.2rem 0.6rem",
-                        color: "#16A34A",
-                        borderColor: "#16A34A",
-                        textDecoration: "none",
+                        padding: "0.25rem 0.6rem",
                         borderRadius: "4px",
                         display: "inline-flex",
                         alignItems: "center",
                         gap: "0.25rem",
-                        marginLeft: "0.5rem",
+                        marginLeft: "0.3rem",
                       }}
-                      title="Contacter sur WhatsApp"
+                      title="Envoyer un message interne dans l'application"
                     >
-                      <MessageCircle size={13} /> WhatsApp
-                    </a>
-                  ) : null}
-                </div>
-              );
-            })}
-          </div>
+                      Messagerie
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div style={{ fontSize: "0.85rem", color: "var(--ink-600)" }}>
+              Aucun enseignant spécifiquement affecté à cette classe pour le moment.
+            </div>
+          )}
         </div>
-      ) : null}
+      ) : (
+        eleve.parents_details && eleve.parents_details.length > 0 ? (
+          <div className="mag-card react-fade-in" style={{ marginBottom: "1.8rem" }}>
+            <div className="mag-stat-label" style={{ marginBottom: "0.8rem" }}>Parents / Contacts d'urgence</div>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "1rem" }}>
+              {eleve.parents_details.map(function (p) {
+                return (
+                  <div key={p.id} style={{ display: "flex", alignItems: "center", gap: "0.8rem", padding: "0.6rem 1rem", border: "1px solid var(--line)", borderRadius: "8px", background: "var(--card-bg, #fff)" }}>
+                    <span className="mag-avatar" style={{ width: "32px", height: "32px", fontSize: "0.85rem" }}>
+                      {(p.nom || "?").charAt(0).toUpperCase()}
+                    </span>
+                    <div>
+                      <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{p.nom}</div>
+                      <div style={{ fontSize: "0.8rem", color: "var(--ink-600)" }}>{p.telephone || "Aucun numero"}</div>
+                    </div>
+                    {p.telephone ? (
+                      <a
+                        href={"https://wa.me/" + p.telephone.replace(/[^0-9]/g, "") + "?text=" + encodeURIComponent("Bonjour " + (p.nom || "") + ", je vous contacte depuis l'administration du Complexe Scolaire Le Magnificat (Lome) au sujet de votre enfant " + (eleve.nom || "") + " " + (eleve.prenom || "") + " (" + (eleve.classe_nom || "") + ").")}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-mag-outline"
+                        style={{
+                          fontSize: "0.75rem",
+                          padding: "0.2rem 0.6rem",
+                          color: "#16A34A",
+                          borderColor: "#16A34A",
+                          textDecoration: "none",
+                          borderRadius: "4px",
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.25rem",
+                          marginLeft: "0.5rem",
+                        }}
+                        title="Contacter sur WhatsApp"
+                      >
+                        <MessageCircle size={13} /> WhatsApp
+                      </a>
+                    ) : null}
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        ) : null
+      )}
 
       <div className="mag-section-entete"><div className="mag-stat-label">Notes</div><span className="mag-compteur-pill">{notes.length}</span></div>
       <div className="mag-table-wrap" style={{ marginBottom: "2rem" }}>

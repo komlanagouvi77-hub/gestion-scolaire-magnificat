@@ -27,10 +27,11 @@ class EleveSerializer(serializers.ModelSerializer):
     # repartition par classe du tableau de bord).
     classe_nom = serializers.SerializerMethodField()
     parents_details = serializers.SerializerMethodField()
+    enseignants_details = serializers.SerializerMethodField()
 
     class Meta:
         model = Eleve
-        fields = ["id", "matricule", "nom", "prenom", "date_naissance", "sexe", "classe", "classe_nom", "parents_details"]
+        fields = ["id", "matricule", "nom", "prenom", "date_naissance", "sexe", "classe", "classe_nom", "parents_details", "enseignants_details"]
 
     def get_classe_nom(self, eleve) -> str | None:
         return str(eleve.classe) if eleve.classe else None
@@ -41,6 +42,25 @@ class EleveSerializer(serializers.ModelSerializer):
             nom = (f"{p.first_name} {p.last_name}").strip() or p.username
             tel = p.telephone or ""
             details.append({"id": p.id, "nom": nom, "telephone": tel, "email": p.email or ""})
+        return details
+
+    def get_enseignants_details(self, eleve) -> list[dict]:
+        details = []
+        if eleve.classe:
+            from comptes.models import Enseignant
+            profs = Enseignant.objects.filter(classes=eleve.classe).distinct()
+            for prof in profs:
+                nom = (f"{prof.first_name} {prof.last_name}").strip() or prof.username
+                tel = getattr(prof, "telephone", "") or ""
+                mats = [m.nom for m in prof.matieres.all()]
+                spec = getattr(prof, "specialite", "") or (mats[0] if mats else "Enseignant")
+                details.append({
+                    "id": prof.id,
+                    "nom": nom,
+                    "telephone": tel,
+                    "specialite": spec,
+                    "matieres": mats,
+                })
         return details
 
 
