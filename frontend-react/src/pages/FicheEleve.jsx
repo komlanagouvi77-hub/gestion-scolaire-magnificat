@@ -128,11 +128,24 @@ export default function FicheEleve({ eleveId, token, role }) {
       {message && !peutAjouterObservation ? <Alerte type={message.type}>{message.texte}</Alerte> : null}
 
       <div className="mag-panneau-form" style={{ marginBottom: "1.8rem" }}>
-        <div className="mag-grid-4-auto">
-          <div><div className="mag-stat-label">Matricule</div><div style={{ fontWeight: 600 }}>{eleve.matricule}</div></div>
-          <div><div className="mag-stat-label">Classe</div><div style={{ fontWeight: 600 }}>{eleve.classe_nom || "-"}</div></div>
-          <div><div className="mag-stat-label">Sexe</div><div style={{ fontWeight: 600 }}>{eleve.sexe === "F" ? "Feminin" : "Masculin"}</div></div>
-          <div><div className="mag-stat-label">Absences non justifiees</div><div style={{ fontWeight: 600, color: nbAbsencesNonJustifiees > 0 ? "var(--red-600)" : undefined }}>{nbAbsencesNonJustifiees}</div></div>
+        <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
+          {eleve.photo ? (
+            <img
+              src={eleve.photo}
+              alt={eleve.nom}
+              style={{ width: "68px", height: "82px", objectFit: "cover", borderRadius: "8px", border: "2px solid #0284C7", boxShadow: "0 2px 4px rgba(0,0,0,0.08)" }}
+            />
+          ) : (
+            <div style={{ width: "68px", height: "82px", borderRadius: "8px", border: "2px dashed var(--line, #CBD5E1)", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", background: "rgba(100, 116, 139, 0.05)", fontSize: "0.68rem", color: "var(--ink-500)", textAlign: "center", padding: "0.3rem" }}>
+              <span>Photo d'identité</span>
+            </div>
+          )}
+          <div className="mag-grid-4-auto" style={{ flex: 1, minWidth: "260px" }}>
+            <div><div className="mag-stat-label">Matricule</div><div style={{ fontWeight: 600 }}>{eleve.matricule}</div></div>
+            <div><div className="mag-stat-label">Classe</div><div style={{ fontWeight: 600 }}>{eleve.classe_nom || "-"}</div></div>
+            <div><div className="mag-stat-label">Sexe</div><div style={{ fontWeight: 600 }}>{eleve.sexe === "F" ? "Feminin" : "Masculin"}</div></div>
+            <div><div className="mag-stat-label">Absences non justifiees</div><div style={{ fontWeight: 600, color: nbAbsencesNonJustifiees > 0 ? "var(--red-600)" : undefined }}>{nbAbsencesNonJustifiees}</div></div>
+          </div>
         </div>
       </div>
 

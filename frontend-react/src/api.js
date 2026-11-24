@@ -73,9 +73,10 @@ export async function connecter(utilisateur, motDePasse) {
 
 async function requeteBrute(url, token, options) {
   options = options || {};
+  const estFormData = options.body instanceof FormData;
   const entetes = Object.assign(
     { Authorization: "Token " + token },
-    options.body ? { "Content-Type": "application/json" } : {},
+    options.body && !estFormData ? { "Content-Type": "application/json" } : {},
     options.headers || {}
   );
   let resp;
@@ -122,9 +123,10 @@ export async function lister(ressource, token) {
 }
 
 export function creer(ressource, token, donnees) {
+  const estFormData = donnees instanceof FormData;
   return requete(ressource + "/", token, {
     method: "POST",
-    body: JSON.stringify(donnees),
+    body: estFormData ? donnees : JSON.stringify(donnees),
   });
 }
 
@@ -192,9 +194,10 @@ export async function importerElevesCsv(token, fichier) {
   return donnees;
 }
 export function modifier(ressource, id, token, donnees) {
+  const estFormData = donnees instanceof FormData;
   return requete(ressource + "/" + id + "/", token, {
     method: "PATCH",
-    body: JSON.stringify(donnees),
+    body: estFormData ? donnees : JSON.stringify(donnees),
   });
 }
 

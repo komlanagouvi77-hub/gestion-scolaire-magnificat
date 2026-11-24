@@ -123,6 +123,7 @@ export default function ElevesParClasse({ token, role }) {
   const [formulaireOuvert, setFormulaireOuvert] = useState(false);
   const [idEnEdition, setIdEnEdition] = useState(null);
   const [champs, setChamps] = useState(CHAMPS_VIDES);
+  const [photoFichier, setPhotoFichier] = useState(null);
   const [enCours, setEnCours] = useState(false);
   const [message, setMessage] = useState(null);
 
@@ -148,6 +149,7 @@ export default function ElevesParClasse({ token, role }) {
   const viderFormulaire = function () {
     setIdEnEdition(null);
     setChamps(CHAMPS_VIDES);
+    setPhotoFichier(null);
   };
 
   const ouvrirCreation = function () {
@@ -166,6 +168,7 @@ export default function ElevesParClasse({ token, role }) {
       sexe: el.sexe || "M",
       classe: el.classe || "",
     });
+    setPhotoFichier(null);
     setFormulaireOuvert(true);
     setMessage(null);
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -175,21 +178,33 @@ export default function ElevesParClasse({ token, role }) {
     evt.preventDefault();
     setMessage(null);
     setEnCours(true);
-    const donnees = {
-      matricule: champs.matricule.trim(),
-      nom: champs.nom.trim(),
-      prenom: champs.prenom.trim(),
-      date_naissance: champs.date_naissance,
-      sexe: champs.sexe,
-      classe: champs.classe ? Number(champs.classe) : null,
-    };
+    let donnees;
+    if (photoFichier) {
+      donnees = new FormData();
+      donnees.append("matricule", champs.matricule.trim());
+      donnees.append("nom", champs.nom.trim());
+      donnees.append("prenom", champs.prenom.trim());
+      donnees.append("date_naissance", champs.date_naissance);
+      donnees.append("sexe", champs.sexe);
+      if (champs.classe) donnees.append("classe", champs.classe);
+      donnees.append("photo", photoFichier);
+    } else {
+      donnees = {
+        matricule: champs.matricule.trim(),
+        nom: champs.nom.trim(),
+        prenom: champs.prenom.trim(),
+        date_naissance: champs.date_naissance,
+        sexe: champs.sexe,
+        classe: champs.classe ? Number(champs.classe) : null,
+      };
+    }
     try {
       if (idEnEdition) {
         await modifier("eleves", idEnEdition, token, donnees);
-        setMessage({ type: "succes", texte: "Eleve mis a jour avec succes." });
+        setMessage({ type: "succes", texte: "Élève mis à jour avec succès." });
       } else {
         await creer("eleves", token, donnees);
-        setMessage({ type: "succes", texte: "Eleve ajoute avec succes." });
+        setMessage({ type: "succes", texte: "Élève ajouté avec succès." });
       }
       viderFormulaire();
       setFormulaireOuvert(false);
@@ -309,6 +324,25 @@ export default function ElevesParClasse({ token, role }) {
                   <option value="M">Masculin</option>
                   <option value="F">Feminin</option>
                 </select>
+              </div>
+              <div className="mag-field" style={{ gridColumn: "1 / -1" }}>
+                <label htmlFor="el-photo">Photo d'identité pour le bulletin (Optionnel)</label>
+                <input
+                  id="el-photo"
+                  type="file"
+                  accept="image/*"
+                  onChange={function (e) {
+                    if (e.target.files && e.target.files[0]) {
+                      setPhotoFichier(e.target.files[0]);
+                    } else {
+                      setPhotoFichier(null);
+                    }
+                  }}
+                  style={{ padding: "0.4rem", border: "1px dashed var(--line)", borderRadius: "6px", width: "100%" }}
+                />
+                <div style={{ fontSize: "0.75rem", color: "var(--ink-500)", marginTop: "0.25rem" }}>
+                  Format carré ou photo d'identité (PNG, JPG). Cette photo sera automatiquement incrustée dans le cadre en haut à droite du bulletin scolaire officiel.
+                </div>
               </div>
             </div>
             <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.6rem 1.8rem" }} disabled={enCours}>
