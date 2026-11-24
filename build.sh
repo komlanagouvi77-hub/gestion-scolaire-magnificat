@@ -25,4 +25,4 @@ echo "--- Application des migrations ---"
 python manage.py migrate
 
 echo "--- Initialisation du systeme et donnees initiales ---"
-python manage.py initialiser_systeme --avec-demo
+python manage.py initialiser_systeme
