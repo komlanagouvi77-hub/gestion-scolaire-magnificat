@@ -173,7 +173,7 @@ export default function App() {
   } else if (page === "eleves") {
     contenuPage = <ElevesParClasse token={token} role={role} />;
   } else if (page === "annonces") {
-    contenuPage = <Annonces token={token} />;
+    contenuPage = <Annonces token={token} role={role} />;
   } else if (page === "parametres") {
     contenuPage = <ParametresEcole token={token} onEnregistre={function (p) { setParametres(p); }} />;
   } else if (page === "suivi") {

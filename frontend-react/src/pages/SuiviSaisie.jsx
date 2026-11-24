@@ -327,7 +327,21 @@ export default function SuiviSaisie({ token }) {
                           </td>
                           <td>
                             <div style={{ display: "flex", alignItems: "center", gap: "0.4rem", flexWrap: "wrap" }}>
-                              <span className="mag-badge" style={{ background: "rgba(2, 132, 199, 0.1)", color: "#0284C7", fontWeight: 700 }}>
+                              <span
+                                className="mag-badge"
+                                onClick={function () {
+                                  try {
+                                    sessionStorage.setItem("mag_preselection_notes", JSON.stringify({
+                                      classeId: String(ligne.classe_id),
+                                      matiereId: String(ligne.matiere_id),
+                                      trimestre: String(trimestre),
+                                    }));
+                                  } catch (e) {}
+                                  window.location.hash = "/notes";
+                                }}
+                                style={{ background: "rgba(2, 132, 199, 0.1)", color: "#0284C7", fontWeight: 700, cursor: "pointer" }}
+                                title="Cliquer pour afficher et inspecter les notes de cette classe"
+                              >
                                 {ligne.classe}
                               </span>
                               <span style={{ fontWeight: 600 }}>{ligne.matiere}</span>
@@ -408,7 +422,16 @@ export default function SuiviSaisie({ token }) {
                                 type="button"
                                 className="mag-btn-lien"
                                 style={{ fontSize: "0.75rem", whiteSpace: "nowrap" }}
-                                onClick={function () { window.location.hash = "/notes"; }}
+                                onClick={function () {
+                                  try {
+                                    sessionStorage.setItem("mag_preselection_notes", JSON.stringify({
+                                      classeId: String(ligne.classe_id),
+                                      matiereId: String(ligne.matiere_id),
+                                      trimestre: String(trimestre),
+                                    }));
+                                  } catch (e) {}
+                                  window.location.hash = "/notes";
+                                }}
                                 title="Accéder à la grille de saisie des notes"
                               >
                                 Saisir →

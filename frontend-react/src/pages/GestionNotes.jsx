@@ -50,6 +50,15 @@ export default function GestionNotes({ token, role }) {
 
     Promise.all(appels)
       .then(function (resultats) {
+        let preselect = null;
+        try {
+          const brut = sessionStorage.getItem("mag_preselection_notes");
+          if (brut) {
+            preselect = JSON.parse(brut);
+            sessionStorage.removeItem("mag_preselection_notes");
+          }
+        } catch (e) {}
+
         if (estAdmin) {
           const cls = resultats[0] || [];
           const mats = resultats[1] || [];
@@ -57,8 +66,22 @@ export default function GestionNotes({ token, role }) {
           setMatieres(mats);
           setEleves(resultats[2] || []);
           setParametres(resultats[3]);
-          if (cls.length === 1) setClasseId(String(cls[0].id));
-          if (mats.length === 1) setMatiereId(String(mats[0].id));
+
+          if (preselect && preselect.classeId) {
+            setClasseId(String(preselect.classeId));
+          } else if (cls.length === 1) {
+            setClasseId(String(cls[0].id));
+          }
+
+          if (preselect && preselect.matiereId) {
+            setMatiereId(String(preselect.matiereId));
+          } else if (mats.length === 1) {
+            setMatiereId(String(mats[0].id));
+          }
+
+          if (preselect && preselect.trimestre) {
+            setTrimestre(String(preselect.trimestre));
+          }
         } else {
           const profil = resultats[0] || {};
           const profClasses = profil.classes || [];
@@ -84,8 +107,21 @@ export default function GestionNotes({ token, role }) {
           setEleves(resultats[1] || []);
           setParametres(resultats[2]);
 
-          if (profClasses.length === 1) setClasseId(String(profClasses[0].id));
-          if (profMatieres.length === 1) setMatiereId(String(profMatieres[0].id));
+          if (preselect && preselect.classeId) {
+            setClasseId(String(preselect.classeId));
+          } else if (profClasses.length === 1) {
+            setClasseId(String(profClasses[0].id));
+          }
+
+          if (preselect && preselect.matiereId) {
+            setMatiereId(String(preselect.matiereId));
+          } else if (profMatieres.length === 1) {
+            setMatiereId(String(profMatieres[0].id));
+          }
+
+          if (preselect && preselect.trimestre) {
+            setTrimestre(String(preselect.trimestre));
+          }
         }
         setStatut("ok");
       })
