@@ -12,7 +12,140 @@ function dateDuJour() {
   return new Date().toISOString().slice(0, 10);
 }
 
+function VueAbsencesParent({ token }) {
+  const [enfants, setEnfants] = useState([]);
+  const [eleveId, setEleveId] = useState("");
+  const [absences, setAbsences] = useState([]);
+  const [statut, setStatut] = useState("chargement");
+
+  useEffect(function () {
+    setStatut("chargement");
+    Promise.all([lister("eleves", token), lister("absences", token)])
+      .then(function (res) {
+        const listeEnfants = Array.isArray(res[0]) ? res[0] : (res[0].results || []);
+        setEnfants(listeEnfants);
+        if (listeEnfants.length > 0) setEleveId(String(listeEnfants[0].id));
+        const toutes = Array.isArray(res[1]) ? res[1] : (res[1].results || []);
+        setAbsences(toutes);
+        setStatut("ok");
+      })
+      .catch(function () { setStatut("refuse"); });
+  }, [token]);
+
+  const enfantActif = useMemo(function () {
+    return enfants.find(function (e) { return String(e.id) === String(eleveId); }) || enfants[0] || null;
+  }, [enfants, eleveId]);
+
+  const absencesEnfant = useMemo(function () {
+    if (!enfantActif) return [];
+    return absences.filter(function (a) { return String(a.eleve) === String(enfantActif.id); });
+  }, [absences, enfantActif]);
+
+  const total = absencesEnfant.length;
+  const justifiees = absencesEnfant.filter(function (a) { return a.justifiee; }).length;
+  const nonJustifiees = total - justifiees;
+
+  if (statut === "chargement") return <Spinner texte="Chargement du dossier d'assiduité..." />;
+  if (statut === "refuse") return <Alerte>Impossible de charger les données d'assiduité.</Alerte>;
+
+  return (
+    <>
+      <div className="mag-page-title-ligne">
+        <div className="mag-page-title">
+          <span className="eyebrow">Espace Famille</span>
+          <h1>Assiduité & Absences de mes Enfants</h1>
+        </div>
+      </div>
+
+      {enfants.length > 1 ? (
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.2rem" }}>
+          {enfants.map(function (e) {
+            const actif = String(e.id) === String(enfantActif ? enfantActif.id : "");
+            return (
+              <button
+                key={e.id}
+                type="button"
+                onClick={function () { setEleveId(String(e.id)); }}
+                className={actif ? "mag-btn-primary" : "btn-mag-outline"}
+                style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "8px" }}
+              >
+                {e.prenom} {e.nom} ({e.classe_nom ? e.classe_nom.split(" (")[0] : "Classe"})
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
+      <div className="mag-grid-3" style={{ marginBottom: "1.5rem" }}>
+        <div className="mag-card" style={{ padding: "1.2rem", textAlign: "center" }}>
+          <div style={{ fontSize: "0.8rem", color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700 }}>Total Absences</div>
+          <div style={{ fontSize: "2rem", fontWeight: 800, color: total === 0 ? "#15803D" : "#0F172A", marginTop: "0.2rem" }}>
+            {total}
+          </div>
+          <div style={{ fontSize: "0.8rem", color: "var(--ink-600)" }}>{total === 0 ? "Assiduité exemplaire" : "signalée(s)"}</div>
+        </div>
+        <div className="mag-card" style={{ padding: "1.2rem", textAlign: "center" }}>
+          <div style={{ fontSize: "0.8rem", color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700 }}>Justifiées</div>
+          <div style={{ fontSize: "2rem", fontWeight: 800, color: "#0284C7", marginTop: "0.2rem" }}>
+            {justifiees}
+          </div>
+          <div style={{ fontSize: "0.8rem", color: "var(--ink-600)" }}>avec justificatif valable</div>
+        </div>
+        <div className="mag-card" style={{ padding: "1.2rem", textAlign: "center" }}>
+          <div style={{ fontSize: "0.8rem", color: "var(--ink-500)", textTransform: "uppercase", fontWeight: 700 }}>Non Justifiées</div>
+          <div style={{ fontSize: "2rem", fontWeight: 800, color: nonJustifiees > 0 ? "#DC2626" : "#15803D", marginTop: "0.2rem" }}>
+            {nonJustifiees}
+          </div>
+          <div style={{ fontSize: "0.8rem", color: "var(--ink-600)" }}>{nonJustifiees === 0 ? "Aucun manquement" : "à régulariser"}</div>
+        </div>
+      </div>
+
+      {absencesEnfant.length === 0 ? (
+        <div className="mag-card" style={{ textAlign: "center", padding: "2.5rem", border: "1px dashed #16A34A", background: "#F0FDF4", borderRadius: "12px" }}>
+          <div style={{ fontSize: "1.1rem", fontWeight: 700, color: "#15803D", marginBottom: "0.3rem" }}>
+            Félicitations pour l'assiduité !
+          </div>
+          <p style={{ color: "#166534", fontSize: "0.9rem", margin: 0 }}>
+            Aucune absence ni retard n'a été signalé pour {enfantActif ? enfantActif.prenom + " " + enfantActif.nom : "cet élève"}.
+          </p>
+        </div>
+      ) : (
+        <div className="mag-card react-fade-in" style={{ padding: 0, overflow: "hidden" }}>
+          <table className="mag-table mag-table-pro">
+            <thead>
+              <tr>
+                <th>Date</th>
+                <th>Statut</th>
+                <th>Motif renseigné</th>
+              </tr>
+            </thead>
+            <tbody>
+              {absencesEnfant.map(function (a) {
+                return (
+                  <tr key={a.id}>
+                    <td style={{ fontWeight: 600 }}>{a.date}</td>
+                    <td>
+                      <span className={"mag-badge " + (a.justifiee ? "mag-badge-succes" : "mag-badge-erreur")}>
+                        {a.justifiee ? "Justifiée" : "Non justifiée"}
+                      </span>
+                    </td>
+                    <td>{a.motif || <span style={{ color: "var(--ink-400)", fontStyle: "italic" }}>Aucun motif précisé</span>}</td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function GestionAbsences({ token, role }) {
+  if (role === "parent") {
+    return <VueAbsencesParent token={token} />;
+  }
+
   const estAdmin = role === "administrateur";
   const [classes, setClasses] = useState([]);
   const [eleves, setEleves] = useState([]);

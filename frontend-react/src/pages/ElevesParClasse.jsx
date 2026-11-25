@@ -117,6 +117,157 @@ function BlocClasse({ classe, eleves, ouvertParDefaut, estAdmin, onModifier, onS
   );
 }
 
+function VueMesEnfantsParent({ eleves, statut }) {
+  if (statut === "chargement") {
+    return <Spinner texte="Chargement de vos enfants..." />;
+  }
+  if (statut === "refuse") {
+    return <Alerte>Impossible de charger vos enfants.</Alerte>;
+  }
+
+  return (
+    <>
+      <div className="mag-page-title-ligne">
+        <div className="mag-page-title">
+          <span className="eyebrow">Espace Famille</span>
+          <h1>Mes Enfants</h1>
+        </div>
+      </div>
+      <p style={{ color: "var(--ink-600)", fontSize: "0.95rem", marginBottom: "1.5rem" }}>
+        Suivi scolaire, équipe pédagogique et accès direct aux notes, bulletins et assiduité de vos enfants.
+      </p>
+
+      {eleves.length === 0 ? (
+        <div className="mag-card" style={{ textAlign: "center", padding: "2.5rem", border: "1px dashed var(--line)", color: "var(--ink-600)" }}>
+          Aucun enfant n'est actuellement rattaché à votre compte. Contactez le secrétariat administratif.
+        </div>
+      ) : (
+        <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(340px, 1fr))", gap: "1.5rem" }}>
+          {eleves.map(function (enfant) {
+            const initiales = ((enfant.prenom || "?").charAt(0) + (enfant.nom || "").charAt(0)).toUpperCase();
+            return (
+              <div key={enfant.id} className="mag-card react-fade-in" style={{ padding: "1.5rem", borderRadius: "12px", border: "1px solid var(--line)", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                <div>
+                  <div style={{ display: "flex", gap: "1rem", alignItems: "center", marginBottom: "1.2rem" }}>
+                    {enfant.photo ? (
+                      <img
+                        src={enfant.photo}
+                        alt={enfant.nom}
+                        style={{ width: 68, height: 80, objectFit: "cover", borderRadius: "8px", border: "2px solid #E2E8F0", boxShadow: "0 2px 4px rgba(0,0,0,0.06)" }}
+                      />
+                    ) : (
+                      <div className="mag-avatar" style={{ width: 64, height: 64, fontSize: "1.6rem", background: "linear-gradient(135deg, #0F2942, #1E4E79)", color: "#FFF", borderRadius: "8px" }}>
+                        {initiales}
+                      </div>
+                    )}
+                    <div>
+                      <div style={{ fontSize: "1.2rem", fontWeight: 700, color: "var(--ink-900)" }}>
+                        {enfant.nom} {enfant.prenom}
+                      </div>
+                      <div style={{ fontSize: "0.85rem", color: "var(--ink-600)", marginTop: "0.2rem" }}>
+                        Matricule : <strong>{enfant.matricule}</strong>
+                      </div>
+                      <div style={{ marginTop: "0.4rem" }}>
+                        <span className="mag-badge" style={{ background: "#0F2942", color: "#FFF", padding: "0.25rem 0.6rem", fontSize: "0.8rem", borderRadius: "6px" }}>
+                          {enfant.classe_nom || "Classe non affectée"}
+                        </span>
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Section Équipe Pédagogique */}
+                  <div style={{ background: "rgba(241, 245, 249, 0.7)", borderRadius: "8px", padding: "0.85rem", marginBottom: "1.2rem", border: "1px solid #E2E8F0" }}>
+                    <div style={{ fontSize: "0.75rem", fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.06em", color: "var(--ink-600)", marginBottom: "0.5rem" }}>
+                      Équipe Pédagogique / Contact Enseignant
+                    </div>
+                    {enfant.enseignants_details && enfant.enseignants_details.length > 0 ? (
+                      enfant.enseignants_details.map(function (ens) {
+                        const telNettoye = ens.telephone ? ens.telephone.replace(/[^0-9]/g, "") : "";
+                        return (
+                          <div key={ens.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem", paddingBottom: "0.5rem", borderBottom: "1px dashed #CBD5E1" }}>
+                            <div>
+                              <div style={{ fontWeight: 600, fontSize: "0.9rem", color: "#0F172A" }}>{ens.nom}</div>
+                              <div style={{ fontSize: "0.78rem", color: "#64748B" }}>
+                                {ens.specialite || (ens.matieres && ens.matieres[0]) || "Enseignant"} {ens.telephone ? " · Tél: " + ens.telephone : ""}
+                              </div>
+                            </div>
+                            {telNettoye ? (
+                              <a
+                                href={"https://wa.me/" + telNettoye + "?text=" + encodeURIComponent("Bonjour M. " + ens.nom + ", je suis le parent de " + enfant.prenom + " " + enfant.nom + " (" + (enfant.classe_nom || "") + ").")}
+                                target="_blank"
+                                rel="noreferrer"
+                                style={{
+                                  fontSize: "0.78rem",
+                                  padding: "0.35rem 0.65rem",
+                                  borderRadius: "6px",
+                                  background: "#25D366",
+                                  color: "#FFF",
+                                  textDecoration: "none",
+                                  fontWeight: 600,
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: "0.3rem",
+                                  boxShadow: "0 1px 3px rgba(37,211,102,0.3)",
+                                }}
+                              >
+                                WhatsApp
+                              </a>
+                            ) : null}
+                          </div>
+                        );
+                      })
+                    ) : (
+                      <div style={{ fontSize: "0.82rem", color: "#64748B", fontStyle: "italic" }}>
+                        En attente de rattachement de l'équipe pédagogique.
+                      </div>
+                    )}
+                  </div>
+                </div>
+
+                {/* Actions directes */}
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "0.5rem", marginTop: "0.5rem" }}>
+                  <button
+                    type="button"
+                    className="mag-btn-primary"
+                    style={{ padding: "0.55rem", fontSize: "0.82rem", justifyContent: "center" }}
+                    onClick={function () { window.location.hash = "/fiche-eleve/" + enfant.id; }}
+                  >
+                    Dossier scolaire
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-mag-outline"
+                    style={{ padding: "0.55rem", fontSize: "0.82rem", justifyContent: "center" }}
+                    onClick={function () { window.location.hash = "/notes"; }}
+                  >
+                    Notes & moyennes
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-mag-outline"
+                    style={{ padding: "0.55rem", fontSize: "0.82rem", justifyContent: "center" }}
+                    onClick={function () { window.location.hash = "/bulletins"; }}
+                  >
+                    Bulletins PDF
+                  </button>
+                  <button
+                    type="button"
+                    className="btn-mag-outline"
+                    style={{ padding: "0.55rem", fontSize: "0.82rem", justifyContent: "center" }}
+                    onClick={function () { window.location.hash = "/absences"; }}
+                  >
+                    Assiduité
+                  </button>
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      )}
+    </>
+  );
+}
+
 const CHAMPS_VIDES = { matricule: "", nom: "", prenom: "", date_naissance: "", sexe: "M", classe: "" };
 
 export default function ElevesParClasse({ token, role }) {
@@ -289,6 +440,10 @@ export default function ElevesParClasse({ token, role }) {
       })
       .filter(function (g) { return g.eleves.length > 0; });
   }, [groupes, recherche, rechercheActive]);
+
+  if (role === "parent") {
+    return <VueMesEnfantsParent eleves={eleves} statut={statut} />;
+  }
 
   return (
     <>

@@ -198,9 +198,9 @@ export default function App() {
     contenuPage = <EmploiDuTemps token={token} role={role} />;
   } else if (page === "messagerie") {
     contenuPage = <Messagerie token={token} />;
-  } else if (page === "notes" && (role === "enseignant" || role === "administrateur")) {
+  } else if (page === "notes") {
     contenuPage = <GestionNotes token={token} role={role} />;
-  } else if (page === "absences" && (role === "enseignant" || role === "administrateur")) {
+  } else if (page === "absences") {
     contenuPage = <GestionAbsences token={token} role={role} />;
   } else if (page === "evenements") {
     contenuPage = <Evenements token={token} role={role} />;

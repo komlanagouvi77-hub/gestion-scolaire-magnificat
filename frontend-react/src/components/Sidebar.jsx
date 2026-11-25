@@ -130,18 +130,21 @@ export default function Sidebar({ pageActive, utilisateur, role, langue, nomEcol
                 {itemsVisibles.map(function (item) {
                   const estActif = pageActive === item.cle || (item.cle === "paiements-gestion" && pageActive === "paiements");
                   const Icone = item.icone;
+                  const labelItem = (role === "parent" && item.cle === "eleves")
+                    ? (langue === "en" ? "My Children" : "Mes Enfants")
+                    : traduire(item.label);
                   return (
                     <li key={item.cle + section.titre}>
                       <button
                         type="button"
                         onClick={function () { naviguerVers(item.cle); }}
                         className={"react-nav-link" + (estActif ? " actif" : "")}
-                        title={replie ? traduire(item.label) : undefined}
-                        aria-label={replie ? traduire(item.label) : undefined}
+                        title={replie ? labelItem : undefined}
+                        aria-label={replie ? labelItem : undefined}
                         aria-current={estActif ? "page" : undefined}
                       >
                         <span className="react-nav-icone"><Icone /></span>
-                        {!replie ? traduire(item.label) : null}
+                        {!replie ? labelItem : null}
                       </button>
                     </li>
                   );

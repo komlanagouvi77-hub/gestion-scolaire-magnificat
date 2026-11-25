@@ -96,7 +96,10 @@ export default function GestionParents({ token }) {
     }
   };
 
-  const optionsEleves = eleves.map(function (e) { return { id: e.id, label: e.nom + " " + e.prenom }; });
+  const optionsEleves = eleves.map(function (e) {
+    const libelleClasse = e.classe_nom ? " (" + e.classe_nom.split(" (")[0] + ")" : "";
+    return { id: e.id, label: e.nom + " " + e.prenom + libelleClasse };
+  });
 
   return (
     <>

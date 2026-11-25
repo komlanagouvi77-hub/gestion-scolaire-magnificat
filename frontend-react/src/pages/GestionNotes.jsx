@@ -31,7 +31,291 @@ function obtenirMention(valeurStr) {
   return { texte: "Insuffisant", classe: "mag-badge-rouge", couleur: "#DC2626", fond: "#FEE2E2" };
 }
 
+function VueNotesParent({ token }) {
+  const [enfants, setEnfants] = useState([]);
+  const [eleveId, setEleveId] = useState("");
+  const [trimestre, setTrimestre] = useState("1");
+  const [notes, setNotes] = useState([]);
+  const [matieres, setMatieres] = useState([]);
+  const [statut, setStatut] = useState("chargement");
+
+  useEffect(function () {
+    setStatut("chargement");
+    Promise.all([lister("eleves", token), lister("matieres", token)])
+      .then(function (res) {
+        const listeEnfants = Array.isArray(res[0]) ? res[0] : (res[0].results || []);
+        setEnfants(listeEnfants);
+        if (listeEnfants.length > 0) {
+          setEleveId(String(listeEnfants[0].id));
+        }
+        setMatieres(res[1] || []);
+        setStatut("ok");
+      })
+      .catch(function () { setStatut("refuse"); });
+  }, [token]);
+
+  const enfantActif = useMemo(function () {
+    return enfants.find(function (e) { return String(e.id) === String(eleveId); }) || enfants[0] || null;
+  }, [enfants, eleveId]);
+
+  useEffect(function () {
+    if (!enfantActif) { setNotes([]); return; }
+    lister("notes", token)
+      .then(function (res) {
+        const toutes = Array.isArray(res) ? res : (res.results || []);
+        const filtrees = toutes.filter(function (n) {
+          return String(n.eleve) === String(enfantActif.id) && String(n.trimestre) === String(trimestre);
+        });
+        setNotes(filtrees);
+      })
+      .catch(function () {});
+  }, [enfantActif, trimestre, token]);
+
+  const lignesMatieres = useMemo(function () {
+    const map = {};
+    notes.forEach(function (n) {
+      const mid = String(n.matiere);
+      if (!map[mid]) map[mid] = { devoirs: [], interrogations: [], compositions: [] };
+      const val = Number(n.valeur);
+      if (n.type_evaluation === "composition") map[mid].compositions.push(val);
+      else if (n.type_evaluation === "interrogation") map[mid].interrogations.push(val);
+      else map[mid].devoirs.push(val);
+    });
+
+    return Object.keys(map).map(function (mid) {
+      const matObj = matieres.find(function (m) { return String(m.id) === String(mid); }) || { nom: "Matière #" + mid, coefficient: 1 };
+      const data = map[mid];
+      const cc = [...data.interrogations, ...data.devoirs];
+      const moyCC = cc.length > 0 ? (cc.reduce((a, b) => a + b, 0) / cc.length) : null;
+      const compo = data.compositions.length > 0 ? data.compositions[0] : null;
+
+      let moyMatiere = null;
+      if (moyCC !== null && compo !== null) moyMatiere = (moyCC + compo) / 2;
+      else if (moyCC !== null) moyMatiere = moyCC;
+      else if (compo !== null) moyMatiere = compo;
+
+      let ensNom = "Enseignant";
+      let ensTel = "";
+      if (enfantActif && enfantActif.enseignants_details) {
+        const ensTrouve = enfantActif.enseignants_details.find(function (ed) {
+          return ed.specialite && (ed.specialite.toLowerCase().includes(matObj.nom.toLowerCase()) || matObj.nom.toLowerCase().includes(ed.specialite.toLowerCase()));
+        });
+        if (ensTrouve) {
+          ensNom = ensTrouve.nom;
+          ensTel = ensTrouve.telephone || "";
+        }
+      }
+
+      return {
+        matiereId: mid,
+        nomMatiere: matObj.nom,
+        coef: matObj.coefficient || 1,
+        devoirs: data.devoirs,
+        interrogations: data.interrogations,
+        composition: compo,
+        moyCC: moyCC !== null ? moyCC.toFixed(2) : "-",
+        moyMatiere: moyMatiere !== null ? moyMatiere.toFixed(2) : "-",
+        mention: moyMatiere !== null ? (moyMatiere >= 16 ? "Très bien" : moyMatiere >= 14 ? "Bien" : moyMatiere >= 12 ? "Assez bien" : moyMatiere >= 10 ? "Passable" : "Insuffisant") : "-",
+        enseignant: ensNom,
+        telephone: ensTel,
+      };
+    });
+  }, [notes, matieres, enfantActif]);
+
+  const stats = useMemo(function () {
+    let pts = 0, coefs = 0;
+    lignesMatieres.forEach(function (l) {
+      if (l.moyMatiere !== "-") {
+        pts += Number(l.moyMatiere) * l.coef;
+        coefs += l.coef;
+      }
+    });
+    return {
+      mg: coefs > 0 ? (pts / coefs).toFixed(2) : null,
+      totalNotes: notes.length,
+      nbMatieres: lignesMatieres.length,
+    };
+  }, [lignesMatieres, notes]);
+
+  if (statut === "chargement") return <Spinner texte="Chargement des notes de vos enfants..." />;
+  if (statut === "refuse") return <Alerte>Impossible de charger le relevé des notes.</Alerte>;
+
+  return (
+    <>
+      <div className="mag-page-title-ligne">
+        <div className="mag-page-title">
+          <span className="eyebrow">Espace Famille</span>
+          <h1>Relevé des Notes de mes Enfants</h1>
+        </div>
+        <button
+          type="button"
+          className="mag-btn-primary"
+          style={{ width: "auto", padding: "0.55rem 1.2rem", fontSize: "0.85rem" }}
+          onClick={function () { window.location.hash = "/bulletins"; }}
+        >
+          Voir les Bulletins PDF →
+        </button>
+      </div>
+
+      {enfants.length > 1 ? (
+        <div style={{ display: "flex", gap: "0.5rem", flexWrap: "wrap", marginBottom: "1.2rem" }}>
+          {enfants.map(function (e) {
+            const actif = String(e.id) === String(enfantActif ? enfantActif.id : "");
+            return (
+              <button
+                key={e.id}
+                type="button"
+                onClick={function () { setEleveId(String(e.id)); }}
+                className={actif ? "mag-btn-primary" : "btn-mag-outline"}
+                style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "8px" }}
+              >
+                {e.prenom} {e.nom} ({e.classe_nom ? e.classe_nom.split(" (")[0] : "Classe"})
+              </button>
+            );
+          })}
+        </div>
+      ) : null}
+
+      <div className="mag-panneau-form react-fade-in" style={{ marginBottom: "1.5rem" }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
+            <label htmlFor="par-trimestre" style={{ fontWeight: 600, fontSize: "0.9rem" }}>Période :</label>
+            <select
+              id="par-trimestre"
+              value={trimestre}
+              onChange={function (e) { setTrimestre(e.target.value); }}
+              style={{ padding: "0.5rem 1rem", borderRadius: "6px", border: "1px solid var(--line)", background: "#FFF" }}
+            >
+              <option value="1">1er trimestre</option>
+              <option value="2">2e trimestre</option>
+              <option value="3">3e trimestre</option>
+            </select>
+          </div>
+
+          <div style={{ display: "flex", gap: "1rem" }}>
+            <div style={{ padding: "0.5rem 1rem", background: "rgba(22, 163, 74, 0.1)", borderRadius: "8px", border: "1px solid rgba(22, 163, 74, 0.2)" }}>
+              <span style={{ fontSize: "0.75rem", color: "#16A34A", fontWeight: 700, textTransform: "uppercase" }}>Moyenne générale</span>
+              <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "#15803D" }}>
+                {stats.mg ? stats.mg + " / 20" : "En cours"}
+              </div>
+            </div>
+            <div style={{ padding: "0.5rem 1rem", background: "rgba(2, 132, 199, 0.1)", borderRadius: "8px", border: "1px solid rgba(2, 132, 199, 0.2)" }}>
+              <span style={{ fontSize: "0.75rem", color: "#0284C7", fontWeight: 700, textTransform: "uppercase" }}>Notes saisies</span>
+              <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "#0369A1" }}>
+                {stats.totalNotes} évaluation{stats.totalNotes > 1 ? "s" : ""}
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {lignesMatieres.length === 0 ? (
+        <div className="mag-card" style={{ textAlign: "center", padding: "2.5rem", border: "1px dashed var(--line)", color: "var(--ink-600)" }}>
+          Aucune note n'a encore été enregistrée pour {enfantActif ? enfantActif.prenom + " " + enfantActif.nom : "cet élève"} au {trimestre === "1" ? "1er trimestre" : trimestre + "e trimestre"}.
+        </div>
+      ) : (
+        <div className="mag-card react-fade-in" style={{ padding: 0, overflow: "hidden" }}>
+          <table className="mag-table mag-table-pro">
+            <thead>
+              <tr>
+                <th>Discipline</th>
+                <th style={{ textAlign: "center" }}>Interrogations</th>
+                <th style={{ textAlign: "center" }}>Devoirs</th>
+                <th style={{ textAlign: "center" }}>Composition</th>
+                <th style={{ textAlign: "center" }}>Moyenne / 20</th>
+                <th style={{ textAlign: "center" }}>Mention</th>
+                <th>Enseignant & Contact</th>
+              </tr>
+            </thead>
+            <tbody>
+              {lignesMatieres.map(function (ligne) {
+                const telNettoye = ligne.telephone ? ligne.telephone.replace(/[^0-9]/g, "") : "";
+                return (
+                  <tr key={ligne.matiereId}>
+                    <td>
+                      <div style={{ fontWeight: 700, color: "var(--ink-900)" }}>{ligne.nomMatiere}</div>
+                      <span style={{ fontSize: "0.78rem", color: "var(--ink-500)" }}>Coeff. {ligne.coef}</span>
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {ligne.interrogations.length > 0 ? (
+                        <div style={{ display: "flex", gap: "0.3rem", justifyContent: "center", flexWrap: "wrap" }}>
+                          {ligne.interrogations.map(function (v, idx) {
+                            return <span key={idx} className="mag-badge" style={{ background: "#F1F5F9", color: "#0F172A", fontWeight: 600 }}>{v.toFixed(2)}</span>;
+                          })}
+                        </div>
+                      ) : <span style={{ color: "var(--ink-400)" }}>-</span>}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {ligne.devoirs.length > 0 ? (
+                        <div style={{ display: "flex", gap: "0.3rem", justifyContent: "center", flexWrap: "wrap" }}>
+                          {ligne.devoirs.map(function (v, idx) {
+                            return <span key={idx} className="mag-badge" style={{ background: "#F1F5F9", color: "#0F172A", fontWeight: 600 }}>{v.toFixed(2)}</span>;
+                          })}
+                        </div>
+                      ) : <span style={{ color: "var(--ink-400)" }}>-</span>}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {ligne.composition !== null ? (
+                        <span className="mag-badge" style={{ background: "#EFF6FF", color: "#1D4ED8", fontWeight: 700, fontSize: "0.85rem" }}>
+                          {ligne.composition.toFixed(2)}
+                        </span>
+                      ) : <span style={{ color: "var(--ink-400)" }}>-</span>}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      <span style={{ fontWeight: 800, fontSize: "1rem", color: Number(ligne.moyMatiere) >= 10 ? "#15803D" : "#DC2626" }}>
+                        {ligne.moyMatiere}
+                      </span>
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      <span className={"mag-badge " + (Number(ligne.moyMatiere) >= 14 ? "mag-badge-succes" : Number(ligne.moyMatiere) >= 10 ? "mag-badge-info" : "mag-badge-erreur")}>
+                        {ligne.mention}
+                      </span>
+                    </td>
+                    <td>
+                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
+                        <div>
+                          <div style={{ fontWeight: 600, fontSize: "0.85rem" }}>{ligne.enseignant}</div>
+                          {ligne.telephone ? <div style={{ fontSize: "0.78rem", color: "var(--ink-500)" }}>{ligne.telephone}</div> : null}
+                        </div>
+                        {telNettoye ? (
+                          <a
+                            href={"https://wa.me/" + telNettoye + "?text=" + encodeURIComponent("Bonjour M. " + ligne.enseignant + ", je suis le parent de " + (enfantActif ? enfantActif.prenom + " " + enfantActif.nom : "") + " au sujet de la matière " + ligne.nomMatiere + ".")}
+                            target="_blank"
+                            rel="noreferrer"
+                            style={{
+                              fontSize: "0.75rem",
+                              padding: "0.25rem 0.55rem",
+                              borderRadius: "6px",
+                              background: "#25D366",
+                              color: "#FFF",
+                              textDecoration: "none",
+                              fontWeight: 600,
+                              display: "inline-flex",
+                              alignItems: "center",
+                              gap: "0.2rem",
+                            }}
+                          >
+                            WhatsApp
+                          </a>
+                        ) : null}
+                      </div>
+                    </td>
+                  </tr>
+                );
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </>
+  );
+}
+
 export default function GestionNotes({ token, role }) {
+  if (role === "parent") {
+    return <VueNotesParent token={token} />;
+  }
+
   const estAdmin = role === "administrateur";
   const [classes, setClasses] = useState([]);
   const [matieres, setMatieres] = useState([]);
