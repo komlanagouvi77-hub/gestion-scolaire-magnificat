@@ -236,7 +236,9 @@ function OngletGeneration({ token, role }) {
       ) : null}
 
       <div className="mag-section-entete">
-        <div className="mag-stat-label">Bulletins {estAdmin ? "generes" : "disponibles"}</div>
+        <div className="mag-stat-label">
+          {role === "parent" ? "Bulletins scolaires officiels" : estAdmin ? "Bulletins generes" : "Bulletins disponibles"}
+        </div>
         <span className="mag-compteur-pill">{bulletins.length}</span>
       </div>
 
@@ -245,7 +247,9 @@ function OngletGeneration({ token, role }) {
       {statut === "ok" ? (
         bulletins.length === 0 ? (
           <div className="mag-card" style={{ textAlign: "center", padding: "2.5rem", border: "1px dashed var(--line)", color: "var(--ink-600)" }}>
-            Veuillez selectionner une classe ou saisir un nom d'eleve pour commencer a generer les bulletins.
+            {role === "parent"
+              ? "Aucun bulletin officiel n'a encore été édité pour votre enfant. Dès que la direction aura calculé et validé les moyennes du trimestre, vous pourrez consulter et télécharger son bulletin officiel ici."
+              : "Veuillez selectionner une classe ou saisir un nom d'eleve pour commencer a generer les bulletins."}
           </div>
         ) : (
           <div className="mag-table-wrap react-fade-in">
@@ -426,7 +430,10 @@ export default function GestionBulletins({ token, role }) {
 
   return (
     <>
-      <div className="mag-page-title"><span className="eyebrow">Pedagogie</span> Bulletins</div>
+      <div className="mag-page-title">
+        <span className="eyebrow">{role === "parent" ? "Espace Famille" : "Pedagogie"}</span>
+        {role === "parent" ? "Bulletins Scolaires" : "Bulletins"}
+      </div>
 
       {estAdmin ? (
         <div style={{ display: "flex", gap: "1.6rem", borderBottom: "1px solid var(--line)", marginBottom: "1.6rem" }}>
