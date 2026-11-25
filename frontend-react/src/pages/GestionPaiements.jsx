@@ -28,7 +28,8 @@ const CHAMPS_VIDES = {
   reference: "", anneeScolaire: "2026-2027",
 };
 
-export default function GestionPaiements({ token }) {
+export default function GestionPaiements({ token, role }) {
+  const estAdmin = role === "administrateur";
   const confirmation = useConfirmation();
   const [paiements, setPaiements] = useState([]);
   const [eleves, setEleves] = useState([]);
@@ -180,7 +181,7 @@ export default function GestionPaiements({ token }) {
     <>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", marginBottom: "1.5rem" }}>
         <div className="mag-page-title" style={{ margin: 0, paddingBottom: 0, borderBottom: "none" }}>
-          <span className="eyebrow">Finances</span> Paiements
+          <span className="eyebrow">{role === "parent" ? "Espace Famille" : "Finances"}</span> {role === "parent" ? "Scolarité & Paiements" : "Paiements"}
         </div>
         <button
           type="button"
@@ -192,53 +193,57 @@ export default function GestionPaiements({ token }) {
         </button>
       </div>
 
-      <div className="mag-panneau-form react-fade-in" style={{ marginBottom: "1.8rem", maxWidth: "680px" }}>
-        <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>
-          {idEnEdition ? "Modifier le paiement" : "Enregistrer un paiement"}
+      {estAdmin ? (
+        <div className="mag-panneau-form react-fade-in" style={{ marginBottom: "1.8rem", maxWidth: "680px" }}>
+          <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>
+            {idEnEdition ? "Modifier le paiement" : "Enregistrer un paiement"}
+          </div>
+          {message ? <Alerte type={message.type}>{message.texte}</Alerte> : null}
+          <form onSubmit={soumettre}>
+            <div className="mag-field">
+              <label htmlFor="pai-eleve">Eleve</label>
+              <select id="pai-eleve" value={champs.eleveId} onChange={function (e) { modifierChamp("eleveId", e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
+                <option value="">-- {traduireTexte("Choisir un eleve")} --</option>
+                {Array.isArray(eleves) && eleves.map(function (el) {
+                  return <option key={el.id} value={el.id}>{el.nom} {el.prenom} — {el.classe_nom || "Classe non assignee"}</option>;
+                })}
+              </select>
+            </div>
+            <div className="mag-grid-2">
+              <div className="mag-field">
+                <label htmlFor="pai-tranche">Tranche concernee</label>
+                <select id="pai-tranche" value={champs.tranche} onChange={function (e) { modifierChamp("tranche", e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
+                  <option value="1">1ere tranche</option>
+                  <option value="2">2eme tranche</option>
+                  <option value="3">3eme tranche</option>
+                </select>
+              </div>
+              <div className="mag-field"><label htmlFor="pai-montant">Montant (FCFA)</label><input id="pai-montant" type="number" min="1" step="1" value={champs.montant} onChange={function (e) { modifierChamp("montant", e.target.value); }} required /></div>
+            </div>
+            <div className="mag-grid-2">
+              <div className="mag-field">
+                <label htmlFor="pai-mode">Mode de paiement</label>
+                <select id="pai-mode" value={champs.modePaiement} onChange={function (e) { modifierChamp("modePaiement", e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
+                  {MODES_PAIEMENT.map(function (m) { return <option key={m.valeur} value={m.valeur}>{traduireTexte(m.label)}</option>; })}
+                </select>
+              </div>
+              <div className="mag-field"><label htmlFor="pai-reference">Reference / N° de recu</label><input id="pai-reference" type="text" value={champs.reference} onChange={function (e) { modifierChamp("reference", e.target.value); }} /></div>
+            </div>
+            <div className="mag-field"><label htmlFor="pai-annee">Annee scolaire</label><input id="pai-annee" type="text" value={champs.anneeScolaire} onChange={function (e) { modifierChamp("anneeScolaire", e.target.value); }} required /></div>
+            <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.6rem 1.8rem" }} disabled={enCours}>
+              {enCours ? <span className="react-spinner"></span> : (idEnEdition ? "Enregistrer les modifications" : "Enregistrer le paiement")}
+            </button>
+            {idEnEdition ? (
+              <button type="button" className="mag-btn-lien" style={{ marginLeft: "0.8rem" }} onClick={viderFormulaire}>Annuler</button>
+            ) : null}
+          </form>
         </div>
-        {message ? <Alerte type={message.type}>{message.texte}</Alerte> : null}
-        <form onSubmit={soumettre}>
-          <div className="mag-field">
-            <label htmlFor="pai-eleve">Eleve</label>
-            <select id="pai-eleve" value={champs.eleveId} onChange={function (e) { modifierChamp("eleveId", e.target.value); }} required style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
-              <option value="">-- {traduireTexte("Choisir un eleve")} --</option>
-              {Array.isArray(eleves) && eleves.map(function (el) {
-                return <option key={el.id} value={el.id}>{el.nom} {el.prenom} — {el.classe_nom || "Classe non assignee"}</option>;
-              })}
-            </select>
-          </div>
-          <div className="mag-grid-2">
-            <div className="mag-field">
-              <label htmlFor="pai-tranche">Tranche concernee</label>
-              <select id="pai-tranche" value={champs.tranche} onChange={function (e) { modifierChamp("tranche", e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
-                <option value="1">1ere tranche</option>
-                <option value="2">2eme tranche</option>
-                <option value="3">3eme tranche</option>
-              </select>
-            </div>
-            <div className="mag-field"><label htmlFor="pai-montant">Montant (FCFA)</label><input id="pai-montant" type="number" min="1" step="1" value={champs.montant} onChange={function (e) { modifierChamp("montant", e.target.value); }} required /></div>
-          </div>
-          <div className="mag-grid-2">
-            <div className="mag-field">
-              <label htmlFor="pai-mode">Mode de paiement</label>
-              <select id="pai-mode" value={champs.modePaiement} onChange={function (e) { modifierChamp("modePaiement", e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px" }}>
-                {MODES_PAIEMENT.map(function (m) { return <option key={m.valeur} value={m.valeur}>{traduireTexte(m.label)}</option>; })}
-              </select>
-            </div>
-            <div className="mag-field"><label htmlFor="pai-reference">Reference / N° de recu</label><input id="pai-reference" type="text" value={champs.reference} onChange={function (e) { modifierChamp("reference", e.target.value); }} /></div>
-          </div>
-          <div className="mag-field"><label htmlFor="pai-annee">Annee scolaire</label><input id="pai-annee" type="text" value={champs.anneeScolaire} onChange={function (e) { modifierChamp("anneeScolaire", e.target.value); }} required /></div>
-          <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.6rem 1.8rem" }} disabled={enCours}>
-            {enCours ? <span className="react-spinner"></span> : (idEnEdition ? "Enregistrer les modifications" : "Enregistrer le paiement")}
-          </button>
-          {idEnEdition ? (
-            <button type="button" className="mag-btn-lien" style={{ marginLeft: "0.8rem" }} onClick={viderFormulaire}>Annuler</button>
-          ) : null}
-        </form>
-      </div>
+      ) : null}
 
       <div className="mag-section-entete">
-        <div className="mag-stat-label">Historique des paiements</div>
+        <div className="mag-stat-label">
+          {role === "parent" ? "Quittances et reçus de paiement de mon enfant" : "Historique des paiements"}
+        </div>
         <span className="mag-compteur-pill">{Array.isArray(paiements) ? paiements.length : 0}</span>
       </div>
 
@@ -250,7 +255,13 @@ export default function GestionPaiements({ token }) {
             <thead><tr><th>Eleve</th><th>Tranche</th><th>Montant</th><th>Mode</th><th>Date</th><th>Reference</th><th></th></tr></thead>
             <tbody>
               {!Array.isArray(paiements) || paiements.length === 0 ? (
-                <tr><td colSpan={7} style={{ textAlign: "center", color: "var(--ink-600)", padding: "2rem" }}>Aucun paiement enregistre.</td></tr>
+                <tr>
+                  <td colSpan={7} style={{ textAlign: "center", color: "var(--ink-600)", padding: "2rem" }}>
+                    {role === "parent"
+                      ? "Aucun paiement enregistré pour votre enfant pour le moment. Vous pouvez régler la scolarité par Mobile Money ci-dessus."
+                      : "Aucun paiement enregistre."}
+                  </td>
+                </tr>
               ) : paiements.map(function (p) {
                 return (
                   <tr key={p.id}>
@@ -281,17 +292,21 @@ export default function GestionPaiements({ token }) {
                       >
                         <Download size={13} /> {enCoursPdfId === p.id ? "PDF..." : "PDF"}
                       </button>
-                      <button
-                        type="button"
-                        className="mag-btn-lien"
-                        style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem", fontWeight: 600, color: "#16A34A" }}
-                        onClick={function () { partagerWhatsApp(p); }}
-                        title="Transmettre la quittance officielle sur WhatsApp au parent"
-                      >
-                        <Share2 size={13} /> WhatsApp
-                      </button>
-                      <button type="button" className="mag-btn-lien" onClick={function () { commencerEdition(p); }}>Modifier →</button>
-                      <BoutonSupprimer onClick={function () { supprimerPaiement(p); }} />
+                      {estAdmin ? (
+                        <>
+                          <button
+                            type="button"
+                            className="mag-btn-lien"
+                            style={{ display: "inline-flex", alignItems: "center", gap: "0.2rem", fontWeight: 600, color: "#16A34A" }}
+                            onClick={function () { partagerWhatsApp(p); }}
+                            title="Transmettre la quittance officielle sur WhatsApp au parent"
+                          >
+                            <Share2 size={13} /> WhatsApp
+                          </button>
+                          <button type="button" className="mag-btn-lien" onClick={function () { commencerEdition(p); }}>Modifier →</button>
+                          <BoutonSupprimer onClick={function () { supprimerPaiement(p); }} />
+                        </>
+                      ) : null}
                     </td>
                   </tr>
                 );
