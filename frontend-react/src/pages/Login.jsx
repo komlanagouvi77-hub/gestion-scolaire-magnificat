@@ -1,9 +1,7 @@
 // src/pages/Login.jsx
 import { useEffect, useState } from "react";
-import { connecter, enregistrerSession, effacerSession, recupererProfil, obtenirIdentitePublique, nomAffichage } from "../api.js";
+import { connecter, enregistrerSession, recupererProfil, obtenirIdentitePublique, nomAffichage } from "../api.js";
 import { Alerte } from "../components/Widgets.jsx";
-import { traduireTexte } from "../localisation.js";
-import SelecteurLangue from "../components/SelecteurLangue.jsx";
 
 function IconeCadenas() {
   return (
@@ -49,6 +47,7 @@ function IconeGraphique() {
     </svg>
   );
 }
+
 function IconePaiement() {
   return (
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -57,6 +56,7 @@ function IconePaiement() {
     </svg>
   );
 }
+
 function IconeMessage() {
   return (
     <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2">
@@ -65,14 +65,26 @@ function IconeMessage() {
   );
 }
 
-function ChampFlottant({ id, label, type, valeur, onChange, icone, requis, boutonOeil }) {
+function formaterMinSec(secondes) {
+  const m = Math.floor(secondes / 60);
+  const s = secondes % 60;
+  const mm = m < 10 ? "0" + m : "" + m;
+  const ss = s < 10 ? "0" + s : "" + s;
+  return mm + ":" + ss;
+}
+
+function ChampFlottant({ id, label, type, valeur, onChange, icone, requis, boutonOeil, desactive }) {
   const [focalise, setFocalise] = useState(false);
   const flotte = focalise || valeur.length > 0;
   return (
     <div className={"react-champ-flottant" + (flotte ? " actif" : "") + (focalise ? " focalise" : "")}>
       <span className="react-icone-champ">{icone}</span>
       <input
-        id={id} type={type} value={valeur} required={requis}
+        id={id}
+        type={type}
+        value={valeur}
+        required={requis}
+        disabled={desactive}
         onFocus={function () { setFocalise(true); }}
         onBlur={function () { setFocalise(false); }}
         onChange={onChange}
@@ -83,69 +95,83 @@ function ChampFlottant({ id, label, type, valeur, onChange, icone, requis, bouto
   );
 }
 
-const ESPACES = [
-  { role: "administrateur", label: "Administration" },
-  { role: "enseignant", label: "Enseignants" },
-  { role: "parent", label: "Parents" },
-];
-
-const LIBELLES_ROLE = { administrateur: "Administration", enseignant: "Enseignant", parent: "Parent" };
-
 export default function Login({ onConnecte, langue, onChangerLangue }) {
   const [utilisateur, setUtilisateur] = useState("");
   const [motDePasse, setMotDePasse] = useState("");
   const [erreur, setErreur] = useState("");
+  const [bloque, setBloque] = useState(false);
+  const [tempsRestant, setTempsRestant] = useState(0);
   const [enCours, setEnCours] = useState(false);
   const [motDePasseVisible, setMotDePasseVisible] = useState(false);
-  const [espaceChoisi, setEspaceChoisi] = useState(null);
   const [identiteEcole, setIdentiteEcole] = useState({ nom_ecole: null, logo: null });
 
   useEffect(function () {
     obtenirIdentitePublique().then(setIdentiteEcole).catch(function () {});
   }, []);
 
-  const nomEcoleAffiche = identiteEcole.nom_ecole || "Complexe Scolaire Magnificat";
+  useEffect(function () {
+    if (tempsRestant <= 0) {
+      if (bloque) {
+        setBloque(false);
+        setErreur("");
+      }
+      return;
+    }
+    const timer = setInterval(function () {
+      setTempsRestant(function (prev) {
+        if (prev <= 1) {
+          clearInterval(timer);
+          setBloque(false);
+          setErreur("");
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+    return function () {
+      clearInterval(timer);
+    };
+  }, [tempsRestant, bloque]);
 
-  const basculerEspace = function (role) {
-    setEspaceChoisi(espaceChoisi === role ? null : role);
-    setErreur("");
-  };
+  const nomEcoleAffiche = identiteEcole.nom_ecole || "Complexe Scolaire Magnificat";
 
   const soumettre = async function (evt) {
     evt.preventDefault();
+    if (bloque || tempsRestant > 0) return;
     setErreur("");
     setEnCours(true);
     try {
-      const token = await connecter(utilisateur, motDePasse);
+      const identifiant = utilisateur.trim();
+      const token = await connecter(identifiant, motDePasse);
       let role = null;
-      let nomAffiche = utilisateur;
+      let nomAffiche = identifiant;
       try {
         const profil = await recupererProfil(token);
         role = profil.role;
-        nomAffiche = nomAffichage(profil, utilisateur);
+        nomAffiche = nomAffichage(profil, identifiant);
       } catch (erreurProfil) {
         role = null;
       }
 
-      if (espaceChoisi && role !== espaceChoisi) {
-        effacerSession();
-        const libelleReel = LIBELLES_ROLE[role] || "inconnu";
-        const libelleChoisi = LIBELLES_ROLE[espaceChoisi];
-        setErreur(
-          "Ce compte correspond a l'espace " + libelleReel + ", pas " + libelleChoisi +
-          ". Choisissez le bon espace ou laissez la selection vide."
-        );
-        setEnCours(false);
-        return;
-      }
-
+      setBloque(false);
+      setTempsRestant(0);
       enregistrerSession(token, nomAffiche, role);
+      window.location.hash = "#/dashboard";
       onConnecte(token, nomAffiche, role);
     } catch (err) {
-      setErreur(err.message);
+      if (err.status === 429 || (err.data && err.data.bloque)) {
+        setBloque(true);
+        const delai = (err.data && (err.data.retry_after || err.data.temps_restant)) || err.retry_after || 300;
+        setTempsRestant(delai);
+        setErreur(err.message || "Compte temporairement bloqué suite à plusieurs tentatives erronées.");
+      } else {
+        setErreur(err.message || "Identifiants incorrects.");
+      }
     }
     setEnCours(false);
   };
+
+  const estVerrouille = bloque && tempsRestant > 0;
 
   return (
     <div className="react-login-split">
@@ -156,75 +182,124 @@ export default function Login({ onConnecte, langue, onChangerLangue }) {
             <img
               src={identiteEcole.logo || (import.meta.env.BASE_URL + "logo-ecole-defaut.png")}
               alt={nomEcoleAffiche}
-              style={{ width: "100%", height: "100%", objectFit: identiteEcole.logo ? "cover" : "contain", padding: identiteEcole.logo ? 0 : "6px" }}
+              style={{
+                width: "100%",
+                height: "100%",
+                objectFit: identiteEcole.logo ? "cover" : "contain",
+                padding: identiteEcole.logo ? 0 : "6px",
+              }}
             />
           </div>
           <h1>{nomEcoleAffiche}</h1>
-          <p className="react-panneau-tagline">La gestion scolaire, simplifiee et centralisee.</p>
+          <p className="react-panneau-tagline">La gestion scolaire, simplifiée et centralisée.</p>
 
           <ul className="react-panneau-liste">
-            <li><span className="react-panneau-icone"><IconeGraphique /></span>Suivi des notes et bulletins en temps reel</li>
-            <li><span className="react-panneau-icone"><IconePaiement /></span>Gestion des paiements par tranches</li>
-            <li><span className="react-panneau-icone"><IconeMessage /></span>Communication directe parents-enseignants</li>
+            <li>
+              <span className="react-panneau-icone"><IconeGraphique /></span>
+              Suivi des notes et bulletins en temps réel
+            </li>
+            <li>
+              <span className="react-panneau-icone"><IconePaiement /></span>
+              Gestion des paiements par tranches
+            </li>
+            <li>
+              <span className="react-panneau-icone"><IconeMessage /></span>
+              Communication directe parents-enseignants
+            </li>
           </ul>
 
-          <div className="react-panneau-pied">Adidogome — Lome, Togo</div>
+          <div className="react-panneau-pied">Adidogomé — Lomé, Togo</div>
         </div>
       </div>
 
       <div className="react-login-formulaire-zone">
-        <div className="react-login-langue"><SelecteurLangue langue={langue} onChangerLangue={onChangerLangue} /></div>
         <div className="react-login-formulaire-carte">
           <h2>Connexion</h2>
           <p className="react-login-sous-titre">
-            {espaceChoisi ? traduireTexte("Espace " + LIBELLES_ROLE[espaceChoisi] + " selectionne") : traduireTexte("Choisissez votre espace, ou connectez-vous directement")}
+            Connectez-vous à votre espace personnel
           </p>
 
-          {erreur ? <Alerte>{erreur}</Alerte> : null}
+          {estVerrouille ? (
+            <div
+              style={{
+                backgroundColor: "#FEF2F2",
+                border: "1px solid #FECACA",
+                borderRadius: "6px",
+                padding: "0.85rem 1rem",
+                marginBottom: "1.2rem",
+                fontSize: "0.85rem",
+                lineHeight: 1.45,
+              }}
+            >
+              <div style={{ fontWeight: 700, marginBottom: "0.25rem", color: "#991B1B" }}>
+                Compte temporairement bloqué
+              </div>
+              <div style={{ color: "#7F1D1D" }}>
+                Compte temporairement bloqué suite à plusieurs tentatives erronées.
+              </div>
+              <div style={{ marginTop: "0.45rem", fontWeight: 600, color: "#DC2626" }}>
+                Accès temporairement verrouillé. Nouvelle tentative possible dans {formaterMinSec(tempsRestant)}
+              </div>
+            </div>
+          ) : erreur ? (
+            <Alerte type="erreur">{erreur}</Alerte>
+          ) : null}
 
           <form onSubmit={soumettre}>
             <ChampFlottant
               id="login-utilisateur"
-              label="Nom d'utilisateur" type="text" valeur={utilisateur} requis={true}
+              label="Nom d'utilisateur"
+              type="text"
+              valeur={utilisateur}
+              requis={true}
+              desactive={estVerrouille}
               onChange={function (e) { setUtilisateur(e.target.value); }}
               icone={<IconePersonne />}
             />
             <ChampFlottant
               id="login-mot-de-passe"
-              label="Mot de passe" type={motDePasseVisible ? "text" : "password"} valeur={motDePasse} requis={true}
+              label="Mot de passe"
+              type={motDePasseVisible ? "text" : "password"}
+              valeur={motDePasse}
+              requis={true}
+              desactive={estVerrouille}
               onChange={function (e) { setMotDePasse(e.target.value); }}
               icone={<IconeCadenas />}
               boutonOeil={
-                <button type="button" className="react-bouton-oeil" onClick={function () { setMotDePasseVisible(!motDePasseVisible); }} aria-label="Afficher ou masquer le mot de passe">
+                <button
+                  type="button"
+                  className="react-bouton-oeil"
+                  disabled={estVerrouille}
+                  onClick={function () { setMotDePasseVisible(!motDePasseVisible); }}
+                  aria-label="Afficher ou masquer le mot de passe"
+                >
                   <IconeOeil ouvert={motDePasseVisible} />
                 </button>
               }
             />
-            <button type="submit" className="mag-btn-primary react-btn-connexion" disabled={enCours}>
-              {enCours ? <span className="react-spinner"></span> : "Se connecter"}
+            <button
+              type="submit"
+              className="mag-btn-primary react-btn-connexion"
+              disabled={enCours || estVerrouille}
+              style={{
+                backgroundColor: estVerrouille ? "#94A3B8" : "#1E3A8A",
+                cursor: estVerrouille ? "not-allowed" : "pointer",
+                transition: "background-color 0.2s ease",
+              }}
+            >
+              {enCours ? (
+                <span className="react-spinner"></span>
+              ) : estVerrouille ? (
+                `Verrouillé (${formaterMinSec(tempsRestant)})`
+              ) : (
+                "Se connecter"
+              )}
             </button>
           </form>
 
-          <div className="react-login-espaces">
-            {ESPACES.map(function (e) {
-              const actif = espaceChoisi === e.role;
-              return (
-                <button
-                  type="button" key={e.role}
-                  className={"react-login-espace-badge" + (actif ? " actif" : "")}
-                  onClick={function () { basculerEspace(e.role); }}
-                >
-                  {traduireTexte(e.label)}
-                </button>
-              );
-            })}
-          </div>
-          <div className="react-login-pied" style={{ marginTop: "0.6rem" }}>
-            {espaceChoisi ? "Cliquez a nouveau pour deselectionner." : "Selection facultative : identifie votre compte au moment de la connexion."}
-          </div>
           <a href="#/demande-acces" className="react-lien-cta">
             <span>Pas encore de compte ?</span>
-            <span className="react-lien-cta-action">Demander un acces <span className="react-lien-cta-fleche">→</span></span>
+            <span className="react-lien-cta-action">Demander un accès</span>
           </a>
         </div>
       </div>

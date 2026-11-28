@@ -1,5 +1,5 @@
 // src/pages/GestionMatieres.jsx
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import { lister, creer, modifier, supprimer } from "../api.js";
 import { Alerte } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
@@ -23,19 +23,37 @@ export default function GestionMatieres({ token }) {
 
   const chargerListe = function () {
     setStatut("chargement");
-    lister("matieres", token).then(function (d) { setMatieres(d); setStatut("ok"); }).catch(function () { setStatut("refuse"); });
+    lister("matieres", token)
+      .then(function (d) {
+        setMatieres(Array.isArray(d) ? d : (d && d.results ? d.results : []));
+        setStatut("ok");
+      })
+      .catch(function () {
+        setStatut("refuse");
+      });
   };
 
   useEffect(chargerListe, [token]);
+
+  // Tri alphabétique français insensible à la casse et aux accents
+  const matieresTriees = useMemo(function () {
+    return [...matieres].sort(function (a, b) {
+      return (a.nom || "").localeCompare(b.nom || "", "fr", { sensitivity: "base" });
+    });
+  }, [matieres]);
 
   const soumettre = async function (evt) {
     evt.preventDefault();
     setMessage(null);
     setEnCours(true);
     try {
-      await creer("matieres", token, { nom: nom, coefficient: Number(coefficient) });
-      setMessage({ type: "succes", texte: "Matiere creee avec succes." });
-      setNom(""); setCoefficient("1");
+      await creer("matieres", token, {
+        nom: nom.trim(),
+        coefficient: Number(coefficient) || 1,
+      });
+      setMessage({ type: "succes", texte: "Matière créée avec succès." });
+      setNom("");
+      setCoefficient("1");
       chargerListe();
     } catch (err) {
       setMessage({ type: "erreur", texte: err.message });
@@ -49,10 +67,18 @@ export default function GestionMatieres({ token }) {
     setEditCoefficient(String(m.coefficient));
   };
 
+  const annulerEdition = function () {
+    setIdEnEdition(null);
+  };
+
   const enregistrerEdition = async function (id) {
     setEnregistrementEnCours(true);
     try {
-      await modifier("matieres", id, token, { nom: editNom, coefficient: Number(editCoefficient) });
+      await modifier("matieres", id, token, {
+        nom: editNom.trim(),
+        coefficient: Number(editCoefficient) || 1,
+      });
+      setMessage({ type: "succes", texte: "Matière mise à jour avec succès." });
       setIdEnEdition(null);
       chargerListe();
     } catch (err) {
@@ -62,73 +88,169 @@ export default function GestionMatieres({ token }) {
   };
 
   const supprimerMatiere = async function (m) {
-    if (!(await confirmation.demander("Supprimer la matiere " + m.nom + " ?"))) return;
+    if (!(await confirmation.demander(`Supprimer la matière ${m.nom} ? Ses notes et cours associés seront également affectés.`))) return;
     try {
       await supprimer("matieres", m.id, token);
+      setMessage({ type: "succes", texte: "Matière supprimée avec succès." });
       chargerListe();
     } catch (err) {
-      setMessage({ type: "erreur", texte: "Suppression impossible." });
+      setMessage({ type: "erreur", texte: "Suppression impossible (des notes y sont peut-être encore rattachées)." });
     }
   };
 
   return (
     <>
-      <div className="mag-page-title"><span className="eyebrow">Configuration</span> Matieres</div>
+      <div className="mag-page-title-ligne" style={{ marginBottom: "1.2rem" }}>
+        <h1 className="mag-page-title">Matières</h1>
+      </div>
 
-      <div className="mag-panneau-form react-fade-in" style={{ marginBottom: "1.8rem", maxWidth: "520px" }}>
-        <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Creer une nouvelle matiere</div>
+      {/* Formulaire compact en pleine largeur (w-full) sur une seule ligne */}
+      <div className="mag-card react-fade-in" style={{ marginBottom: "1.5rem", width: "100%", padding: "1.25rem" }}>
+        <div style={{ fontWeight: 600, fontSize: "0.95rem", color: "#0F172A", marginBottom: "0.85rem" }}>
+          Créer une nouvelle matière
+        </div>
         {message ? <Alerte type={message.type}>{message.texte}</Alerte> : null}
         <form onSubmit={soumettre}>
-          <div className="mag-grid-2">
-            <div className="mag-field"><label htmlFor="mat-nom">Nom</label><input id="mat-nom" type="text" value={nom} onChange={function (e) { setNom(e.target.value); }} placeholder="Ex: Mathematiques" required /></div>
-            <div className="mag-field"><label htmlFor="mat-coeff">Coefficient</label><input id="mat-coeff" type="number" min="1" value={coefficient} onChange={function (e) { setCoefficient(e.target.value); }} required /></div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(220px, 1fr)) 120px auto", gap: "0.85rem", alignItems: "flex-end" }}>
+            <div className="mag-field" style={{ margin: 0 }}>
+              <label htmlFor="mat-nom" style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                Nom de la matière
+              </label>
+              <input
+                id="mat-nom"
+                type="text"
+                value={nom}
+                onChange={function (e) { setNom(e.target.value); }}
+                placeholder="Ex: Mathématiques"
+                required
+                style={{ width: "100%", padding: "0.55rem 0.75rem", border: "1px solid var(--line, #CBD5E1)", borderRadius: "6px", fontSize: "0.85rem" }}
+              />
+            </div>
+
+            <div className="mag-field" style={{ margin: 0 }}>
+              <label htmlFor="mat-coeff" style={{ fontSize: "0.82rem", fontWeight: 600, color: "#475569" }}>
+                Coefficient
+              </label>
+              <input
+                id="mat-coeff"
+                type="number"
+                min="1"
+                step="1"
+                value={coefficient}
+                onChange={function (e) { setCoefficient(e.target.value); }}
+                required
+                style={{ width: "100%", padding: "0.55rem 0.75rem", border: "1px solid var(--line, #CBD5E1)", borderRadius: "6px", fontSize: "0.85rem" }}
+              />
+            </div>
+
+            <div>
+              <button
+                type="submit"
+                className="mag-btn-primary"
+                style={{ padding: "0.58rem 1.6rem", whiteSpace: "nowrap" }}
+                disabled={enCours}
+              >
+                {enCours ? <span className="react-spinner"></span> : "Créer"}
+              </button>
+            </div>
           </div>
-          <button type="submit" className="mag-btn-primary" style={{ width: "auto", padding: "0.55rem 1.6rem" }} disabled={enCours}>
-            {enCours ? <span className="react-spinner"></span> : "Creer"}
-          </button>
         </form>
       </div>
 
-      <div className="mag-section-entete">
-        <div className="mag-stat-label">Liste des matieres</div>
+      <div className="mag-section-entete" style={{ marginBottom: "0.75rem" }}>
+        <div className="mag-stat-label">Liste des matières</div>
         <span className="mag-compteur-pill">{matieres.length}</span>
       </div>
 
-      {statut === "chargement" ? <Spinner texte="Chargement..." /> : null}
-      {statut === "refuse" ? <Alerte>Impossible de charger les matieres.</Alerte> : null}
+      {statut === "chargement" ? <Spinner texte="Chargement des matières..." /> : null}
+      {statut === "refuse" ? <Alerte>Impossible de charger les matières.</Alerte> : null}
       {statut === "ok" ? (
-        <div className="mag-table-wrap react-fade-in">
+        <div className="mag-table-wrap react-fade-in" style={{ border: "1px solid #E2E8F0", borderRadius: "6px" }}>
           <table className="mag-table mag-table-pro">
-            <thead><tr><th>Nom</th><th style={{ textAlign: "center" }}>Coefficient</th><th></th></tr></thead>
+            <thead>
+              <tr>
+                <th style={{ width: "55%" }}>Nom de la matière</th>
+                <th style={{ width: "25%", textAlign: "center" }}>Coefficient</th>
+                <th style={{ width: "20%", textAlign: "right" }}>Actions</th>
+              </tr>
+            </thead>
             <tbody>
-              {matieres.length === 0 ? (
-                <tr><td colSpan={3} style={{ textAlign: "center", color: "var(--ink-600)", padding: "2rem" }}>Aucune matiere creee.</td></tr>
-              ) : matieres.map(function (m) {
-                if (idEnEdition === m.id) {
+              {matieresTriees.length === 0 ? (
+                <tr>
+                  <td colSpan={3} style={{ textAlign: "center", color: "var(--ink-600)", padding: "2rem" }}>
+                    Aucune matière créée pour le moment.
+                  </td>
+                </tr>
+              ) : (
+                matieresTriees.map(function (m) {
+                  if (idEnEdition === m.id) {
+                    return (
+                      <tr key={m.id}>
+                        <td>
+                          <input
+                            type="text"
+                            value={editNom}
+                            onChange={function (e) { setEditNom(e.target.value); }}
+                            style={{ width: "100%", padding: "0.35rem 0.5rem", borderRadius: "4px", border: "1px solid var(--line)" }}
+                          />
+                        </td>
+                        <td style={{ textAlign: "center" }}>
+                          <input
+                            type="number"
+                            min="1"
+                            step="1"
+                            value={editCoefficient}
+                            onChange={function (e) { setEditCoefficient(e.target.value); }}
+                            style={{ width: "80px", padding: "0.35rem 0.5rem", borderRadius: "4px", border: "1px solid var(--line)", textAlign: "center" }}
+                          />
+                        </td>
+                        <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                          <button
+                            type="button"
+                            className="mag-btn-lien"
+                            onClick={function () { enregistrerEdition(m.id); }}
+                            disabled={enregistrementEnCours}
+                            style={{ fontWeight: 600, marginRight: "0.5rem" }}
+                          >
+                            {enregistrementEnCours ? "Enregistrement..." : "Enregistrer"}
+                          </button>
+                          <button
+                            type="button"
+                            className="mag-btn-lien"
+                            onClick={annulerEdition}
+                            disabled={enregistrementEnCours}
+                            style={{ color: "#64748B" }}
+                          >
+                            Annuler
+                          </button>
+                        </td>
+                      </tr>
+                    );
+                  }
+
                   return (
                     <tr key={m.id}>
-                      <td><input type="text" value={editNom} onChange={function (e) { setEditNom(e.target.value); }} style={{ width: "100%", padding: "0.35rem" }} /></td>
-                      <td><input type="number" min="1" value={editCoefficient} onChange={function (e) { setEditCoefficient(e.target.value); }} style={{ width: "80px", padding: "0.35rem" }} /></td>
-                      <td>
-                        <button type="button" className="mag-btn-lien" onClick={function () { enregistrerEdition(m.id); }} disabled={enregistrementEnCours}>
-                          {enregistrementEnCours ? "Enregistrement..." : "Enregistrer"}
+                      <td style={{ fontWeight: 600, color: "#0F172A" }}>{m.nom}</td>
+                      <td style={{ textAlign: "center" }}>
+                        <span className="mag-badge" style={{ background: "#F1F5F9", color: "#1E3A8A", fontWeight: 600 }}>
+                          Coef. {m.coefficient}
+                        </span>
+                      </td>
+                      <td style={{ textAlign: "right", whiteSpace: "nowrap" }}>
+                        <button
+                          type="button"
+                          className="mag-btn-lien"
+                          onClick={function () { commencerEdition(m); }}
+                          style={{ marginRight: "0.6rem", fontSize: "0.85rem", fontWeight: 500 }}
+                        >
+                          Modifier
                         </button>
-                        <button type="button" className="mag-btn-lien" onClick={function () { setIdEnEdition(null); }} disabled={enregistrementEnCours}>Annuler</button>
+                        <BoutonSupprimer onClick={function () { supprimerMatiere(m); }} />
                       </td>
                     </tr>
                   );
-                }
-                return (
-                  <tr key={m.id}>
-                    <td style={{ fontWeight: 600 }}>{m.nom}</td>
-                    <td style={{ textAlign: "center" }}><span className="mag-badge">Coef. {m.coefficient}</span></td>
-                    <td>
-                      <button type="button" className="mag-btn-lien" onClick={function () { commencerEdition(m); }}>Modifier →</button>
-                      <BoutonSupprimer onClick={function () { supprimerMatiere(m); }} />
-                    </td>
-                  </tr>
-                );
-              })}
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -136,7 +258,7 @@ export default function GestionMatieres({ token }) {
 
       {confirmation.demande ? (
         <ConfirmModal
-          titre="Supprimer la matiere"
+          titre="Supprimer la matière"
           message={confirmation.demande.message}
           texteConfirmer="Supprimer"
           danger

@@ -1,9 +1,9 @@
 // src/components/Widgets.jsx
 import { traduireTexte } from "../localisation.js";
-import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid } from "recharts";
-import { BarChart3, UserPlus, UploadCloud, ArrowRight } from "lucide-react";
+import { ResponsiveContainer, BarChart, Bar, XAxis, YAxis, Tooltip, CartesianGrid, LabelList } from "recharts";
+import { BarChart3, UserPlus, UploadCloud } from "lucide-react";
 
-export function CarteStat({ label, valeur, lien, onClick }) {
+export function CarteStat({ label, valeur, lien, onClick, sousTexte }) {
   const estCliquable = !!(lien || onClick);
   const gererClic = function () {
     if (onClick) onClick();
@@ -15,13 +15,26 @@ export function CarteStat({ label, valeur, lien, onClick }) {
       onClick={estCliquable ? gererClic : undefined}
       role={estCliquable ? "button" : undefined}
       tabIndex={estCliquable ? 0 : undefined}
-      style={estCliquable ? { cursor: "pointer" } : undefined}
+      style={{
+        cursor: estCliquable ? "pointer" : "default",
+        padding: "1rem 1.25rem",
+        borderRadius: "6px",
+        background: "#FFFFFF",
+        border: "1px solid var(--line, #E2E8F0)",
+        boxShadow: "0 1px 2px rgba(0,0,0,0.03)",
+      }}
     >
-      <div className="mag-stat-label" style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-        <span>{typeof label === "string" ? traduireTexte(label) : label}</span>
-        {estCliquable ? <ArrowRight className="w-4 h-4 ml-1 opacity-60 inline" /> : null}
+      <div style={{ fontSize: "0.82rem", fontWeight: 600, color: "#64748B", marginBottom: "0.35rem" }}>
+        {typeof label === "string" ? traduireTexte(label) : label}
       </div>
-      <div className="mag-stat-value">{valeur}</div>
+      <div style={{ fontSize: "1.75rem", fontWeight: 700, color: "#0F172A", lineHeight: 1.1 }}>
+        {valeur}
+      </div>
+      {sousTexte ? (
+        <div style={{ fontSize: "0.78rem", color: "#64748B", marginTop: "0.4rem" }}>
+          {sousTexte}
+        </div>
+      ) : null}
     </div>
   );
 }
@@ -46,7 +59,7 @@ export function TableauGenerique({ colonnes, lignes, cleLigne = "id" }) {
           {lignes.length === 0 ? (
             <tr>
               <td colSpan={colonnes.length} style={{ textAlign: "center", color: "var(--ink-600)" }}>
-                Aucune donnee.
+                Aucune donnée.
               </td>
             </tr>
           ) : (
@@ -70,78 +83,40 @@ function traduireValeur(valeur) {
   return valeur;
 }
 
-export function GraphiqueBarres({ titre, donnees }) {
+export function GraphiqueBarres({ titre, donnees, hauteur = 200 }) {
   const aDesDonnees = Array.isArray(donnees) && donnees.length > 0;
 
   return (
-    <div className="mag-card react-fade-in react-carte-dataviz">
-      <div className="react-dataviz-entete">
-        <div className="mag-stat-label">{traduireTexte(titre)}</div>
+    <div className="mag-card react-fade-in react-carte-dataviz" style={{ padding: "1.1rem 1.25rem", height: "100%", display: "flex", flexDirection: "column" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
+        <div style={{ fontWeight: 600, fontSize: "0.92rem", color: "#0F172A" }}>
+          {traduireTexte(titre)}
+        </div>
         {aDesDonnees ? (
-          <span className="react-dataviz-badge-compte">
-            {donnees.length} {donnees.length > 1 ? traduireTexte("classes représentées") : traduireTexte("classe représentée")}
+          <span style={{ fontSize: "0.75rem", color: "#64748B" }}>
+            {donnees.length} classes
           </span>
-        ) : (
-          <span className="react-dataviz-badge-attente">
-            {traduireTexte("En attente de données")}
-          </span>
-        )}
+        ) : null}
       </div>
 
       {!aDesDonnees ? (
-        <div className="react-dataviz-empty-state">
-          {/* Silhouette de graphique fantôme stylisée en arrière-plan */}
-          <div className="react-dataviz-ghost-chart" aria-hidden="true">
-            <div className="react-dataviz-ghost-bar" style={{ height: "38%" }}></div>
-            <div className="react-dataviz-ghost-bar" style={{ height: "65%" }}></div>
-            <div className="react-dataviz-ghost-bar" style={{ height: "48%" }}></div>
-            <div className="react-dataviz-ghost-bar" style={{ height: "80%" }}></div>
-            <div className="react-dataviz-ghost-bar" style={{ height: "55%" }}></div>
-            <div className="react-dataviz-ghost-baseline"></div>
-          </div>
-
-          <div className="react-dataviz-empty-contenu">
-            <div className="react-dataviz-empty-icone" aria-hidden="true">
-              <BarChart3 className="w-6 h-6 text-[#B08A2E]" />
-            </div>
-            <div className="react-dataviz-empty-titre">
-              {traduireTexte("Visualisation comparative des effectifs")}
-            </div>
-            <p className="react-dataviz-empty-desc">
-              {traduireTexte("Ce graphique interactif tracera automatiquement la répartition dès que des élèves seront affectés à leurs classes.")}
-            </p>
-            <div className="react-dataviz-empty-actions">
-              <button
-                type="button"
-                className="mag-btn-primary react-dataviz-btn-cta inline-flex items-center gap-1.5"
-                onClick={function () { window.location.hash = "/eleves"; }}
-              >
-                <UserPlus className="w-4 h-4" aria-hidden="true" />
-                <span>{traduireTexte("Inscrire un élève")}</span>
-              </button>
-              <button
-                type="button"
-                className="btn-mag-outline react-dataviz-btn-sec inline-flex items-center gap-1.5"
-                onClick={function () { window.location.hash = "/import"; }}
-              >
-                <UploadCloud className="w-4 h-4" aria-hidden="true" />
-                <span>{traduireTexte("Importer via CSV")}</span>
-              </button>
-            </div>
-          </div>
+        <div style={{ padding: "2rem", textAlign: "center", color: "#64748B", fontSize: "0.85rem" }}>
+          Aucune donnée disponible.
         </div>
       ) : (
-        <div className="react-dataviz-recharts-wrap w-full" style={{ height: "230px", marginTop: "10px" }}>
-          <ResponsiveContainer width="100%" height={230}>
-            <BarChart data={donnees} margin={{ top: 15, right: 15, left: -20, bottom: 5 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="#E2E8F0" vertical={false} />
-              <XAxis dataKey="label" stroke="#64748B" fontSize={11} tickLine={false} />
-              <YAxis stroke="#64748B" fontSize={11} tickLine={false} allowDecimals={false} />
+        <div style={{ width: "100%", height: hauteur + "px", flex: 1, marginTop: "0.3rem" }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={donnees} margin={{ top: 18, right: 10, left: -25, bottom: 0 }} barSize={30}>
+              <CartesianGrid strokeDasharray="2 2" stroke="#F1F5F9" vertical={false} />
+              <XAxis dataKey="label" stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#E2E8F0" }} />
+              <YAxis stroke="#64748B" fontSize={11} tickLine={false} axisLine={{ stroke: "#E2E8F0" }} allowDecimals={false} />
               <Tooltip 
-                cursor={{ fill: "rgba(176, 138, 46, 0.08)" }}
-                contentStyle={{ backgroundColor: "#0A2540", color: "#FFFFFF", borderRadius: "8px", border: "none", fontSize: "12px", boxShadow: "0 4px 12px rgba(0,0,0,0.15)" }}
+                cursor={{ fill: "rgba(15, 23, 42, 0.04)" }}
+                contentStyle={{ backgroundColor: "#0F172A", color: "#FFFFFF", borderRadius: "4px", border: "none", fontSize: "12px", padding: "4px 8px" }}
               />
-              <Bar dataKey="valeur" fill="#B08A2E" radius={[4, 4, 0, 0]} name={traduireTexte("Effectif")} />
+              <Bar dataKey="valeur" fill="#1E3A8A" radius={[3, 3, 0, 0]} name={traduireTexte("Effectif")}>
+                <LabelList dataKey="valeur" position="top" fill="#1E3A8A" fontSize={11} fontWeight={600} offset={4} />
+              </Bar>
             </BarChart>
           </ResponsiveContainer>
         </div>
@@ -149,6 +124,7 @@ export function GraphiqueBarres({ titre, donnees }) {
     </div>
   );
 }
+
 export function ListeCasesACocher({ options, valeursSelectionnees, onChange }) {
   const basculer = function (id) {
     const idStr = String(id);
@@ -159,22 +135,17 @@ export function ListeCasesACocher({ options, valeursSelectionnees, onChange }) {
       onChange(valeursSelectionnees.concat([id]));
     }
   };
-
   return (
-    <div className="mag-checkbox-list-wrap">
-      <ul>
-        {options.map(function (opt) {
-          const coche = valeursSelectionnees.map(String).indexOf(String(opt.id)) !== -1;
-          return (
-            <li key={opt.id}>
-              <label className={coche ? "actif" : ""}>
-                <input type="checkbox" checked={coche} onChange={function () { basculer(opt.id); }} />
-                {traduireTexte(opt.label)}
-              </label>
-            </li>
-          );
-        })}
-      </ul>
+    <div className="mag-cases-wrap">
+      {options.map(function (opt) {
+        const estCoche = valeursSelectionnees.map(String).indexOf(String(opt.valeur)) !== -1;
+        return (
+          <label key={opt.valeur} className={"mag-case-item" + (estCoche ? " mag-case-item-actif" : "")}>
+            <input type="checkbox" checked={estCoche} onChange={function () { basculer(opt.valeur); }} />
+            <span>{typeof opt.label === "string" ? traduireTexte(opt.label) : opt.label}</span>
+          </label>
+        );
+      })}
     </div>
   );
 }

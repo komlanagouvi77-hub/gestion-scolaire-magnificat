@@ -9,8 +9,8 @@ export default {
     extend: {
       colors: {
         magnificat: {
-          navy: "#0A2540",
-          gold: "#B08A2E",
+          navy: "#0F172A",
+          blue: "#2563EB",
           amber: "#F59E0B",
           dark: "#0B1326",
           card: "#142036",

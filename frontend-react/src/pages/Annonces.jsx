@@ -3,7 +3,7 @@ import { useState, useEffect } from "react";
 import { lister, creer } from "../api.js";
 import { Alerte } from "../components/Widgets.jsx";
 import Spinner from "../components/Spinner.jsx";
-import { Bell, Calendar, Users, Send } from "lucide-react";
+import { Calendar, Users } from "lucide-react";
 
 export default function Annonces({ token, role }) {
   const [donnees, setDonnees] = useState([]);
@@ -42,13 +42,8 @@ export default function Annonces({ token, role }) {
   };
 
   const badgeDestinataire = function (dest) {
-    if (dest === "parents") {
-      return <span className="mag-badge" style={{ background: "#FEF3C7", color: "#B45309", fontWeight: 700 }}>Parents</span>;
-    }
-    if (dest === "enseignants") {
-      return <span className="mag-badge" style={{ background: "#E0E7FF", color: "#4338CA", fontWeight: 700 }}>Enseignants</span>;
-    }
-    return <span className="mag-badge" style={{ background: "#DCFCE7", color: "#15803D", fontWeight: 700 }}>Tous</span>;
+    const libelle = dest === "parents" ? "Parents" : dest === "enseignants" ? "Enseignants" : "Tous";
+    return <span style={{ fontWeight: 600, color: "var(--ink-700)" }}>{libelle}</span>;
   };
 
   const formaterDate = function (dateIso) {
@@ -64,14 +59,14 @@ export default function Annonces({ token, role }) {
   return (
     <>
       <div className="mag-page-title">
-        <span className="eyebrow">Communication</span> Annonces
+        <h1>Annonces</h1>
       </div>
 
       {estAdmin ? (
         <div className="mag-card react-fade-in" style={{ marginBottom: "1.5rem" }}>
-          <div className="mag-stat-label" style={{ marginBottom: "0.9rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
-            <Send size={16} /> Publier une nouvelle annonce officielle
-          </div>
+          <h2 style={{ fontSize: "1rem", fontWeight: 600, color: "var(--ink-900)", margin: "0 0 1rem 0" }}>
+            Publier une annonce
+          </h2>
 
           {messageEnvoi ? <Alerte type={messageEnvoi.type}>{messageEnvoi.texte}</Alerte> : null}
 
@@ -81,26 +76,26 @@ export default function Annonces({ token, role }) {
               <input
                 id="annonce-titre"
                 type="text"
-                placeholder="Ex. Réunion trimestrielle de rentrée, Suspension des cours..."
+                placeholder="Titre de l'annonce"
                 value={titre}
                 onChange={function (e) { setTitre(e.target.value); }}
                 required
               />
             </div>
             <div className="mag-field">
-              <label htmlFor="annonce-contenu">Contenu du communiqué</label>
+              <label htmlFor="annonce-contenu">Contenu de l'annonce</label>
               <textarea
                 id="annonce-contenu"
                 value={contenu}
                 onChange={function (e) { setContenu(e.target.value); }}
                 required
                 rows={4}
-                placeholder="Rédigez ici le texte officiel à destination des familles et des enseignants..."
+                placeholder="Contenu de l'annonce..."
                 style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px", fontFamily: "inherit" }}
               ></textarea>
             </div>
             <div className="mag-field">
-              <label htmlFor="annonce-destinataires">Audience cible</label>
+              <label htmlFor="annonce-destinataires">Destinataires</label>
               <select
                 id="annonce-destinataires"
                 value={destinataires}
@@ -112,28 +107,12 @@ export default function Annonces({ token, role }) {
                 <option value="enseignants">Enseignants uniquement</option>
               </select>
             </div>
-            <button type="submit" className="mag-btn-primary" disabled={envoiEnCours}>
-              {envoiEnCours ? <span className="react-spinner"></span> : "Diffuser l'annonce"}
+            <button type="submit" className="mag-btn-primary" disabled={envoiEnCours} style={{ padding: "0.6rem 1.6rem", fontWeight: 600, borderRadius: "6px" }}>
+              {envoiEnCours ? <span className="react-spinner"></span> : "Publier l'annonce"}
             </button>
           </form>
         </div>
-      ) : (
-        <div className="mag-card" style={{ marginBottom: "1.5rem", background: "linear-gradient(135deg, rgba(2, 132, 199, 0.05), rgba(79, 70, 229, 0.05))" }}>
-          <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-            <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "var(--indigo-950)", color: "#fff", display: "flex", alignItems: "center", justifyContent: "center" }}>
-              <Bell size={18} />
-            </div>
-            <div>
-              <div style={{ fontWeight: 800, color: "var(--indigo-950)", fontSize: "1rem" }}>
-                Communications &amp; Avis de l'établissement
-              </div>
-              <div style={{ fontSize: "0.82rem", color: "var(--ink-600)" }}>
-                Retrouvez ci-dessous l'ensemble des communiqués officiels transmis par la Direction.
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
+      ) : null}
 
       {statut === "chargement" ? <Spinner texte="Chargement des annonces..." /> : null}
       {statut === "refuse" ? <Alerte>Impossible de charger les annonces pour ce compte.</Alerte> : null}
@@ -146,22 +125,21 @@ export default function Annonces({ token, role }) {
           <div className="react-fade-in" style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
             {donnees.map(function (annonce) {
               return (
-                <div key={annonce.id} className="mag-card" style={{ borderLeft: "4px solid var(--indigo-950)", padding: "1.2rem 1.4rem" }}>
+                <div key={annonce.id} className="mag-card" style={{ padding: "1.2rem 1.4rem" }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "0.6rem", marginBottom: "0.6rem" }}>
                     <div>
-                      <h3 style={{ margin: "0 0 0.3rem 0", fontSize: "1.1rem", fontWeight: 800, color: "var(--indigo-950)" }}>
+                      <h3 style={{ margin: "0 0 0.3rem 0", fontSize: "1.05rem", fontWeight: 700, color: "var(--indigo-950)" }}>
                         {annonce.titre}
                       </h3>
-                      <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", fontSize: "0.78rem", color: "var(--ink-500)" }}>
-                        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "0.8rem", fontSize: "0.78rem", color: "var(--ink-500)" }}>
+                        <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
                           <Calendar size={13} /> {formaterDate(annonce.date_publication)}
                         </span>
                         {estAdmin ? (
-                          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem" }}>
-                            <Users size={13} /> Destinataires :
+                          <span style={{ display: "inline-flex", alignItems: "center", gap: "0.3rem" }}>
+                            <Users size={13} /> Destinataires : {badgeDestinataire(annonce.destinataires)}
                           </span>
                         ) : null}
-                        {badgeDestinataire(annonce.destinataires)}
                       </div>
                     </div>
                   </div>

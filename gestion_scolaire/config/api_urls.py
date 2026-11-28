@@ -1,13 +1,13 @@
 from django.urls import include, path
 from drf_spectacular.views import SpectacularAPIView, SpectacularRedocView, SpectacularSwaggerView
 from rest_framework import routers
-from rest_framework.authtoken.views import obtain_auth_token
 
 from comptes.views_api import (
     DemandeCongeViewSet,
     DemandeInscriptionViewSet,
     EnseignantViewSet,
     ParentViewSet,
+    connexion_securisee_view,
     identite_publique_ecole,
     parametres_ecole,
     qui_suis_je,
@@ -57,8 +57,8 @@ router.register(r"demandes-acces", DemandeInscriptionViewSet, basename="demande-
 router.register(r"conges", DemandeCongeViewSet, basename="conge")
 
 urlpatterns = [
-    # POST username/password ici -> recoit un token a utiliser dans Postman
-    path("token/", obtain_auth_token, name="api_token_auth"),
+    # POST username/password ici -> recoit un token avec protection anti-brute-force
+    path("token/", connexion_securisee_view, name="api_token_auth"),
     # Identite et role de l'utilisateur connecte (pour adapter le frontend)
     path("whoami/", qui_suis_je, name="qui_suis_je"),
     # Configuration de l'etablissement (nom, logo, annee scolaire active...)

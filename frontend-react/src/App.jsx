@@ -28,7 +28,6 @@ import GestionConges from "./pages/GestionConges.jsx";
 import SituationFinanciere from "./pages/SituationFinanciere.jsx";
 import FicheEleve from "./pages/FicheEleve.jsx";
 import ErrorBoundary from "./components/ErrorBoundary.jsx";
-import CommandPalette from "./components/CommandPalette.jsx";
 
 function lirePageDepuisUrl() {
   const hash = window.location.hash.replace(/^#\//, "");
@@ -49,7 +48,6 @@ export default function App() {
   const [theme, setTheme] = useState(function () {
     return localStorage.getItem("magnificat_theme") || "light";
   });
-  const [paletteOuverte, setPaletteOuverte] = useState(false);
 
   const changerLangue = function (evenement) {
     const nouvelleLangue = evenement.target.value === "en" ? "en" : "fr";
@@ -74,24 +72,7 @@ export default function App() {
     document.documentElement.setAttribute("data-theme", theme);
   }, [theme]);
 
-  // Raccourcis clavier globaux : Ctrl+K ou Cmd+K ou /
-  useEffect(function () {
-    const gererClavier = function (e) {
-      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === "k") {
-        e.preventDefault();
-        setPaletteOuverte(function (v) { return !v; });
-      } else if (
-        e.key === "/" &&
-        !["INPUT", "TEXTAREA", "SELECT"].includes((e.target && e.target.tagName) || "") &&
-        !(e.target && e.target.isContentEditable)
-      ) {
-        e.preventDefault();
-        setPaletteOuverte(true);
-      }
-    };
-    window.addEventListener("keydown", gererClavier);
-    return function () { window.removeEventListener("keydown", gererClavier); };
-  }, []);
+
 
   useEffect(function () {
     const gererChangement = function () { setPage(lirePageDepuisUrl()); };
@@ -148,6 +129,8 @@ export default function App() {
     setToken(tok);
     setUtilisateur(user);
     setRole(r);
+    setPage("dashboard");
+    window.location.hash = "#/dashboard";
   };
 
   const seDeconnecter = function () {
@@ -197,7 +180,7 @@ export default function App() {
   } else if (page === "emploi-du-temps") {
     contenuPage = <EmploiDuTemps token={token} role={role} />;
   } else if (page === "messagerie") {
-    contenuPage = <Messagerie token={token} />;
+    contenuPage = <Messagerie token={token} role={role} />;
   } else if (page === "notes") {
     contenuPage = <GestionNotes token={token} role={role} />;
   } else if (page === "absences") {
@@ -245,18 +228,11 @@ export default function App() {
       />
       <div className="react-zone-principale">
         <Header
-          token={token}
           utilisateur={utilisateur}
           role={role}
-          langue={langue}
-          onChangerLangue={changerLangue}
           parametres={parametres}
-          etapesOnboarding={etapesOnboarding}
           onDeconnexion={seDeconnecter}
           onBasculerMenu={function () { setMenuMobileOuvert(function (v) { return !v; }); }}
-          theme={theme}
-          onBasculerTheme={basculerTheme}
-          onOuvrirPalette={function () { setPaletteOuverte(true); }}
         />
         <main className="react-contenu" key={page}>
           <ErrorBoundary clePage={page}>
@@ -264,18 +240,6 @@ export default function App() {
           </ErrorBoundary>
         </main>
       </div>
-
-      {/* Palette de commande rapide Ctrl + K */}
-      <CommandPalette
-        ouvert={paletteOuverte}
-        onFermer={function () { setPaletteOuverte(false); }}
-        role={role}
-        langue={langue}
-        theme={theme}
-        onBasculerTheme={basculerTheme}
-        onChangerLangue={changerLangue}
-        onDeconnexion={seDeconnecter}
-      />
     </div>
   );
 }

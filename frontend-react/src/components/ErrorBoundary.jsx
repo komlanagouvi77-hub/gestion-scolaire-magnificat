@@ -74,7 +74,7 @@ export default class ErrorBoundary extends React.Component {
               style={{ width: "auto", padding: "0.6rem 1.4rem" }}
               onClick={this.allerDashboard}
             >
-              Tableau de bord →
+              Tableau de bord
             </button>
           </div>
         </div>

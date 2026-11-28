@@ -28,10 +28,42 @@ class EleveSerializer(serializers.ModelSerializer):
     classe_nom = serializers.SerializerMethodField()
     parents_details = serializers.SerializerMethodField()
     enseignants_details = serializers.SerializerMethodField()
+    moyenne_actuelle = serializers.SerializerMethodField()
+    solde_restant = serializers.SerializerMethodField()
+    absences_count = serializers.SerializerMethodField()
 
     class Meta:
         model = Eleve
-        fields = ["id", "matricule", "nom", "prenom", "date_naissance", "sexe", "classe", "classe_nom", "photo", "parents_details", "enseignants_details"]
+        fields = [
+            "id", "matricule", "nom", "prenom", "date_naissance", "sexe",
+            "classe", "classe_nom", "photo", "parents_details", "enseignants_details",
+            "moyenne_actuelle", "solde_restant", "absences_count",
+        ]
+
+    def get_absences_count(self, eleve) -> int:
+        return eleve.absences.count()
+
+    def get_moyenne_actuelle(self, eleve) -> float | None:
+        bulletin = eleve.bulletins.order_by("-date_generation").first()
+        if bulletin and bulletin.moyenne_generale is not None:
+            return float(bulletin.moyenne_generale)
+        notes = list(eleve.notes.all())
+        if notes:
+            total_coeff = sum(float(n.matiere.coefficient) for n in notes if n.matiere and n.matiere.coefficient)
+            if total_coeff > 0:
+                total_points = sum(float(n.valeur) * float(n.matiere.coefficient) for n in notes if n.matiere and n.matiere.coefficient)
+                return round(total_points / total_coeff, 2)
+            return round(sum(float(n.valeur) for n in notes) / len(notes), 2)
+        return None
+
+    def get_solde_restant(self, eleve) -> int:
+        if not eleve.classe:
+            return 0
+        from paiements.models import FraisScolarite, Paiement
+        total_du = sum(f.montant_du for f in FraisScolarite.objects.filter(classe=eleve.classe))
+        total_paye = sum(p.montant for p in Paiement.objects.filter(eleve=eleve))
+        reste = max(0, total_du - total_paye)
+        return int(reste)
 
     def get_classe_nom(self, eleve) -> str | None:
         return str(eleve.classe) if eleve.classe else None
@@ -163,3 +195,68 @@ class CoursSerializer(serializers.ModelSerializer):
 
     def get_classe_nom(self, cours) -> str | None:
         return str(cours.classe) if cours.classe_id else None
+
+    def validate(self, attrs):
+        debut = attrs.get("heure_debut") or (self.instance.heure_debut if self.instance else None)
+        fin = attrs.get("heure_fin") or (self.instance.heure_fin if self.instance else None)
+        jour = attrs.get("jour") or (self.instance.jour if self.instance else None)
+        classe = attrs.get("classe") or (self.instance.classe if self.instance else None)
+        enseignant = attrs.get("enseignant") or (self.instance.enseignant if self.instance else None)
+        salle = attrs.get("salle", self.instance.salle if self.instance else "")
+
+        if debut and fin and debut >= fin:
+            raise serializers.ValidationError("L'heure de fin doit être postérieure à l'heure de début.")
+
+        if debut and fin and jour:
+            # Vérification de conflit pour la classe
+            conflits_classe = Cours.objects.filter(
+                classe=classe, jour=jour,
+                heure_debut__lt=fin, heure_fin__gt=debut
+            )
+            if self.instance:
+                conflits_classe = conflits_classe.exclude(pk=self.instance.pk)
+            if conflits_classe.exists():
+                c = conflits_classe.first()
+                h_deb = c.heure_debut.strftime("%H:%M") if hasattr(c.heure_debut, "strftime") else str(c.heure_debut)[:5]
+                h_fin = c.heure_fin.strftime("%H:%M") if hasattr(c.heure_fin, "strftime") else str(c.heure_fin)[:5]
+                nom_classe = getattr(c.classe, "nom", str(c.classe))
+                raise serializers.ValidationError(
+                    f"Conflit d'horaire : La classe {nom_classe} a déjà un cours de {c.matiere.nom} le {jour} de {h_deb} à {h_fin}."
+                )
+
+            # Vérification de conflit pour l'enseignant
+            conflits_ens = Cours.objects.filter(
+                enseignant=enseignant, jour=jour,
+                heure_debut__lt=fin, heure_fin__gt=debut
+            )
+            if self.instance:
+                conflits_ens = conflits_ens.exclude(pk=self.instance.pk)
+            if conflits_ens.exists():
+                c = conflits_ens.first()
+                h_deb = c.heure_debut.strftime("%H:%M") if hasattr(c.heure_debut, "strftime") else str(c.heure_debut)[:5]
+                h_fin = c.heure_fin.strftime("%H:%M") if hasattr(c.heure_fin, "strftime") else str(c.heure_fin)[:5]
+                nom_ens = c.enseignant.get_full_name() or c.enseignant.username
+                nom_classe = getattr(c.classe, "nom", str(c.classe))
+                raise serializers.ValidationError(
+                    f"Conflit d'horaire : L'enseignant {nom_ens} a déjà un cours de {c.matiere.nom} ({nom_classe}) le {jour} de {h_deb} à {h_fin}."
+                )
+
+            # Vérification de conflit pour la salle
+            if salle and str(salle).strip():
+                salle_clean = str(salle).strip()
+                conflits_salle = Cours.objects.filter(
+                    salle__iexact=salle_clean, jour=jour,
+                    heure_debut__lt=fin, heure_fin__gt=debut
+                )
+                if self.instance:
+                    conflits_salle = conflits_salle.exclude(pk=self.instance.pk)
+                if conflits_salle.exists():
+                    c = conflits_salle.first()
+                    h_deb = c.heure_debut.strftime("%H:%M") if hasattr(c.heure_debut, "strftime") else str(c.heure_debut)[:5]
+                    h_fin = c.heure_fin.strftime("%H:%M") if hasattr(c.heure_fin, "strftime") else str(c.heure_fin)[:5]
+                    nom_classe = getattr(c.classe, "nom", str(c.classe))
+                    raise serializers.ValidationError(
+                        f"Conflit de salle : La salle {salle_clean} est déjà occupée par {nom_classe} ({c.matiere.nom}) le {jour} de {h_deb} à {h_fin}."
+                    )
+
+        return attrs

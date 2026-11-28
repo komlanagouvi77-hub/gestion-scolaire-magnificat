@@ -21,131 +21,173 @@ function useListe(ressource, token) {
   return { donnees: donnees, chargement: chargement };
 }
 
-function salutationActuelle() {
-  const heure = new Date().getHours();
-  if (heure >= 5 && heure < 12) return "Bonjour";
-  if (heure >= 12 && heure < 18) return "Bon apres-midi";
-  return "Bonsoir";
-}
-
-function prenomAffiche(nomComplet) {
-  if (!nomComplet) return "";
-  return nomComplet.trim().split(" ")[0];
-}
-
-const PHRASE_ACCUEIL_PAR_ROLE = {
-  administrateur: function (ecole) { return "Voici la situation de " + ecole + " aujourd'hui."; },
-  enseignant: function (ecole) { return "Pret pour votre journee a " + ecole + " ?"; },
-  parent: function (ecole) { return "Suivez la scolarite de vos enfants a " + ecole + "."; },
-};
-
-const RACCOURCIS_ADMIN = [
-  { cle: "notes", titre: "Saisie des notes", texte: "Saisir ou corriger les notes de toutes les classes.", couleur: "#2563EB" },
-  { cle: "enseignants-gestion", titre: "Enseignants", texte: "Creer et gerer les comptes enseignants.", couleur: "#1D4E89" },
-  { cle: "parents-gestion", titre: "Parents", texte: "Creer et gerer les comptes parents.", couleur: "#7C3AED" },
-  { cle: "paiements-gestion", titre: "Comptabilite & Frais", texte: "Enregistrer un paiement, consulter l'historique.", couleur: "#16A34A" },
-  { cle: "import", titre: "Import eleves", texte: "Ajouter plusieurs eleves d'un coup via un fichier CSV.", couleur: "#D97706" },
-  { cle: "absences", titre: "Absences & Discipline", texte: "Bilan des absences et observations comportementales.", couleur: "#DB2777" },
-  { cle: "suivi", titre: "Suivi des notes", texte: "Qui a termine la saisie, qui est en retard.", couleur: "#DC2626" },
-  { cle: "parametres", titre: "Parametres etablissement", texte: "Nom, logo, annee scolaire, verrouillage des trimestres.", couleur: "#0891B2" },
-];
-
-const RACCOURCIS_ENSEIGNANT = [
-  { cle: "notes", titre: "Saisir les notes", texte: "Entrer ou modifier les notes de vos eleves.", couleur: "#DC2626" },
-  { cle: "absences", titre: "Absences", texte: "Enregistrer les absences et retards de vos classes.", couleur: "#DB2777" },
-  { cle: "bulletins", titre: "Bulletins", texte: "Consulter les bulletins de vos eleves.", couleur: "#1D4E89" },
-  { cle: "emploi-du-temps", titre: "Emploi du temps", texte: "Voir votre planning de cours de la semaine.", couleur: "#0891B2" },
-  { cle: "messagerie", titre: "Messagerie", texte: "Echanger avec les parents de vos eleves.", couleur: "#7C3AED" },
-  { cle: "annonces", titre: "Annonces", texte: "Publier ou consulter les annonces de l'etablissement.", couleur: "#D97706" },
-];
-
-const RACCOURCIS_PARENT = [
-  { cle: "bulletins", titre: "Bulletins", texte: "Consulter les bulletins de vos enfants.", couleur: "#1D4E89" },
-  { cle: "notes", titre: "Notes", texte: "Suivre les notes de vos enfants.", couleur: "#DC2626" },
-  { cle: "absences", titre: "Absences", texte: "Consulter les absences de vos enfants.", couleur: "#DB2777" },
-  { cle: "emploi-du-temps", titre: "Emploi du temps", texte: "Voir le planning de classe de vos enfants.", couleur: "#0891B2" },
-  { cle: "paiements", titre: "Paiements", texte: "Consulter l'historique des paiements.", couleur: "#16A34A" },
-  { cle: "messagerie", titre: "Messagerie", texte: "Contacter les enseignants de vos enfants.", couleur: "#7C3AED" },
-];
-
-function GrilleRaccourcis({ items }) {
-  return (
-    <div className="react-raccourcis-grille">
-      {items.map(function (r) {
-        return (
-          <button
-            type="button"
-            key={r.cle} className="react-raccourci-carte"
-            style={{ "--couleur-raccourci": r.couleur }}
-            onClick={function () { window.location.hash = "/" + r.cle; }}
-          >
-            <div className="react-raccourci-barre"></div>
-            <div className="react-raccourci-titre">{traduireTexte(r.titre)}</div>
-            <div className="react-raccourci-texte">{traduireTexte(r.texte)}</div>
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
-function BarreParite({ label, valeur, total, couleur }) {
-  const pourcentage = total > 0 ? Math.round((valeur / total) * 100) : 0;
-  return (
-    <div className="react-parite-ligne">
-      <div className="react-parite-entete">
-        <span>{label}</span>
-        <span>{valeur} ({pourcentage}%)</span>
-      </div>
-      <div className="react-parite-piste">
-        <div className="react-parite-remplissage" style={{ width: pourcentage + "%", background: couleur }}></div>
-      </div>
-    </div>
-  );
+function formaterDateCourte(dateStr) {
+  if (!dateStr) return "-";
+  try {
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return dateStr;
+    return d.toLocaleDateString("fr-FR", { day: "2-digit", month: "short", year: "numeric" });
+  } catch (e) {
+    return dateStr;
+  }
 }
 
 function CarteMesEnfants({ eleves, onPayer }) {
   return (
-    <div className="mag-card react-fade-in">
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.9rem", flexWrap: "wrap", gap: "0.5rem" }}>
-        <div className="mag-stat-label" style={{ margin: 0 }}>Mes enfants</div>
-        {eleves.length > 0 && onPayer ? (
-          <button
-            type="button"
-            onClick={function () { onPayer(eleves[0] ? String(eleves[0].id) : ""); }}
-            className="mag-btn-primary"
-            style={{ background: "#E65100", borderColor: "#E65100", fontSize: "0.8rem", padding: "0.4rem 0.9rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
-          >
-            <Smartphone size={14} /> {traduireTexte("Payer scolarite (T-Money / Flooz)")}
-          </button>
-        ) : null}
+    <div
+      className="mag-card mag-card-fixe react-fade-in"
+      style={{
+        padding: "1.25rem",
+        border: "1px solid #E2E8F0",
+        outline: "none",
+        backgroundColor: "#FFFFFF",
+        borderRadius: "8px",
+      }}
+    >
+      <div style={{ fontWeight: 600, fontSize: "0.95rem", color: "#0F172A", marginBottom: "0.9rem" }}>
+        Mes enfants
       </div>
       {eleves.length === 0 ? (
-        <p style={{ fontSize: "0.85rem", color: "var(--ink-600)" }}>Aucun enfant rattache a votre compte pour le moment.</p>
+        <p style={{ fontSize: "0.85rem", color: "#64748B", margin: 0 }}>
+          Aucun enfant rattaché à votre compte pour le moment.
+        </p>
       ) : (
-        <div className="react-enfants-liste">
+        <div style={{ display: "flex", flexDirection: "column", gap: "0.65rem" }}>
           {eleves.map(function (e) {
-            const initiales = ((e.prenom || "?").charAt(0) + (e.nom || "").charAt(0)).toUpperCase();
+            const initiales = (
+              ((e.prenom || "?").charAt(0)) + ((e.nom || "").charAt(0))
+            ).toUpperCase();
+            const nomClasseSansAnnee = (e.classe_nom || "Classe non assignée").replace(/\s*\([^)]*\)/g, "").trim();
+            const aMoyenne = e.moyenne_actuelle !== null && e.moyenne_actuelle !== undefined;
+            const aSolde = e.solde_restant !== null && e.solde_restant !== undefined;
+
             return (
-              <div className="react-enfant-carte" key={e.id} style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem" }}>
-                  <div className="react-enfant-avatar">{initiales}</div>
+              <div
+                key={e.id}
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "0.85rem",
+                  padding: "0.85rem 1rem",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: "6px",
+                  backgroundColor: "#FFFFFF",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", minWidth: "220px" }}>
+                  <div
+                    style={{
+                      width: 38,
+                      height: 38,
+                      borderRadius: "50%",
+                      background: "#1E3A8A",
+                      color: "#FFFFFF",
+                      display: "flex",
+                      alignItems: "center",
+                      justifyContent: "center",
+                      fontWeight: 700,
+                      fontSize: "0.85rem",
+                      flexShrink: 0,
+                    }}
+                  >
+                    {initiales}
+                  </div>
                   <div>
-                    <div className="react-enfant-nom">{e.prenom} {e.nom}</div>
-                    <div className="react-enfant-classe">{e.classe_nom || "Classe non assignee"}</div>
+                    <div style={{ fontWeight: 700, color: "#0F172A", fontSize: "0.92rem" }}>
+                      {e.prenom} {e.nom}
+                    </div>
+                    <div style={{ fontSize: "0.78rem", color: "#64748B", marginTop: "0.15rem" }}>
+                      {nomClasseSansAnnee} • {e.matricule || ("MAG-" + e.id)}
+                    </div>
                   </div>
                 </div>
-                {onPayer ? (
-                  <button
-                    type="button"
-                    onClick={function () { onPayer(String(e.id)); }}
-                    className="mag-btn-lien"
-                    style={{ fontSize: "0.8rem", color: "#E65100", fontWeight: 600, padding: "0.3rem 0.6rem", border: "1px solid #FFCC80", borderRadius: "6px", background: "#FFF8E1", display: "inline-flex", alignItems: "center", gap: "0.3rem" }}
-                    title="Payer les frais de scolarite par Mobile Money"
-                  >
-                    <Smartphone size={13} /> Payer →
-                  </button>
-                ) : null}
+
+                <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", flexWrap: "wrap" }}>
+                  {aMoyenne ? (
+                    <span
+                      style={{
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.3rem",
+                        background: "#EFF6FF",
+                        color: "#1E40AF",
+                        border: "1px solid #BFDBFE",
+                        padding: "0.25rem 0.6rem",
+                        borderRadius: "4px",
+                        fontSize: "0.78rem",
+                        fontWeight: 600,
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      Moyenne : {Number(e.moyenne_actuelle).toFixed(2).replace(".", ",")} / 20
+                    </span>
+                  ) : null}
+
+                  {aSolde ? (
+                    e.solde_restant > 0 ? (
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.3rem",
+                          background: "#FFFBEB",
+                          color: "#B45309",
+                          border: "1px solid #FDE68A",
+                          padding: "0.25rem 0.65rem",
+                          borderRadius: "4px",
+                          fontSize: "0.78rem",
+                          fontWeight: 600,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Reste à payer : {e.solde_restant.toLocaleString(localeActive())} FCFA
+                      </span>
+                    ) : (
+                      <span
+                        style={{
+                          display: "inline-flex",
+                          alignItems: "center",
+                          gap: "0.3rem",
+                          background: "#F0FDF4",
+                          color: "#15803D",
+                          border: "1px solid #BBF7D0",
+                          padding: "0.25rem 0.65rem",
+                          borderRadius: "4px",
+                          fontSize: "0.78rem",
+                          fontWeight: 600,
+                          whiteSpace: "nowrap",
+                        }}
+                      >
+                        Scolarité soldée
+                      </span>
+                    )
+                  ) : null}
+
+                  {onPayer ? (
+                    <button
+                      type="button"
+                      onClick={function () { onPayer(String(e.id)); }}
+                      style={{
+                        backgroundColor: "#1E3A8A",
+                        color: "#FFFFFF",
+                        border: "none",
+                        borderRadius: "6px",
+                        padding: "0.45rem 0.9rem",
+                        fontSize: "0.8rem",
+                        fontWeight: 600,
+                        cursor: "pointer",
+                        display: "inline-flex",
+                        alignItems: "center",
+                        gap: "0.4rem",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      <Smartphone size={14} /> Payer la scolarité
+                    </button>
+                  ) : null}
+                </div>
               </div>
             );
           })}
@@ -190,20 +232,38 @@ function libelleJourRelatif(decalage, jour) {
 function CarteProchainsCours({ cours, role }) {
   const prochains = useMemo(function () { return prochainsCreneaux(cours, 4); }, [cours]);
   return (
-    <div className="mag-card react-fade-in">
-      <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Prochains cours</div>
+    <div
+      className="mag-card mag-card-fixe react-fade-in"
+      style={{
+        padding: "1.25rem",
+        border: "1px solid #E2E8F0",
+        outline: "none",
+        backgroundColor: "#FFFFFF",
+        borderRadius: "8px",
+      }}
+    >
+      <div style={{ fontWeight: 600, fontSize: "0.95rem", color: "#0F172A", marginBottom: "0.8rem" }}>
+        Prochains cours
+      </div>
       {prochains.length === 0 ? (
-        <p style={{ fontSize: "0.85rem", color: "var(--ink-600)" }}>Aucun cours planifie pour le moment.</p>
+        <p style={{ fontSize: "0.85rem", color: "var(--ink-600)", margin: 0 }}>
+          Aucun cours planifié pour le moment.
+        </p>
       ) : (
         <ul className="react-prochains-cours">
           {prochains.map(function (c) {
+            const nomClasseSansAnnee = (c.classe_nom || "").replace(/\s*\([^)]*\)/g, "").trim();
+            const salleTexte = c.salle ? "Salle " + c.salle.replace(/^salle\s*/i, "") : null;
+            const enseignantTexte = role !== "enseignant" ? c.enseignant_nom : null;
+            const morceauxDetails = [nomClasseSansAnnee, salleTexte, enseignantTexte].filter(Boolean);
+
             return (
               <li key={c.id}>
                 <span className="react-prochain-jour">{libelleJourRelatif(c.decalage, c.jour)}</span>
                 <span className="react-prochain-heure">{c.heure_debut.slice(0, 5)} – {c.heure_fin.slice(0, 5)}</span>
                 <span className="react-prochain-matiere">{c.matiere_nom}</span>
                 <span className="react-prochain-details">
-                  {c.classe_nom}{c.salle ? " · " + c.salle : ""}{role !== "enseignant" ? " · " + c.enseignant_nom : ""}
+                  {morceauxDetails.join(" • ")}
                 </span>
               </li>
             );
@@ -264,7 +324,9 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
       const cle = (el.classe_nom || "Sans classe").split(" (")[0];
       compteurs[cle] = (compteurs[cle] || 0) + 1;
     });
-    return Object.entries(compteurs).map(function (entree) { return { label: entree[0], valeur: entree[1] }; });
+    return Object.entries(compteurs)
+      .map(function (entree) { return { label: entree[0], valeur: entree[1] }; })
+      .sort(function (a, b) { return a.label.localeCompare(b.label); });
   }, [eleves.donnees, estEnseignant, classesAssignees]);
 
   const repartitionGenre = useMemo(function () {
@@ -273,225 +335,349 @@ export default function Dashboard({ token, role, utilisateur, parametres }) {
       if (el.sexe === "F") filles += 1;
       else if (el.sexe === "M") garcons += 1;
     });
-    return { filles: filles, garcons: garcons, total: filles + garcons };
+    const total = filles + garcons;
+    const pctFilles = total > 0 ? Math.round((filles / total) * 100) : 0;
+    const pctGarcons = total > 0 ? Math.round((garcons / total) * 100) : 0;
+    return { filles, garcons, total, pctFilles, pctGarcons };
   }, [eleves.donnees]);
 
   const totalRecouvre = useMemo(function () {
     return paiements.donnees.reduce(function (somme, p) { return somme + Number(p.montant || 0); }, 0);
   }, [paiements.donnees]);
 
-  const nomEcole = parametres ? parametres.nom_ecole : "l'etablissement";
-  const phraseAccueil = traduireTexte((PHRASE_ACCUEIL_PAR_ROLE[role] || PHRASE_ACCUEIL_PAR_ROLE.administrateur)(nomEcole));
+  const mapEleveClasse = useMemo(function () {
+    const map = {};
+    eleves.donnees.forEach(function (e) {
+      map[e.id] = (e.classe_nom || "").split(" (")[0];
+    });
+    return map;
+  }, [eleves.donnees]);
 
-  let statCards;
-  if (estEnseignant) {
-    const nbClasses = classesAssignees.length > 0 ? classesAssignees.length : repartitionParClasse.length;
-    statCards = [
-      { label: "Mes eleves", valeur: eleves.donnees.length, lien: "eleves" },
-      { label: "Mes classes", valeur: nbClasses, lien: "eleves" },
-      { label: "Absences signalees", valeur: absences.donnees.length, lien: "absences" },
-    ];
-  } else if (estParent) {
-    statCards = [
-      { label: "Mes enfants", valeur: eleves.donnees.length, lien: "eleves" },
-      { label: "Absences", valeur: absences.donnees.length, lien: "absences" },
-      { label: "Paiements enregistres", valeur: paiements.donnees.length, lien: "paiements" },
-    ];
-  } else {
-    statCards = [
-      { label: "Eleves inscrits", valeur: eleves.donnees.length, lien: "eleves" },
-      { label: "Classes", valeur: classes.donnees.length, lien: "classes-gestion" },
-      { label: "Absences", valeur: absences.donnees.length, lien: "absences" },
-      { label: "Paiements", valeur: paiements.donnees.length, lien: "paiements-gestion" },
-    ];
-  }
-
-  const [banniereMasquee, setBanniereMasquee] = useState(function () {
-    try {
-      return sessionStorage.getItem("magnificat_banniere_accueil_fermee") === "1";
-    } catch (e) {
-      return false;
-    }
-  });
-
-  const masquerBanniere = function () {
-    try {
-      sessionStorage.setItem("magnificat_banniere_accueil_fermee", "1");
-    } catch (e) {}
-    setBanniereMasquee(true);
-  };
+  const derniersPaiements = useMemo(function () {
+    return [...paiements.donnees]
+      .sort(function (a, b) {
+        const da = a.date_paiement ? new Date(a.date_paiement).getTime() : 0;
+        const db = b.date_paiement ? new Date(b.date_paiement).getTime() : 0;
+        if (db !== da) return db - da;
+        return Number(b.id || 0) - Number(a.id || 0);
+      })
+      .slice(0, 5);
+  }, [paiements.donnees]);
 
   const dateDuJour = useMemo(function () {
     try {
       const d = new Date();
       const options = { weekday: "long", day: "numeric", month: "long", year: "numeric" };
-      const locale = localeActive() === "en" ? "en-US" : "fr-FR";
-      const s = d.toLocaleDateString(locale, options);
+      const s = d.toLocaleDateString("fr-FR", options);
       return s.charAt(0).toUpperCase() + s.slice(1);
     } catch (e) {
       return "";
     }
   }, []);
 
-  const raccourcis = estAdmin ? RACCOURCIS_ADMIN : estEnseignant ? RACCOURCIS_ENSEIGNANT : RACCOURCIS_PARENT;
+  const finances = statsGlobales ? statsGlobales.finances : null;
+  const montantPrevu = finances && finances.total_prevu ? Number(finances.total_prevu) : (eleves.donnees.length * 60000 || 1440000);
+  const montantRecouvre = totalRecouvre || (finances ? Number(finances.total_encaisse) : 0);
+  const soldeRestant = finances && finances.solde_restant ? Number(finances.solde_restant) : Math.max(0, montantPrevu - montantRecouvre);
+  const tauxPct = montantPrevu > 0 ? ((montantRecouvre / montantPrevu) * 100).toFixed(1).replace(".", ",") : "0,0";
 
   return (
     <>
-      <div className="react-dashboard-entete-ligne">
-        <div className="mag-page-title" style={{ marginBottom: 0, paddingBottom: 0, borderBottom: "none" }}>
-          <span className="eyebrow">{traduireTexte("Vue d'ensemble")}</span>
-          <span>{traduireTexte("Tableau de bord")}</span>
+      {/* En-tête sobre et naturel */}
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", flexWrap: "wrap", gap: "1rem", marginBottom: "1.2rem", paddingBottom: "0.8rem", borderBottom: "1px solid #E2E8F0" }}>
+        <div>
+          <h1 style={{ fontSize: "1.5rem", fontWeight: 700, color: "#0F172A", margin: 0 }}>
+            {traduireTexte("Tableau de bord")}
+          </h1>
+          <p style={{ fontSize: "0.85rem", color: "#64748B", margin: "0.2rem 0 0 0" }}>
+            {estParent
+              ? "Suivi scolaire et financier de vos enfants"
+              : traduireTexte("Vue d'ensemble de l'établissement")}
+          </p>
         </div>
-        <div className="react-dashboard-date-badge">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-            <rect x="3" y="4" width="18" height="18" rx="2" ry="2"></rect>
-            <line x1="16" y1="2" x2="16" y2="6"></line>
-            <line x1="8" y1="2" x2="8" y2="6"></line>
-            <line x1="3" y1="10" x2="21" y2="10"></line>
-          </svg>
-          <span>{dateDuJour}</span>
+        <div style={{ fontSize: "0.82rem", color: "#64748B", fontWeight: 500 }}>
+          {dateDuJour}
         </div>
       </div>
 
-      {!banniereMasquee && (
-        <div className="react-banniere-accueil-pro react-fade-in">
-          <div className="react-banniere-pro-gauche">
-            <div className="react-banniere-pro-icone" aria-hidden="true">
-              <span className="react-banniere-point-pulse"></span>
-            </div>
-            <div className="react-banniere-pro-contenu">
-              <div className="react-banniere-pro-titre">
-                <span>{traduireTexte(salutationActuelle())}, <strong>{prenomAffiche(utilisateur) || utilisateur}</strong></span>
-                <span className="react-banniere-role-pill">
-                  {estAdmin ? traduireTexte("Direction") : estEnseignant ? traduireTexte("Enseignant") : traduireTexte("Parent")}
-                </span>
-              </div>
-              <div className="react-banniere-pro-texte">
-                {phraseAccueil}
-              </div>
-            </div>
-          </div>
-          <button
-            type="button"
-            className="react-banniere-pro-fermer"
-            onClick={masquerBanniere}
-            aria-label={traduireTexte("Masquer ce message")}
-            title={traduireTexte("Masquer ce message")}
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <line x1="18" y1="6" x2="6" y2="18"></line>
-              <line x1="6" y1="6" x2="18" y2="18"></line>
-            </svg>
-          </button>
-        </div>
-      )}
-
-      {chargementGlobal ? <Spinner texte="Recuperation des donnees..." /> : (
+      {chargementGlobal ? <Spinner texte="Chargement des données..." /> : (
         <>
-          <div className={statCards.length === 4 ? "mag-grid-4" : "mag-grid-4-auto"} style={{ marginBottom: "1.5rem" }}>
-            {statCards.map(function (s) { return <CarteStat key={s.label} label={s.label} valeur={s.valeur} lien={s.lien} />; })}
+          {/* Ligne 1 : 4 cartes simples, sobres, uniformes */}
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: "1rem", marginBottom: "1.2rem" }}>
+            {estAdmin ? (
+              <>
+                <CarteStat
+                  label="Élèves inscrits"
+                  valeur={eleves.donnees.length}
+                  sousTexte="Effectif total"
+                  lien="eleves"
+                />
+                <CarteStat
+                  label="Classes"
+                  valeur={classes.donnees.length}
+                  sousTexte="Classes actives"
+                  lien="classes-gestion"
+                />
+                <CarteStat
+                  label="Absences"
+                  valeur={absences.donnees.length}
+                  sousTexte="Absences enregistrées"
+                  lien="absences"
+                />
+                <CarteStat
+                  label="Frais encaissés"
+                  valeur={montantRecouvre.toLocaleString(localeActive()) + " FCFA"}
+                  sousTexte={paiements.donnees.length + " paiements"}
+                  lien="paiements-gestion"
+                />
+              </>
+            ) : estEnseignant ? (
+              <>
+                <CarteStat
+                  label="Mes élèves"
+                  valeur={eleves.donnees.length}
+                  sousTexte="Élèves assignés"
+                  lien="eleves"
+                />
+                <CarteStat
+                  label="Mes classes"
+                  valeur={classesAssignees.length || repartitionParClasse.length}
+                  sousTexte="Classes"
+                  lien="eleves"
+                />
+                <CarteStat
+                  label="Absences"
+                  valeur={absences.donnees.length}
+                  sousTexte="Signalées"
+                  lien="absences"
+                />
+              </>
+            ) : (
+              <>
+                <CarteStat
+                  label="Mes enfants"
+                  valeur={eleves.donnees.length}
+                  sousTexte="Inscrits"
+                  lien="eleves"
+                />
+                <CarteStat
+                  label="Absences"
+                  valeur={absences.donnees.length}
+                  sousTexte="Enregistrées ce trimestre"
+                  lien="absences"
+                />
+                <CarteStat
+                  label="Paiements"
+                  valeur={paiements.donnees.length}
+                  sousTexte="Reçus disponibles"
+                  lien="paiements"
+                />
+              </>
+            )}
           </div>
 
           {estParent ? (
-            <CarteMesEnfants
-              eleves={eleves.donnees}
-              onPayer={function (id) { setEnfantMobileMoney(id || "1"); }}
-            />
-          ) : (
-            <GraphiqueBarres titre={estEnseignant ? "Repartition de mes eleves par classe" : "Repartition des eleves par classe"} donnees={repartitionParClasse} />
-          )}
+            <div style={{ marginBottom: "1.2rem" }}>
+              <CarteMesEnfants
+                eleves={eleves.donnees}
+                onPayer={function (id) { setEnfantMobileMoney(id || "1"); }}
+              />
+            </div>
+          ) : null}
 
           {(estEnseignant || estParent) ? (
-            <div style={{ marginTop: "1.5rem" }}>
+            <div style={{ marginBottom: "1.2rem" }}>
               <CarteProchainsCours cours={cours.donnees} role={role} />
             </div>
           ) : null}
 
-          <div className="mag-section-entete" style={{ marginTop: "2rem" }}>
-            <div className="mag-stat-label">Raccourcis &amp; actions rapides</div>
-          </div>
-          <GrilleRaccourcis items={raccourcis} />
-
+          {/* Ligne 2 : Grille 2 colonnes (Graphique répartition + Recouvrement financier) */}
           {estAdmin ? (
             <>
-              <div className="mag-section-entete" style={{ marginTop: "2rem" }}>
-                <div className="mag-stat-label">Pilotage &amp; indicateurs cles</div>
-              </div>
-              <div className="mag-grid-2">
-                <div className="mag-card">
-                  <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Repartition de genre</div>
-                  {repartitionGenre.total > 0 ? (
-                    <>
-                      <BarreParite label="Filles" valeur={repartitionGenre.filles} total={repartitionGenre.total} couleur="#DB2777" />
-                      <BarreParite label="Garcons" valeur={repartitionGenre.garcons} total={repartitionGenre.total} couleur="#0369A1" />
-                    </>
-                  ) : (
-                    <p style={{ fontSize: "0.85rem", color: "var(--ink-600)" }}>Aucun eleve enregistre pour le moment.</p>
-                  )}
+              <div className="react-grille-asymetrique-2-1">
+                {/* Graphique de répartition des élèves par classe */}
+                <div>
+                  <GraphiqueBarres
+                    titre="Répartition des élèves par classe"
+                    donnees={repartitionParClasse}
+                    hauteur={190}
+                  />
                 </div>
 
+                {/* Carte Recouvrement financier épurée */}
                 <div
-                  className="mag-card mag-card-cliquable"
-                  style={{ cursor: "pointer" }}
-                  role="button"
-                  tabIndex={0}
-                  onClick={function () { window.location.hash = "/situation-financiere"; }}
+                  className="mag-card react-fade-in"
+                  style={{
+                    padding: "1.1rem 1.25rem",
+                    display: "flex",
+                    flexDirection: "column",
+                    justifyContent: "space-between",
+                    height: "100%",
+                  }}
                 >
-                  <div className="mag-stat-label" style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.5rem" }}>
-                    <span>Recouvrement financier</span>
-                    {statsGlobales && statsGlobales.finances ? (
-                      <span className="mag-badge" style={{ background: "rgba(22, 163, 74, 0.12)", color: "#16A34A", fontWeight: 700 }}>
-                        {statsGlobales.finances.taux_recouvrement_pct}% recouvres
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
+                      <span style={{ fontWeight: 600, fontSize: "0.92rem", color: "#0F172A" }}>
+                        Recouvrement des frais
                       </span>
-                    ) : <span style={{ opacity: 0.5, fontSize: "0.85rem" }}>→</span>}
-                  </div>
-                  <div className="mag-stat-value" style={{ fontSize: "1.8rem", color: "var(--green-600)" }}>
-                    {totalRecouvre.toLocaleString(localeActive())} FCFA
-                  </div>
-                  {statsGlobales && statsGlobales.finances ? (
-                    <div style={{ marginTop: "0.6rem" }}>
-                      <div className="react-parite-piste" style={{ height: "8px", borderRadius: "4px", background: "var(--line, #e2e8f0)" }}>
-                        <div
-                          className="react-parite-remplissage"
-                          style={{
-                            width: Math.min(100, statsGlobales.finances.taux_recouvrement_pct) + "%",
-                            background: "var(--green-600, #16A34A)",
-                            height: "100%",
-                            borderRadius: "4px",
-                          }}
-                        ></div>
+                      <span style={{ background: "#F1F5F9", color: "#334155", fontSize: "0.75rem", fontWeight: 600, padding: "0.2rem 0.5rem", borderRadius: "4px" }}>
+                        {tauxPct} % recouvré
+                      </span>
+                    </div>
+
+                    <div style={{ fontSize: "1.6rem", fontWeight: 700, color: "#0F172A", marginBottom: "0.6rem" }}>
+                      {montantRecouvre.toLocaleString(localeActive())} <span style={{ fontSize: "0.9rem", fontWeight: 500, color: "#64748B" }}>FCFA</span>
+                    </div>
+
+                    {/* Barre de progression simple */}
+                    <div style={{ height: "6px", background: "#E2E8F0", borderRadius: "3px", overflow: "hidden", marginBottom: "0.75rem" }}>
+                      <div
+                        style={{
+                          height: "100%",
+                          width: Math.min(100, parseFloat(tauxPct.replace(",", "."))) + "%",
+                          background: "#1E3A8A",
+                          borderRadius: "3px",
+                        }}
+                      ></div>
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.35rem", fontSize: "0.82rem", color: "#475569" }}>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span>Total prévu :</span>
+                        <strong style={{ color: "#0F172A" }}>{montantPrevu.toLocaleString(localeActive())} FCFA</strong>
                       </div>
-                      <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.75rem", color: "var(--ink-600)", marginTop: "0.3rem" }}>
-                        <span>Prevu : {Number(statsGlobales.finances.total_prevu).toLocaleString(localeActive())} FCFA</span>
-                        <span>Reste : {Number(statsGlobales.finances.solde_restant).toLocaleString(localeActive())} FCFA</span>
+                      <div style={{ display: "flex", justifyContent: "space-between" }}>
+                        <span>Reste à percevoir :</span>
+                        <strong style={{ color: "#0F172A" }}>{soldeRestant.toLocaleString(localeActive())} FCFA</strong>
                       </div>
                     </div>
-                  ) : (
-                    <p style={{ fontSize: "0.8rem", color: "var(--ink-600)", marginTop: "0.4rem" }}>
-                      Total percu, toutes tranches et classes confondues ({paiements.donnees.length} paiement{paiements.donnees.length > 1 ? "s" : ""}).
-                    </p>
-                  )}
+                  </div>
+
+                  <div style={{ marginTop: "0.9rem", paddingTop: "0.6rem", borderTop: "1px solid #F1F5F9" }}>
+                    <button
+                      type="button"
+                      className="mag-btn-lien"
+                      onClick={function () { window.location.hash = "/situation-financiere"; }}
+                      style={{ fontSize: "0.8rem", color: "#1E3A8A", fontWeight: 600, padding: 0 }}
+                    >
+                      Voir la situation financière complète →
+                    </button>
+                  </div>
                 </div>
               </div>
 
-              <div className="mag-grid-2" style={{ marginTop: "1rem" }}>
-                <div className="mag-card">
-                  <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Activite academique &amp; Assiduite</div>
-                  <div className="react-fiche-identite">
-                    <div><span>Notes saisies</span><strong>{statsGlobales && statsGlobales.academique ? statsGlobales.academique.total_notes : "-"}</strong></div>
-                    <div><span>Bulletins generes</span><strong>{statsGlobales && statsGlobales.academique ? statsGlobales.academique.total_bulletins : "-"}</strong></div>
-                    <div><span>Assiduite justifiee</span><strong>{statsGlobales && statsGlobales.absences ? statsGlobales.absences.taux_justification_pct + "%" : "-"}</strong></div>
-                    <div><span>Classes actives</span><strong>{classes.donnees.length}</strong></div>
+              {/* Ligne 3 : Répartition par genre (tableau sobre) + Derniers paiements */}
+              <div className="react-grille-asymetrique-1-2">
+                {/* Répartition par genre : Présentation sobre et humaine */}
+                <div className="mag-card react-fade-in" style={{ padding: "1.1rem 1.25rem", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ fontWeight: 600, fontSize: "0.92rem", color: "#0F172A", marginBottom: "0.8rem" }}>
+                      Répartition par genre
+                    </div>
+
+                    <div style={{ display: "flex", flexDirection: "column", gap: "0.75rem", marginTop: "0.5rem" }}>
+                      <div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", marginBottom: "0.3rem" }}>
+                          <span style={{ fontWeight: 500, color: "#334155" }}>Garçons</span>
+                          <span style={{ fontWeight: 600, color: "#0F172A" }}>{repartitionGenre.garcons} élèves ({repartitionGenre.pctGarcons} %)</span>
+                        </div>
+                        <div style={{ height: "6px", background: "#E2E8F0", borderRadius: "3px", overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: repartitionGenre.pctGarcons + "%", background: "#1E3A8A", borderRadius: "3px" }}></div>
+                        </div>
+                      </div>
+
+                      <div>
+                        <div style={{ display: "flex", justifyContent: "space-between", fontSize: "0.82rem", marginBottom: "0.3rem" }}>
+                          <span style={{ fontWeight: 500, color: "#334155" }}>Filles</span>
+                          <span style={{ fontWeight: 600, color: "#0F172A" }}>{repartitionGenre.filles} élèves ({repartitionGenre.pctFilles} %)</span>
+                        </div>
+                        <div style={{ height: "6px", background: "#E2E8F0", borderRadius: "3px", overflow: "hidden" }}>
+                          <div style={{ height: "100%", width: repartitionGenre.pctFilles + "%", background: "#475569", borderRadius: "3px" }}></div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: "1rem", fontSize: "0.78rem", color: "#64748B", borderTop: "1px solid #F1F5F9", paddingTop: "0.5rem" }}>
+                    Total : <strong>{repartitionGenre.total} élèves</strong> scolarisés
                   </div>
                 </div>
 
-                <div className="mag-card">
-                  <div className="mag-stat-label" style={{ marginBottom: "0.9rem" }}>Fiche d'identite technique</div>
-                  <div className="react-fiche-identite">
-                    <div><span>Nom de l'etablissement</span><strong>{parametres ? parametres.nom_ecole : "-"}</strong></div>
-                    <div><span>Annee scolaire active</span><strong>{parametres ? parametres.annee_scolaire_active : "-"}</strong></div>
-                    <div><span>Systeme academique</span><strong>{parametres ? (parametres.systeme_periodes === "semestre" ? "Semestres" : "Trimestres") : "-"}</strong></div>
-                    <div><span>Devise monetaire</span><strong>FCFA</strong></div>
+                {/* Derniers paiements enregistrés */}
+                <div className="mag-card react-fade-in" style={{ padding: "1.1rem 1.25rem", display: "flex", flexDirection: "column", justifyContent: "space-between" }}>
+                  <div>
+                    <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "0.6rem" }}>
+                      <div style={{ fontWeight: 600, fontSize: "0.92rem", color: "#0F172A" }}>
+                        Derniers paiements enregistrés
+                      </div>
+                      <span style={{ fontSize: "0.75rem", color: "#64748B" }}>
+                        {paiements.donnees.length} règlements
+                      </span>
+                    </div>
+
+                    <div className="mag-table-wrap" style={{ border: "1px solid #E2E8F0", borderRadius: "4px" }}>
+                      <table className="mag-table" style={{ fontSize: "0.82rem" }}>
+                        <thead>
+                          <tr>
+                            <th style={{ padding: "0.45rem 0.6rem" }}>Date</th>
+                            <th style={{ padding: "0.45rem 0.6rem" }}>Élève</th>
+                            <th style={{ padding: "0.45rem 0.6rem" }}>Classe</th>
+                            <th style={{ padding: "0.45rem 0.6rem" }}>Tranche</th>
+                            <th style={{ padding: "0.45rem 0.6rem", textAlign: "right" }}>Montant</th>
+                            <th style={{ padding: "0.45rem 0.6rem" }}>Mode</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {derniersPaiements.length === 0 ? (
+                            <tr>
+                              <td colSpan={6} style={{ textAlign: "center", color: "#64748B", padding: "1.2rem" }}>
+                                Aucun paiement enregistré.
+                              </td>
+                            </tr>
+                          ) : (
+                            derniersPaiements.map(function (p) {
+                              const nomClasse = p.classe_nom || mapEleveClasse[p.eleve] || "-";
+                              const labelMode = p.mode_paiement === "mobile_money" ? "Mobile Money" :
+                                                p.mode_paiement === "especes" ? "Espèces" :
+                                                p.mode_paiement === "virement" ? "Virement" :
+                                                p.mode_paiement === "cheque" ? "Chèque" : p.mode_paiement;
+
+                              return (
+                                <tr key={p.id}>
+                                  <td style={{ color: "#64748B", whiteSpace: "nowrap" }}>
+                                    {formaterDateCourte(p.date_paiement)}
+                                  </td>
+                                  <td style={{ fontWeight: 600, color: "#0F172A" }}>
+                                    {p.eleve_nom || ("Élève #" + p.eleve)}
+                                  </td>
+                                  <td>{nomClasse}</td>
+                                  <td style={{ color: "#475569" }}>
+                                    {p.tranche ? p.tranche + "e tranche" : "Scolarité"}
+                                  </td>
+                                  <td style={{ textAlign: "right", fontWeight: 600, color: "#0F172A", whiteSpace: "nowrap" }}>
+                                    {Number(p.montant).toLocaleString(localeActive())} FCFA
+                                  </td>
+                                  <td style={{ color: "#475569" }}>
+                                    {labelMode}
+                                  </td>
+                                </tr>
+                              );
+                            })
+                          )}
+                        </tbody>
+                      </table>
+                    </div>
+                  </div>
+
+                  <div style={{ marginTop: "0.7rem", textAlign: "right" }}>
+                    <button
+                      type="button"
+                      className="mag-btn-lien"
+                      onClick={function () { window.location.hash = "/paiements-gestion"; }}
+                      style={{ fontSize: "0.8rem", fontWeight: 600, color: "#1E3A8A", padding: 0 }}
+                    >
+                      Accéder à la gestion des paiements →
+                    </button>
                   </div>
                 </div>
               </div>

@@ -1,10 +1,15 @@
+import time
 import unicodedata
-from rest_framework import viewsets
+from django.core.cache import cache
+from rest_framework import status, viewsets
+from rest_framework.authtoken.models import Token
+from rest_framework.authtoken.serializers import AuthTokenSerializer
 from rest_framework.decorators import action, api_view, parser_classes, permission_classes
 from rest_framework.exceptions import PermissionDenied
 from rest_framework.parsers import FormParser, JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
+from rest_framework.views import APIView
 from drf_spectacular.utils import extend_schema, inline_serializer
 from rest_framework import serializers
 
@@ -16,6 +21,101 @@ def sans_accents(texte):
         return ""
     texte = unicodedata.normalize("NFD", str(texte))
     return "".join(c for c in texte if unicodedata.category(c) != "Mn").lower().strip()
+
+
+def _obtenir_ip_client(request):
+    x_forwarded_for = request.META.get("HTTP_X_FORWARDED_FOR")
+    if x_forwarded_for:
+        return x_forwarded_for.split(",")[0].strip()
+    return request.META.get("REMOTE_ADDR", "unknown")
+
+
+class ConnexionSecuriseeView(APIView):
+    """
+    Vue d'authentification par jeton (Token) avec protection anti-brute-force intégrée.
+    - Suivi des tentatives infructueuses par nom d'utilisateur et IP avec django.core.cache.
+    - Blocage automatique temporaire pendant 300 secondes (5 minutes) après 5 échecs consécutifs (HTTP 429).
+    - Réinitialisation immédiate du compteur à zéro dès qu'une tentative réussit.
+    - Message clair avec le nombre d'essais restants entre 1 et 4 échecs.
+    """
+    permission_classes = [AllowAny]
+    serializer_class = AuthTokenSerializer
+
+    def post(self, request, *args, **kwargs):
+        username_raw = str(request.data.get("username", "")).strip()
+        ip_client = _obtenir_ip_client(request)
+
+        cle_base = username_raw.lower() if username_raw else f"ip_{ip_client}"
+        cle_blocage = f"auth_lock_{cle_base}"
+        cle_tentatives = f"auth_tentatives_{cle_base}"
+
+        # 1. Vérification d'un verrouillage en cours
+        lock_info = cache.get(cle_blocage)
+        now = time.time()
+        if lock_info:
+            expire_at = lock_info.get("expire_at", 0)
+            retry_after = max(1, int(expire_at - now))
+            if retry_after > 0:
+                return Response(
+                    {
+                        "detail": "Compte temporairement bloqué suite à plusieurs tentatives erronées.",
+                        "bloque": True,
+                        "retry_after": retry_after,
+                        "temps_restant": retry_after,
+                    },
+                    status=status.HTTP_429_TOO_MANY_REQUESTS,
+                    headers={"Retry-After": str(retry_after)},
+                )
+            else:
+                cache.delete(cle_blocage)
+                cache.delete(cle_tentatives)
+
+        # 2. Validation des identifiants avec AuthTokenSerializer
+        serializer = self.serializer_class(data=request.data, context={"request": request})
+        if serializer.is_valid():
+            # Succès : Réinitialisation immédiate du compteur d'échecs
+            cache.delete(cle_tentatives)
+            cache.delete(cle_blocage)
+            user = serializer.validated_data["user"]
+            token, _ = Token.objects.get_or_create(user=user)
+            return Response({"token": token.key})
+
+        # 3. Échec de connexion : Incrémentation du compteur
+        MAX_ECHECS = 5
+        DUREE_BLOCAGE = 300  # 5 minutes (300 secondes)
+
+        echecs = cache.get(cle_tentatives, 0) + 1
+
+        if echecs >= MAX_ECHECS:
+            expire_at = now + DUREE_BLOCAGE
+            cache.set(cle_blocage, {"expire_at": expire_at}, timeout=DUREE_BLOCAGE)
+            cache.delete(cle_tentatives)
+            return Response(
+                {
+                    "detail": "Compte temporairement bloqué suite à plusieurs tentatives erronées.",
+                    "bloque": True,
+                    "retry_after": DUREE_BLOCAGE,
+                    "temps_restant": DUREE_BLOCAGE,
+                },
+                status=status.HTTP_429_TOO_MANY_REQUESTS,
+                headers={"Retry-After": str(DUREE_BLOCAGE)},
+            )
+        else:
+            cache.set(cle_tentatives, echecs, timeout=DUREE_BLOCAGE)
+            restantes = MAX_ECHECS - echecs
+            pluriel = "s" if restantes > 1 else ""
+            msg = f"Identifiants incorrects. Il vous reste {restantes} tentative{pluriel} avant blocage temporaire."
+            return Response(
+                {
+                    "detail": msg,
+                    "non_field_errors": [msg],
+                    "tentatives_restantes": restantes,
+                    "echecs": echecs,
+                },
+                status=status.HTTP_400_BAD_REQUEST,
+            )
+
+connexion_securisee_view = ConnexionSecuriseeView.as_view()
 
 from .emails import envoyer_email_demande_approuvee, envoyer_email_demande_refusee
 from .models import DemandeConge, DemandeInscription, Enseignant, Parametres, Parent
@@ -306,7 +406,12 @@ class DemandeInscriptionViewSet(viewsets.ModelViewSet):
     def get_queryset(self):
         if not hasattr(self.request.user, "administrateur"):
             return DemandeInscription.objects.none()
-        return DemandeInscription.objects.filter(statut=DemandeInscription.STATUT_EN_ATTENTE)
+        statut = self.request.query_params.get("statut")
+        if statut == "tous":
+            return DemandeInscription.objects.all().order_by("-date_demande")
+        if statut == "traitees":
+            return DemandeInscription.objects.exclude(statut=DemandeInscription.STATUT_EN_ATTENTE).order_by("-date_demande")
+        return DemandeInscription.objects.filter(statut=DemandeInscription.STATUT_EN_ATTENTE).order_by("-date_demande")
 
     def list(self, request, *args, **kwargs):
         if not hasattr(request.user, "administrateur"):

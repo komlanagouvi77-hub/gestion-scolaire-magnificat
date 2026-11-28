@@ -1,18 +1,18 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 :root {
-  --indigo-950: #0A2540;   /* bleu nuit profond - navbar, titres */
+  --indigo-950: #0F172A;   /* bleu nuit profond - navbar, titres */
   --indigo-800: #12345C;   /* bleu fonce - accents cartes */
   --indigo-700: #1D4E89;   /* bleu intermediaire */
-  --gold-500: #B08A2E;     /* or institutionnel - accent principal, bordures */
-  --gold-300: #E4CE8F;     /* or clair - texte sur fond fonce */
-  --paper-50: #FBFAF6;     /* papier ivoire - fond de page */
-  --paper-100: #F7F1DE;    /* ivoire dore tres clair - lignes alternees */
+  --gold-500: #2563EB;     /* or institutionnel - accent principal, bordures */
+  --gold-300: #93C5FD;     /* or clair - texte sur fond fonce */
+  --paper-50: #F8FAFC;     /* papier ivoire - fond de page */
+  --paper-100: #F1F5F9;    /* ivoire dore tres clair - lignes alternees */
   --ink-900: #0F172A;      /* texte principal */
   --ink-600: #64748B;      /* texte secondaire */
   --green-600: #1F7A4D;
   --red-600: #A32424;
-  --line: #E3DAC0;         /* bordures ivoire/or - hairline institutionnel */
+  --line: #E2E8F0;         /* bordures ivoire/or - hairline institutionnel */
 }
 
 body {
@@ -35,7 +35,7 @@ a { transition: color 0.15s ease; }
   box-shadow: 0 4px 18px rgba(10, 37, 64, 0.35);
 }
 .mag-navbar .brand {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.35rem;
   color: #ffffff;
@@ -50,7 +50,7 @@ a { transition: color 0.15s ease; }
   background: #fff;
   color: var(--indigo-950);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 700;
   font-size: 1rem;
   overflow: hidden;
@@ -74,7 +74,7 @@ a { transition: color 0.15s ease; }
   border: 2px solid var(--gold-500);
   color: #ffffff;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 0.95rem;
   background: var(--indigo-700);
@@ -100,7 +100,7 @@ a { transition: color 0.15s ease; }
 }
 
 .mag-page-title {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   color: var(--indigo-950);
   font-size: 1.9rem;
@@ -112,7 +112,7 @@ a { transition: color 0.15s ease; }
   gap: 0.6rem;
 }
 .mag-page-title .eyebrow {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.72rem;
   color: var(--indigo-700);
   letter-spacing: 0.08em;
@@ -134,14 +134,14 @@ a { transition: color 0.15s ease; }
   transform: translateY(-2px);
 }
 .mag-card .mag-stat-label {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.07em;
   text-transform: uppercase;
   color: var(--ink-600);
 }
 .mag-card .mag-stat-value {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 2.6rem;
   background: linear-gradient(135deg, var(--indigo-950) 0%, var(--indigo-700) 100%);
@@ -157,7 +157,7 @@ a { transition: color 0.15s ease; }
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(160deg, #F7F1DE 0%, #FBFAF6 55%, #F1EAD4 100%);
+  background: linear-gradient(160deg, #F1F5F9 0%, #F8FAFC 55%, #F1EAD4 100%);
 }
 .mag-login-card {
   background: #fff;
@@ -179,7 +179,7 @@ a { transition: color 0.15s ease; }
   background: #fff;
   color: #ffffff;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 700;
   font-size: 1.5rem;
   margin: 0 auto 1.1rem;
@@ -193,7 +193,7 @@ a { transition: color 0.15s ease; }
   padding: 4px;
 }
 .mag-login-card h1 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.35rem;
   text-align: center;
@@ -202,7 +202,7 @@ a { transition: color 0.15s ease; }
 }
 .mag-login-card .sub {
   text-align: center;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -266,7 +266,7 @@ a { transition: color 0.15s ease; }
 .mag-table thead th {
   background: linear-gradient(120deg, var(--indigo-950) 0%, var(--indigo-800) 100%);
   color: #ffffff;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -580,7 +580,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 .mag-checkbox-list-wrap label:hover {
   border-color: var(--gold-500);
-  background: #F7F1DE;
+  background: #F1F5F9;
 }
 .mag-checkbox-list-wrap input[type="checkbox"] {
   accent-color: var(--indigo-950);
@@ -604,7 +604,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 0.85rem;
   flex-shrink: 0;
@@ -621,7 +621,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 .mag-personne-sous {
   font-size: 0.78rem;
   color: var(--ink-600);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* Badges pills pour classes/matieres affichees dans les tableaux */
@@ -648,7 +648,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   font-size: 0.78rem;
 }
 .mag-compteur-pill {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.72rem;
   font-weight: 600;
   background: var(--indigo-950);
@@ -659,7 +659,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 
 /* Formulaire de creation : presentation "panneau" plus premium */
 .mag-panneau-form {
-  background: linear-gradient(180deg, #FBFAF6 0%, var(--paper-100) 100%);
+  background: linear-gradient(180deg, #F8FAFC 0%, var(--paper-100) 100%);
   border: 1px solid var(--line);
   border-top: 3px solid var(--gold-500);
   border-radius: 10px;
@@ -693,5 +693,5 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   transition: background-color 0.12s ease;
 }
 .mag-table-pro tbody tr:hover {
-  background: #F7F1DE !important;
+  background: #F1F5F9 !important;
 }

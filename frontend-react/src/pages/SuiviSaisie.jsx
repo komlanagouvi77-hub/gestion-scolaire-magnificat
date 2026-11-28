@@ -142,7 +142,7 @@ export default function SuiviSaisie({ token }) {
     <>
       <div className="mag-page-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
         <div>
-          <span className="eyebrow">Direction Pédagogique</span> Suivi de la saisie des notes
+          Suivi de la saisie des notes
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "0.6rem", flexWrap: "wrap" }}>
           <button
@@ -395,29 +395,7 @@ export default function SuiviSaisie({ token }) {
                           </td>
                           <td style={{ textAlign: "center" }}>
                             <div style={{ display: "inline-flex", alignItems: "center", gap: "0.4rem" }}>
-                              {ligne.statut !== "termine" ? (
-                                <a
-                                  href={telClean ? ("https://wa.me/" + telClean + "?text=" + msgRelance) : ("https://wa.me/?text=" + msgRelance)}
-                                  target="_blank"
-                                  rel="noopener noreferrer"
-                                  className="btn-mag-outline"
-                                  style={{
-                                    fontSize: "0.72rem",
-                                    padding: "0.2rem 0.5rem",
-                                    color: "#16A34A",
-                                    borderColor: "#16A34A",
-                                    textDecoration: "none",
-                                    borderRadius: "4px",
-                                    display: "inline-flex",
-                                    alignItems: "center",
-                                    gap: "0.2rem",
-                                    fontWeight: 700,
-                                  }}
-                                  title="Envoyer un rappel officiel sur WhatsApp à l'enseignant"
-                                >
-                                  <MessageCircle size={13} /> Relancer
-                                </a>
-                              ) : null}
+                              
                               <button
                                 type="button"
                                 className="mag-btn-lien"
@@ -434,7 +412,7 @@ export default function SuiviSaisie({ token }) {
                                 }}
                                 title="Accéder à la grille de saisie des notes"
                               >
-                                Saisir →
+                                Saisir
                               </button>
                             </div>
                           </td>

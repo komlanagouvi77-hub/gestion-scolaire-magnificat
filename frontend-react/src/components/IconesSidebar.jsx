@@ -16,6 +16,28 @@ export const IconeCarnet = () => <Icone enfants={<><path d="M4 4h13a2 2 0 0 1 2 
 export const IconePresseCahier = () => <Icone enfants={<><rect x="5" y="3.5" width="14" height="17" rx="2"></rect><path d="M9 3.5V6h6V3.5"></path><path d="M8.5 11.5l2 2 4-4.5"></path><path d="M8 16h8"></path></>} />;
 export const IconeMedaille = () => <Icone enfants={<><circle cx="12" cy="9" r="5.5"></circle><path d="M9 13.5 7.5 21l4.5-2.5 4.5 2.5-1.5-7.5"></path></>} />;
 export const IconeBouclier = () => <Icone enfants={<path d="M12 2.5 4 6v6c0 5 3.4 8.4 8 9.5 4.6-1.1 8-4.5 8-9.5V6l-8-3.5Z"></path>} />;
+export const IconeUserX = () => (
+  <Icone enfants={
+    <>
+      <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"></path>
+      <circle cx="9" cy="7" r="4"></circle>
+      <line x1="17" y1="8" x2="22" y2="13"></line>
+      <line x1="22" y1="8" x2="17" y2="13"></line>
+    </>
+  } />
+);
+export const IconeCalendarOff = () => (
+  <Icone enfants={
+    <>
+      <path d="M4.2 4.2A2 2 0 0 0 3 6v14a2 2 0 0 0 2 2h14a2 2 0 0 0 1.8-1.2"></path>
+      <path d="M3 10h7m4 0h7"></path>
+      <path d="m2 2 20 20"></path>
+      <path d="M8 2v4"></path>
+      <path d="M17 2v1"></path>
+      <path d="M21 15V6a2 2 0 0 0-2-2H9"></path>
+    </>
+  } />
+);
 export const IconeDossier = () => <Icone enfants={<path d="M3 6.5a2 2 0 0 1 2-2h4l2 2h8a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-11Z"></path>} />;
 export const IconeCarte = () => <Icone enfants={<><rect x="2.5" y="5.5" width="19" height="13" rx="2"></rect><path d="M2.5 10h19"></path></>} />;
 export const IconeCle = () => <Icone enfants={<><circle cx="8" cy="15.5" r="4"></circle><path d="M11 12.5 20 3.5"></path><path d="M16.5 8 19 5.5M13.5 11l2 2"></path></>} />;

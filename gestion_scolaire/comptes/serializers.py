@@ -99,15 +99,22 @@ class DemandeInscriptionSerializer(serializers.ModelSerializer):
         required=False,
         allow_blank=True,
     )
+    traite_par_nom = serializers.SerializerMethodField()
+
+    def get_traite_par_nom(self, obj):
+        if obj.traite_par:
+            nom_complet = obj.traite_par.get_full_name()
+            return nom_complet if nom_complet.strip() else obj.traite_par.username
+        return ""
 
     class Meta:
         model = DemandeInscription
         fields = [
             "id", "type_compte", "username_souhaite", "password", "first_name", "last_name",
             "email", "telephone", "specialite", "profession", "matricules_enfants",
-            "statut", "date_demande",
+            "statut", "date_demande", "motif_refus", "traite_par_nom",
         ]
-        read_only_fields = ["id", "statut", "date_demande"]
+        read_only_fields = ["id", "statut", "date_demande", "motif_refus", "traite_par_nom"]
 
     def validate_first_name(self, value):
         val = value.strip()

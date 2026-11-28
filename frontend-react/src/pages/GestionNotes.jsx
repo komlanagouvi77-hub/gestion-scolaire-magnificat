@@ -20,6 +20,47 @@ const TYPES_EVALUATION = [
   { valeur: "composition", label: "Composition", etiquette: "Compositions" },
 ];
 
+function trierClassesOrdreScolaire(liste) {
+  if (!Array.isArray(liste)) return [];
+  const ordreNiveaux = [
+    // Primaire
+    "ci", "cp1", "cp2", "ce1", "ce2", "cm1", "cm2",
+    // Collège (6e -> 3e)
+    "6e", "6eme", "6ème", "sixieme", "sixième",
+    "5e", "5eme", "5ème", "cinquieme", "cinquième",
+    "4e", "4eme", "4ème", "quatrieme", "quatrième",
+    "3e", "3eme", "3ème", "troisieme", "troisième",
+    // Lycée (2nde -> Tle)
+    "2nde", "seconde", "2nd", "2e",
+    "1ere", "1ère", "premiere", "première", "1re",
+    "tle", "terminale"
+  ];
+
+  return [...liste].sort(function (a, b) {
+    const nomA = (a.nom || "").toLowerCase().trim();
+    const nomB = (b.nom || "").toLowerCase().trim();
+
+    const trouverIndex = function (nom, niveau) {
+      const nivStr = (niveau || "").toLowerCase().trim();
+      for (let i = 0; i < ordreNiveaux.length; i++) {
+        const prefixe = ordreNiveaux[i];
+        if (nom.startsWith(prefixe) || (nivStr && nivStr.includes(prefixe))) {
+          return i;
+        }
+      }
+      return 999;
+    };
+
+    const indexA = trouverIndex(nomA, a.niveau);
+    const indexB = trouverIndex(nomB, b.niveau);
+
+    if (indexA !== indexB) {
+      return indexA - indexB;
+    }
+    return nomA.localeCompare(nomB, "fr", { numeric: true });
+  });
+}
+
 function obtenirMention(valeurStr) {
   if (!valeurStr || valeurStr === "") return null;
   const num = parseFloat(valeurStr);
@@ -143,17 +184,14 @@ function VueNotesParent({ token }) {
   return (
     <>
       <div className="mag-page-title-ligne">
-        <div className="mag-page-title">
-          <span className="eyebrow">Espace Famille</span>
-          <h1>Relevé des Notes de mes Enfants</h1>
-        </div>
+        <h1 className="mag-page-title">Relevé des notes</h1>
         <button
           type="button"
           className="mag-btn-primary"
           style={{ width: "auto", padding: "0.55rem 1.2rem", fontSize: "0.85rem" }}
           onClick={function () { window.location.hash = "/bulletins"; }}
         >
-          Voir les Bulletins PDF →
+          Voir les bulletins PDF
         </button>
       </div>
 
@@ -167,7 +205,7 @@ function VueNotesParent({ token }) {
                 type="button"
                 onClick={function () { setEleveId(String(e.id)); }}
                 className={actif ? "mag-btn-primary" : "btn-mag-outline"}
-                style={{ padding: "0.5rem 1rem", fontSize: "0.85rem", borderRadius: "8px" }}
+                style={{ padding: "0.45rem 0.9rem", fontSize: "0.85rem", borderRadius: "6px" }}
               >
                 {e.prenom} {e.nom} ({e.classe_nom ? e.classe_nom.split(" (")[0] : "Classe"})
               </button>
@@ -176,15 +214,15 @@ function VueNotesParent({ token }) {
         </div>
       ) : null}
 
-      <div className="mag-panneau-form react-fade-in" style={{ marginBottom: "1.5rem" }}>
+      <div className="mag-card" style={{ marginBottom: "1.5rem", padding: "0.9rem 1.2rem" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
-            <label htmlFor="par-trimestre" style={{ fontWeight: 600, fontSize: "0.9rem" }}>Période :</label>
+            <label htmlFor="par-trimestre" style={{ fontWeight: 600, fontSize: "0.88rem", color: "var(--ink-700)" }}>Période :</label>
             <select
               id="par-trimestre"
               value={trimestre}
               onChange={function (e) { setTrimestre(e.target.value); }}
-              style={{ padding: "0.5rem 1rem", borderRadius: "6px", border: "1px solid var(--line)", background: "#FFF" }}
+              style={{ padding: "0.45rem 0.85rem", borderRadius: "6px", border: "1px solid var(--line)", background: "#FFF", fontSize: "0.88rem" }}
             >
               <option value="1">1er trimestre</option>
               <option value="2">2e trimestre</option>
@@ -192,18 +230,19 @@ function VueNotesParent({ token }) {
             </select>
           </div>
 
-          <div style={{ display: "flex", gap: "1rem" }}>
-            <div style={{ padding: "0.5rem 1rem", background: "rgba(22, 163, 74, 0.1)", borderRadius: "8px", border: "1px solid rgba(22, 163, 74, 0.2)" }}>
-              <span style={{ fontSize: "0.75rem", color: "#16A34A", fontWeight: 700, textTransform: "uppercase" }}>Moyenne générale</span>
-              <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "#15803D" }}>
-                {stats.mg ? stats.mg + " / 20" : "En cours"}
-              </div>
+          <div style={{ display: "flex", gap: "1.5rem", alignItems: "center", fontSize: "0.88rem" }}>
+            <div>
+              <span style={{ color: "var(--ink-600)", marginRight: "0.4rem" }}>Moyenne générale :</span>
+              <strong style={{ color: "var(--indigo-950)", fontSize: "1rem" }}>
+                {stats.mg ? stats.mg.replace(".", ",") + " / 20" : "Non calculée"}
+              </strong>
             </div>
-            <div style={{ padding: "0.5rem 1rem", background: "rgba(2, 132, 199, 0.1)", borderRadius: "8px", border: "1px solid rgba(2, 132, 199, 0.2)" }}>
-              <span style={{ fontSize: "0.75rem", color: "#0284C7", fontWeight: 700, textTransform: "uppercase" }}>Notes saisies</span>
-              <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "#0369A1" }}>
-                {stats.totalNotes} évaluation{stats.totalNotes > 1 ? "s" : ""}
-              </div>
+            <span style={{ color: "var(--line)" }}>|</span>
+            <div>
+              <span style={{ color: "var(--ink-600)", marginRight: "0.4rem" }}>Notes enregistrées :</span>
+              <strong style={{ color: "var(--indigo-950)" }}>
+                {stats.totalNotes} {stats.totalNotes > 1 ? "évaluations" : "évaluation"}
+              </strong>
             </div>
           </div>
         </div>
@@ -214,91 +253,67 @@ function VueNotesParent({ token }) {
           Aucune note n'a encore été enregistrée pour {enfantActif ? enfantActif.prenom + " " + enfantActif.nom : "cet élève"} au {trimestre === "1" ? "1er trimestre" : trimestre + "e trimestre"}.
         </div>
       ) : (
-        <div className="mag-card react-fade-in" style={{ padding: 0, overflow: "hidden" }}>
-          <table className="mag-table mag-table-pro">
+        <div className="mag-card" style={{ padding: 0, overflow: "hidden" }}>
+          <table className="mag-table">
             <thead>
               <tr>
-                <th>Discipline</th>
-                <th style={{ textAlign: "center" }}>Interrogations</th>
-                <th style={{ textAlign: "center" }}>Devoirs</th>
-                <th style={{ textAlign: "center" }}>Composition</th>
-                <th style={{ textAlign: "center" }}>Moyenne / 20</th>
-                <th style={{ textAlign: "center" }}>Mention</th>
-                <th>Enseignant & Contact</th>
+                <th style={{ width: "24%" }}>Discipline</th>
+                <th style={{ textAlign: "center", width: "14%" }}>Interrogations</th>
+                <th style={{ textAlign: "center", width: "14%" }}>Devoirs</th>
+                <th style={{ textAlign: "center", width: "12%" }}>Composition</th>
+                <th style={{ textAlign: "center", width: "12%" }}>Moyenne / 20</th>
+                <th style={{ textAlign: "center", width: "11%" }}>Mention</th>
+                <th style={{ width: "13%" }}>Enseignant</th>
               </tr>
             </thead>
             <tbody>
               {lignesMatieres.map(function (ligne) {
-                const telNettoye = ligne.telephone ? ligne.telephone.replace(/[^0-9]/g, "") : "";
                 return (
                   <tr key={ligne.matiereId}>
                     <td>
-                      <div style={{ fontWeight: 700, color: "var(--ink-900)" }}>{ligne.nomMatiere}</div>
-                      <span style={{ fontSize: "0.78rem", color: "var(--ink-500)" }}>Coeff. {ligne.coef}</span>
+                      <div style={{ fontWeight: 600, color: "var(--ink-900)" }}>{ligne.nomMatiere}</div>
+                      <div style={{ fontSize: "0.78rem", color: "var(--ink-500)" }}>Coef. {ligne.coef}</div>
                     </td>
                     <td style={{ textAlign: "center" }}>
                       {ligne.interrogations.length > 0 ? (
-                        <div style={{ display: "flex", gap: "0.3rem", justifyContent: "center", flexWrap: "wrap" }}>
-                          {ligne.interrogations.map(function (v, idx) {
-                            return <span key={idx} className="mag-badge" style={{ background: "#F1F5F9", color: "#0F172A", fontWeight: 600 }}>{v.toFixed(2)}</span>;
-                          })}
-                        </div>
-                      ) : <span style={{ color: "var(--ink-400)" }}>-</span>}
+                        ligne.interrogations.map(function (v) { return v.toFixed(2).replace(".", ","); }).join(", ")
+                      ) : (
+                        <span style={{ color: "var(--ink-400)" }}>-</span>
+                      )}
                     </td>
                     <td style={{ textAlign: "center" }}>
                       {ligne.devoirs.length > 0 ? (
-                        <div style={{ display: "flex", gap: "0.3rem", justifyContent: "center", flexWrap: "wrap" }}>
-                          {ligne.devoirs.map(function (v, idx) {
-                            return <span key={idx} className="mag-badge" style={{ background: "#F1F5F9", color: "#0F172A", fontWeight: 600 }}>{v.toFixed(2)}</span>;
-                          })}
-                        </div>
-                      ) : <span style={{ color: "var(--ink-400)" }}>-</span>}
+                        ligne.devoirs.map(function (v) { return v.toFixed(2).replace(".", ","); }).join(", ")
+                      ) : (
+                        <span style={{ color: "var(--ink-400)" }}>-</span>
+                      )}
                     </td>
                     <td style={{ textAlign: "center" }}>
-                      {ligne.composition !== null ? (
-                        <span className="mag-badge" style={{ background: "#EFF6FF", color: "#1D4ED8", fontWeight: 700, fontSize: "0.85rem" }}>
-                          {ligne.composition.toFixed(2)}
+                      {ligne.composition !== null ? ligne.composition.toFixed(2).replace(".", ",") : <span style={{ color: "var(--ink-400)" }}>-</span>}
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      <strong style={{ color: "var(--indigo-950)" }}>
+                        {ligne.moyMatiere !== "-" ? ligne.moyMatiere.replace(".", ",") : "-"}
+                      </strong>
+                    </td>
+                    <td style={{ textAlign: "center" }}>
+                      {ligne.mention !== "-" ? (
+                        <span style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--ink-700)" }}>
+                          {ligne.mention}
                         </span>
-                      ) : <span style={{ color: "var(--ink-400)" }}>-</span>}
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      <span style={{ fontWeight: 800, fontSize: "1rem", color: Number(ligne.moyMatiere) >= 10 ? "#15803D" : "#DC2626" }}>
-                        {ligne.moyMatiere}
-                      </span>
-                    </td>
-                    <td style={{ textAlign: "center" }}>
-                      <span className={"mag-badge " + (Number(ligne.moyMatiere) >= 14 ? "mag-badge-succes" : Number(ligne.moyMatiere) >= 10 ? "mag-badge-info" : "mag-badge-erreur")}>
-                        {ligne.mention}
-                      </span>
+                      ) : (
+                        <span style={{ color: "var(--ink-400)" }}>-</span>
+                      )}
                     </td>
                     <td>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "0.5rem" }}>
-                        <div>
-                          <div style={{ fontWeight: 600, fontSize: "0.85rem" }}>{ligne.enseignant}</div>
-                          {ligne.telephone ? <div style={{ fontSize: "0.78rem", color: "var(--ink-500)" }}>{ligne.telephone}</div> : null}
-                        </div>
-                        {telNettoye ? (
-                          <a
-                            href={"https://wa.me/" + telNettoye + "?text=" + encodeURIComponent("Bonjour M. " + ligne.enseignant + ", je suis le parent de " + (enfantActif ? enfantActif.prenom + " " + enfantActif.nom : "") + " au sujet de la matière " + ligne.nomMatiere + ".")}
-                            target="_blank"
-                            rel="noreferrer"
-                            style={{
-                              fontSize: "0.75rem",
-                              padding: "0.25rem 0.55rem",
-                              borderRadius: "6px",
-                              background: "#25D366",
-                              color: "#FFF",
-                              textDecoration: "none",
-                              fontWeight: 600,
-                              display: "inline-flex",
-                              alignItems: "center",
-                              gap: "0.2rem",
-                            }}
-                          >
-                            WhatsApp
-                          </a>
-                        ) : null}
+                      <div style={{ fontSize: "0.85rem", fontWeight: 500, color: "var(--ink-900)" }}>
+                        {ligne.enseignant}
                       </div>
+                      {ligne.telephone ? (
+                        <div style={{ fontSize: "0.78rem", color: "var(--ink-600)", marginTop: "2px" }}>
+                          {ligne.telephone}
+                        </div>
+                      ) : null}
                     </td>
                   </tr>
                 );
@@ -420,6 +435,10 @@ export default function GestionNotes({ token, role }) {
       })
       .catch(function () { setStatut("refuse"); });
   }, [token, estAdmin]);
+
+  const classesTriees = useMemo(function () {
+    return trierClassesOrdreScolaire(classes);
+  }, [classes]);
 
   const elevesDeLaClasse = useMemo(function () {
     if (!classeId) return [];
@@ -566,37 +585,9 @@ export default function GestionNotes({ token, role }) {
 
   return (
     <>
-      <div className="mag-page-title" style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "1rem" }}>
-        <div>
-          <span className="eyebrow">{estAdmin ? "Administration Pédagogique" : "Espace Enseignant"}</span>
-          <h1>{estAdmin ? "Consultation & Supervision des notes" : "Saisie des notes"}</h1>
-        </div>
-        <div style={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-          {estAdmin ? (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.35rem 0.75rem", borderRadius: "8px", background: "rgba(2, 132, 199, 0.1)", color: "#0284C7", fontSize: "0.82rem", fontWeight: 700 }}>
-              <ShieldCheck size={15} /> Supervision Direction
-            </span>
-          ) : (
-            <span style={{ display: "inline-flex", alignItems: "center", gap: "0.35rem", padding: "0.35rem 0.75rem", borderRadius: "8px", background: "rgba(22, 163, 74, 0.1)", color: "#16A34A", fontSize: "0.82rem", fontWeight: 700 }}>
-              <BookOpen size={15} /> Saisie Pédagogique Ouverte
-            </span>
-          )}
-        </div>
+      <div className="mag-page-title">
+        <h1>{traduireTexte("Saisie des notes")}</h1>
       </div>
-
-      {estAdmin ? (
-        <div className="mag-card" style={{ marginBottom: "1.2rem", padding: "0.9rem 1.2rem", background: "linear-gradient(135deg, rgba(2, 132, 199, 0.05), rgba(79, 70, 229, 0.05))" }}>
-          <div style={{ fontSize: "0.86rem", color: "var(--ink-700)", lineHeight: 1.5 }}>
-            <strong>Mode supervision académique :</strong> Vous visualisez en temps réel les notes saisies par le corps professoral. Vous pouvez inspecter les évaluations, contrôler les moyennes de classe et intervenir pour des régularisations exceptionnelles.
-          </div>
-        </div>
-      ) : (
-        <div className="mag-card" style={{ marginBottom: "1.2rem", padding: "0.9rem 1.2rem", background: "rgba(248, 250, 252, 0.8)" }}>
-          <div style={{ fontSize: "0.86rem", color: "var(--ink-700)", lineHeight: 1.5 }}>
-            <strong>Saisie des évaluations :</strong> Choisissez votre classe et votre matière, puis sélectionnez le type d'évaluation (Devoir, Interrogation ou Composition) pour enregistrer les notes de vos élèves.
-          </div>
-        </div>
-      )}
 
       {classes.length === 0 ? (
         <Alerte>
@@ -604,74 +595,178 @@ export default function GestionNotes({ token, role }) {
         </Alerte>
       ) : (
         <>
-          {/* Panneau de sélection de la classe et matière */}
-          <div className="mag-panneau-form react-fade-in" style={{ marginBottom: "1.5rem" }}>
-            <div className="mag-grid-2">
-              <div className="mag-field">
-                <label htmlFor="notes-classe">Classe</label>
-                <select id="notes-classe" value={classeId} onChange={function (e) { setClasseId(e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px", fontWeight: 600 }}>
+          {/* Panneau de sélection de la classe, matière, période et type d'évaluation */}
+          <div
+            className="mag-panneau-form react-fade-in"
+            style={{
+              marginBottom: "1.5rem",
+              background: "#FFFFFF",
+              border: "1px solid #E2E8F0",
+              borderRadius: "8px",
+              padding: "1.2rem",
+            }}
+          >
+            <div
+              style={{
+                display: "grid",
+                gridTemplateColumns: "repeat(auto-fit, minmax(210px, 1fr))",
+                gap: "1.2rem",
+                alignItems: "flex-end",
+              }}
+            >
+              <div className="mag-field" style={{ margin: 0 }}>
+                <label
+                  htmlFor="notes-classe"
+                  style={{
+                    fontSize: "0.82rem",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "0.35rem",
+                    display: "block",
+                  }}
+                >
+                  Classe
+                </label>
+                <select
+                  id="notes-classe"
+                  value={classeId}
+                  onChange={function (e) { setClasseId(e.target.value); }}
+                  style={{
+                    width: "100%",
+                    height: "38px",
+                    padding: "0 0.75rem",
+                    border: "1px solid #CBD5E1",
+                    borderRadius: "6px",
+                    background: "#FFF",
+                    fontSize: "0.88rem",
+                    fontWeight: 600,
+                    color: "#0F172A",
+                    boxSizing: "border-box",
+                  }}
+                >
                   <option value="">-- Sélectionner la classe --</option>
-                  {classes.map(function (c) { return <option key={c.id} value={c.id}>{c.nom}</option>; })}
+                  {classesTriees.map(function (c) { return <option key={c.id} value={c.id}>{c.nom}</option>; })}
                 </select>
               </div>
-              <div className="mag-field">
-                <label htmlFor="notes-matiere">Matière</label>
-                <select id="notes-matiere" value={matiereId} onChange={function (e) { setMatiereId(e.target.value); }} style={{ width: "100%", padding: "0.6rem", border: "1px solid var(--line)", borderRadius: "6px", fontWeight: 600 }}>
+
+              <div className="mag-field" style={{ margin: 0 }}>
+                <label
+                  htmlFor="notes-matiere"
+                  style={{
+                    fontSize: "0.82rem",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "0.35rem",
+                    display: "block",
+                  }}
+                >
+                  Matière
+                </label>
+                <select
+                  id="notes-matiere"
+                  value={matiereId}
+                  onChange={function (e) { setMatiereId(e.target.value); }}
+                  style={{
+                    width: "100%",
+                    height: "38px",
+                    padding: "0 0.75rem",
+                    border: "1px solid #CBD5E1",
+                    borderRadius: "6px",
+                    background: "#FFF",
+                    fontSize: "0.88rem",
+                    fontWeight: 600,
+                    color: "#0F172A",
+                    boxSizing: "border-box",
+                  }}
+                >
                   <option value="">-- Sélectionner la matière --</option>
                   {matieres.map(function (m) { return <option key={m.id} value={m.id}>{m.nom}</option>; })}
                 </select>
               </div>
-            </div>
 
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem", marginTop: "1rem", borderTop: "1px solid var(--line, #E2E8F0)", paddingTop: "1rem" }}>
-              <div>
-                <label htmlFor="notes-trimestre" style={{ fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: "0.3rem" }}>Période</label>
-                <select id="notes-trimestre" value={trimestre} onChange={function (e) { setTrimestre(e.target.value); }} style={{ padding: "0.55rem 0.8rem", border: "1px solid var(--line)", borderRadius: "6px", fontWeight: 600 }}>
+              <div className="mag-field" style={{ margin: 0 }}>
+                <label
+                  htmlFor="notes-trimestre"
+                  style={{
+                    fontSize: "0.82rem",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "0.35rem",
+                    display: "block",
+                  }}
+                >
+                  Période
+                </label>
+                <select
+                  id="notes-trimestre"
+                  value={trimestre}
+                  onChange={function (e) { setTrimestre(e.target.value); }}
+                  style={{
+                    width: "100%",
+                    height: "38px",
+                    padding: "0 0.75rem",
+                    border: "1px solid #CBD5E1",
+                    borderRadius: "6px",
+                    background: "#FFF",
+                    fontSize: "0.88rem",
+                    fontWeight: 600,
+                    color: "#0F172A",
+                    boxSizing: "border-box",
+                  }}
+                >
                   {TRIMESTRES.map(function (t) { return <option key={t.valeur} value={t.valeur}>{traduireTexte(t.label)}</option>; })}
                 </select>
               </div>
 
-              {/* Onglets interactifs des types d'évaluation avec comptage en temps réel */}
-              <div>
-                <label style={{ fontSize: "0.82rem", fontWeight: 700, display: "block", marginBottom: "0.3rem" }}>Type d'évaluation</label>
-                <div style={{ display: "inline-flex", background: "var(--line, #E2E8F0)", padding: "3px", borderRadius: "8px", gap: "2px" }}>
+              <div className="mag-field" style={{ margin: 0 }}>
+                <label
+                  style={{
+                    fontSize: "0.82rem",
+                    fontWeight: 600,
+                    color: "#475569",
+                    marginBottom: "0.35rem",
+                    display: "block",
+                  }}
+                >
+                  Type d'évaluation
+                </label>
+                <div
+                  style={{
+                    display: "flex",
+                    background: "#F1F5F9",
+                    padding: "3px",
+                    borderRadius: "6px",
+                    gap: "3px",
+                    border: "1px solid #E2E8F0",
+                    height: "38px",
+                    boxSizing: "border-box",
+                    alignItems: "center",
+                  }}
+                >
                   {TYPES_EVALUATION.map(function (t) {
                     const actif = typeEvaluation === t.valeur;
-                    const count = compteurParType[t.valeur] || 0;
                     return (
                       <button
                         key={t.valeur}
                         type="button"
                         onClick={function () { setTypeEvaluation(t.valeur); }}
                         style={{
+                          flex: 1,
+                          height: "100%",
                           border: "none",
                           background: actif ? "#FFFFFF" : "transparent",
-                          color: actif ? "var(--indigo-950)" : "var(--ink-600)",
-                          padding: "0.45rem 0.9rem",
-                          borderRadius: "6px",
-                          fontWeight: actif ? 800 : 600,
-                          fontSize: "0.84rem",
+                          color: actif ? "#1E3A8A" : "#64748B",
+                          borderRadius: "4px",
+                          fontWeight: actif ? 700 : 500,
+                          fontSize: "0.82rem",
                           cursor: "pointer",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.4rem",
-                          boxShadow: actif ? "0 1px 3px rgba(0,0,0,0.1)" : "none",
+                          boxShadow: actif ? "0 1px 2px rgba(0,0,0,0.08)" : "none",
+                          whiteSpace: "nowrap",
+                          padding: "0 0.4rem",
                           transition: "all 0.15s ease",
                         }}
                       >
-                        <span>{t.label}</span>
-                        <span
-                          style={{
-                            fontSize: "0.72rem",
-                            padding: "0.1rem 0.4rem",
-                            borderRadius: "10px",
-                            background: count > 0 ? (actif ? "rgba(22, 163, 74, 0.15)" : "rgba(22, 163, 74, 0.1)") : "rgba(100, 116, 139, 0.1)",
-                            color: count > 0 ? "#15803D" : "var(--ink-500)",
-                            fontWeight: 700,
-                          }}
-                        >
-                          {count > 0 ? `${count} noté${count > 1 ? "s" : ""}` : "0"}
-                        </span>
+                        {t.label}
                       </button>
                     );
                   })}
@@ -692,43 +787,6 @@ export default function GestionNotes({ token, role }) {
             <Alerte>{traduireTexte("Aucun élève dans cette classe.")}</Alerte>
           ) : (
             <form onSubmit={soumettre} className="react-fade-in">
-              {/* Bannière de statistiques instantanées de l'évaluation */}
-              <div className="mag-card" style={{ marginBottom: "1.2rem", padding: "1rem 1.4rem", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "1rem" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "1.5rem", flexWrap: "wrap" }}>
-                  <div>
-                    <div style={{ fontSize: "0.78rem", color: "var(--ink-500)", fontWeight: 600 }}>Effectif noté</div>
-                    <div style={{ fontSize: "1.2rem", fontWeight: 800, color: "var(--indigo-950)" }}>
-                      {statsEvaluation.count} / {statsEvaluation.total} élèves
-                    </div>
-                  </div>
-                  <div style={{ width: "1px", height: "30px", background: "var(--line, #E2E8F0)" }}></div>
-                  <div>
-                    <div style={{ fontSize: "0.78rem", color: "var(--ink-500)", fontWeight: 600 }}>Moyenne de l'évaluation</div>
-                    <div style={{ fontSize: "1.2rem", fontWeight: 800, color: statsEvaluation.moyenne && parseFloat(statsEvaluation.moyenne) >= 10 ? "#16A34A" : "var(--indigo-950)" }}>
-                      {statsEvaluation.moyenne !== null ? `${statsEvaluation.moyenne} / 20` : "-"}
-                    </div>
-                  </div>
-                  <div style={{ width: "1px", height: "30px", background: "var(--line, #E2E8F0)" }}></div>
-                  <div>
-                    <div style={{ fontSize: "0.78rem", color: "var(--ink-500)", fontWeight: 600 }}>Taux de réussite (≥ 10)</div>
-                    <div style={{ fontSize: "1.2rem", fontWeight: 800, color: statsEvaluation.tauxReussite >= 50 ? "#16A34A" : "#DC2626" }}>
-                      {statsEvaluation.count > 0 ? `${statsEvaluation.tauxReussite}%` : "-"}
-                    </div>
-                  </div>
-                </div>
-
-                {estAdmin ? (
-                  <button
-                    type="button"
-                    onClick={function () { window.location.hash = "/bulletins"; }}
-                    className="btn-mag-outline"
-                    style={{ fontSize: "0.82rem", padding: "0.45rem 0.9rem", display: "inline-flex", alignItems: "center", gap: "0.4rem" }}
-                  >
-                    <BarChart2 size={14} /> Délibérations &amp; Bulletins de classe <ArrowRight size={14} />
-                  </button>
-                ) : null}
-              </div>
-
               {estVerrouille && !estAdmin ? (
                 <div style={{ marginBottom: "1.2rem", padding: "0.85rem 1.2rem", background: "rgba(239, 68, 68, 0.08)", border: "1px solid rgba(239, 68, 68, 0.3)", borderRadius: "8px", color: "var(--ink-800)", fontSize: "0.9rem", display: "flex", alignItems: "center", gap: "0.5rem" }}>
                   <Lock size={16} color="#DC2626" />
@@ -736,34 +794,32 @@ export default function GestionNotes({ token, role }) {
                 </div>
               ) : null}
 
-              {/* Tableau épuré des notes individuelles */}
-              <div className="mag-table-wrap">
+              {/* Tableau de saisie des notes */}
+              <div className="mag-table-wrap" style={{ border: "1px solid #E2E8F0", borderRadius: "6px", overflow: "hidden" }}>
                 <table className="mag-table mag-table-pro">
                   <thead>
                     <tr>
-                      <th style={{ width: "120px" }}>Matricule</th>
-                      <th>Nom &amp; Prénoms de l'élève</th>
-                      <th style={{ width: "160px", textAlign: "center" }}>Note / 20</th>
-                      <th style={{ width: "160px", textAlign: "center" }}>Mention</th>
-                      <th style={{ width: "130px", textAlign: "center" }}>État</th>
+                      <th style={{ width: "170px", minWidth: "160px", whiteSpace: "nowrap" }}>Matricule</th>
+                      <th style={{ minWidth: "220px" }}>Nom &amp; Prénoms de l'élève</th>
+                      <th style={{ width: "150px", textAlign: "center", whiteSpace: "nowrap" }}>Note / 20</th>
+                      <th style={{ width: "150px", textAlign: "center", whiteSpace: "nowrap" }}>Mention</th>
                     </tr>
                   </thead>
                   <tbody>
                     {elevesDeLaClasse.map(function (eleve) {
                       const noteVal = valeurs[eleve.id] || "";
                       const mention = obtenirMention(noteVal);
-                      const aDejaUneNote = notesExistantes.some(function (n) { return String(n.eleve) === String(eleve.id); });
                       const estDesactive = estVerrouille && !estAdmin;
 
                       return (
                         <tr key={eleve.id}>
-                          <td>
-                            <span className="mag-badge" style={{ background: "rgba(100, 116, 139, 0.08)", color: "var(--ink-700)", fontWeight: 700, fontSize: "0.78rem" }}>
-                              {eleve.matricule || `ELEVE-${eleve.id}`}
+                          <td style={{ whiteSpace: "nowrap" }}>
+                            <span style={{ fontWeight: 600, color: "#334155", fontSize: "0.85rem", whiteSpace: "nowrap", letterSpacing: "0.02em" }}>
+                              {(eleve.matricule || `ELEVE-${eleve.id}`).toUpperCase()}
                             </span>
                           </td>
-                          <td>
-                            <div style={{ fontWeight: 700, color: "var(--ink-900)" }}>
+                          <td style={{ whiteSpace: "nowrap" }}>
+                            <div style={{ fontWeight: 600, color: "#0F172A" }}>
                               {eleve.nom} {eleve.prenom}
                             </div>
                           </td>
@@ -785,27 +841,27 @@ export default function GestionNotes({ token, role }) {
                               }}
                               placeholder="-- / 20"
                               style={{
-                                width: "110px",
+                                width: "100px",
                                 textAlign: "center",
                                 padding: "0.45rem",
-                                fontWeight: 800,
-                                fontSize: "1rem",
-                                borderRadius: "8px",
-                                border: noteVal !== "" ? "2px solid #0284C7" : "1px solid var(--line, #CBD5E1)",
+                                fontWeight: 700,
+                                fontSize: "0.95rem",
+                                borderRadius: "6px",
+                                border: "1px solid var(--line, #CBD5E1)",
                                 background: estDesactive ? "#F1F5F9" : "#FFFFFF",
                                 color: noteVal !== "" && parseFloat(noteVal) >= 10 ? "#15803D" : (noteVal !== "" ? "#DC2626" : "inherit"),
                               }}
                             />
                           </td>
                           <td style={{ textAlign: "center" }}>
-                            {mention ? (
+                            {noteVal !== "" && mention ? (
                               <span
                                 style={{
                                   display: "inline-block",
-                                  padding: "0.25rem 0.6rem",
-                                  borderRadius: "12px",
+                                  padding: "0.2rem 0.55rem",
+                                  borderRadius: "4px",
                                   fontSize: "0.78rem",
-                                  fontWeight: 700,
+                                  fontWeight: 600,
                                   background: mention.fond,
                                   color: mention.couleur,
                                 }}
@@ -813,16 +869,7 @@ export default function GestionNotes({ token, role }) {
                                 {mention.texte}
                               </span>
                             ) : (
-                              <span style={{ color: "var(--ink-400)", fontSize: "0.8rem" }}>En attente</span>
-                            )}
-                          </td>
-                          <td style={{ textAlign: "center" }}>
-                            {aDejaUneNote ? (
-                              <span style={{ display: "inline-flex", alignItems: "center", gap: "0.25rem", color: "#16A34A", fontSize: "0.78rem", fontWeight: 700 }}>
-                                <CheckCircle2 size={14} /> Enregistrée
-                              </span>
-                            ) : (
-                              <span style={{ color: "var(--ink-400)", fontSize: "0.78rem" }}>Non saisie</span>
+                              <span style={{ color: "var(--ink-400)", fontSize: "0.8rem" }}>-</span>
                             )}
                           </td>
                         </tr>
@@ -832,27 +879,79 @@ export default function GestionNotes({ token, role }) {
                 </table>
               </div>
 
-              {/* Bouton d'action adapté au rôle */}
-              <div style={{ marginTop: "1.5rem", display: "flex", justifyContent: "flex-end", gap: "1rem" }}>
-                {estAdmin ? (
+              {/* Pied de tableau professionnel */}
+              <div
+                style={{
+                  marginTop: "0.85rem",
+                  background: "#F8FAFC",
+                  border: "1px solid #E2E8F0",
+                  borderRadius: "6px",
+                  padding: "0.85rem 1.25rem",
+                  display: "flex",
+                  justifyContent: "space-between",
+                  alignItems: "center",
+                  flexWrap: "wrap",
+                  gap: "1rem",
+                }}
+              >
+                <div style={{ display: "flex", alignItems: "center", gap: "1.2rem", flexWrap: "wrap", fontSize: "0.88rem" }}>
+                  <div>
+                    <span style={{ color: "#64748B", marginRight: "0.45rem", fontWeight: 500 }}>
+                      Moyenne de la classe :
+                    </span>
+                    <strong style={{ color: statsEvaluation.moyenne ? "#1E3A8A" : "#94A3B8", fontSize: "1rem" }}>
+                      {statsEvaluation.moyenne ? (statsEvaluation.moyenne.replace(".", ",") + " / 20") : "-- / 20"}
+                    </strong>
+                  </div>
+                  <span style={{ color: "#CBD5E1" }}>|</span>
+                  <div>
+                    <span style={{ color: "#64748B", marginRight: "0.45rem", fontWeight: 500 }}>
+                      Notes saisies :
+                    </span>
+                    <strong style={{ color: "#0F172A" }}>
+                      {statsEvaluation.count} / {statsEvaluation.total} élève{statsEvaluation.total > 1 ? "s" : ""}
+                    </strong>
+                  </div>
+                  {statsEvaluation.moyenne ? (
+                    <>
+                      <span style={{ color: "#CBD5E1" }}>|</span>
+                      <div>
+                        <span style={{ color: "#64748B", marginRight: "0.45rem", fontWeight: 500 }}>
+                          Taux de réussite :
+                        </span>
+                        <strong style={{ color: statsEvaluation.tauxReussite >= 50 ? "#16A34A" : "#DC2626" }}>
+                          {statsEvaluation.tauxReussite}%
+                        </strong>
+                      </div>
+                    </>
+                  ) : null}
+                </div>
+
+                <div>
                   <button
                     type="submit"
-                    className="mag-btn-primary"
-                    disabled={enCours}
-                    style={{ background: "#0284C7", borderColor: "#0284C7", padding: "0.6rem 1.6rem", fontWeight: 700 }}
+                    disabled={enCours || (estVerrouille && !estAdmin)}
+                    style={{
+                      width: "auto",
+                      background: "#1E3A8A",
+                      color: "#FFFFFF",
+                      border: "1px solid #1E3A8A",
+                      padding: "0.55rem 1.6rem",
+                      fontWeight: 600,
+                      fontSize: "0.88rem",
+                      borderRadius: "6px",
+                      cursor: (enCours || (estVerrouille && !estAdmin)) ? "not-allowed" : "pointer",
+                      opacity: (enCours || (estVerrouille && !estAdmin)) ? 0.6 : 1,
+                      display: "inline-flex",
+                      alignItems: "center",
+                      gap: "0.5rem",
+                      boxShadow: "0 1px 2px rgba(0,0,0,0.05)",
+                      transition: "all 0.15s ease",
+                    }}
                   >
-                    {enCours ? <span className="react-spinner"></span> : "Enregistrer les modifications (Supervision)"}
+                    {enCours ? <span className="react-spinner"></span> : "Enregistrer les notes"}
                   </button>
-                ) : (
-                  <button
-                    type="submit"
-                    className="mag-btn-primary"
-                    disabled={enCours || estVerrouille}
-                    style={{ background: "#16A34A", borderColor: "#16A34A", padding: "0.6rem 1.8rem", fontWeight: 800 }}
-                  >
-                    {enCours ? <span className="react-spinner"></span> : "Enregistrer mes notes"}
-                  </button>
-                )}
+                </div>
               </div>
             </form>
           )}

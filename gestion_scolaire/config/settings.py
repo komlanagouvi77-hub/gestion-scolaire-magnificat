@@ -198,6 +198,14 @@ AUTH_PASSWORD_VALIDATORS = [
     {'NAME': 'django.contrib.auth.password_validation.NumericPasswordValidator'},
 ]
 
+# Cache en mémoire locale (gestion brute-force et limitation du login)
+CACHES = {
+    'default': {
+        'BACKEND': 'django.core.cache.backends.locmem.LocMemCache',
+        'LOCATION': 'magnificat-auth-cache',
+    }
+}
+
 
 LANGUAGE_CODE = 'fr-fr'
 TIME_ZONE = 'Africa/Lome'

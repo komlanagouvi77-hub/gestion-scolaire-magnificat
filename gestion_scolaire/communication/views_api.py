@@ -153,6 +153,11 @@ def correspondants_messagerie(request):
                 "nom": c.get_full_name() or c.username,
                 "role": "enseignant" if hasattr(c, "enseignant") else "parent",
                 "telephone": getattr(c, "telephone", "") or "",
+                "matiere": (
+                    ", ".join([m.nom for m in c.matieres.all()])
+                    if hasattr(c, "matieres") and c.matieres.exists()
+                    else (getattr(c, "specialite", "") or "Enseignant")
+                ) if hasattr(c, "enseignant") else "Parent d'élève",
             }
             for c in correspondants
         ],

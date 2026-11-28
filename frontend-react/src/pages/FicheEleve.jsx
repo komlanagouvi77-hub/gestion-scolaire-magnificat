@@ -122,7 +122,7 @@ export default function FicheEleve({ eleveId, token, role }) {
   return (
     <>
       <div className="mag-page-title">
-        <span className="eyebrow">Registre</span> {eleve.nom} {eleve.prenom}
+        {eleve.nom} {eleve.prenom}
       </div>
 
       {message && !peutAjouterObservation ? <Alerte type={message.type}>{message.texte}</Alerte> : null}
@@ -168,30 +168,7 @@ export default function FicheEleve({ eleveId, token, role }) {
                       <div style={{ fontSize: "0.78rem", color: "#0284C7", fontWeight: 600 }}>{prof.specialite || "Enseignant"}</div>
                       <div style={{ fontSize: "0.78rem", color: "var(--ink-500)" }}>{prof.telephone || "Numéro non renseigné"}</div>
                     </div>
-                    {telClean ? (
-                      <a
-                        href={"https://wa.me/" + telClean + "?text=" + encodeURIComponent("Bonjour " + (prof.nom || "") + ", je vous contacte en tant que parent de " + (eleve.nom || "") + " " + (eleve.prenom || "") + " (" + (eleve.classe_nom || "") + ") au sujet du suivi scolaire de mon enfant.")}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-mag-outline"
-                        style={{
-                          fontSize: "0.75rem",
-                          padding: "0.25rem 0.65rem",
-                          color: "#16A34A",
-                          borderColor: "#16A34A",
-                          textDecoration: "none",
-                          borderRadius: "4px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.25rem",
-                          marginLeft: "0.5rem",
-                          fontWeight: 700,
-                        }}
-                        title="Échanger sur WhatsApp"
-                      >
-                        <MessageCircle size={13} /> WhatsApp
-                      </a>
-                    ) : null}
+                    
                     <button
                       type="button"
                       onClick={function () { window.location.hash = "/messagerie"; }}
@@ -234,29 +211,7 @@ export default function FicheEleve({ eleveId, token, role }) {
                       <div style={{ fontWeight: 600, fontSize: "0.9rem" }}>{p.nom}</div>
                       <div style={{ fontSize: "0.8rem", color: "var(--ink-600)" }}>{p.telephone || "Aucun numero"}</div>
                     </div>
-                    {p.telephone ? (
-                      <a
-                        href={"https://wa.me/" + p.telephone.replace(/[^0-9]/g, "") + "?text=" + encodeURIComponent("Bonjour " + (p.nom || "") + ", je vous contacte depuis l'administration du Complexe Scolaire Le Magnificat (Lome) au sujet de votre enfant " + (eleve.nom || "") + " " + (eleve.prenom || "") + " (" + (eleve.classe_nom || "") + ").")}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="btn-mag-outline"
-                        style={{
-                          fontSize: "0.75rem",
-                          padding: "0.2rem 0.6rem",
-                          color: "#16A34A",
-                          borderColor: "#16A34A",
-                          textDecoration: "none",
-                          borderRadius: "4px",
-                          display: "inline-flex",
-                          alignItems: "center",
-                          gap: "0.25rem",
-                          marginLeft: "0.5rem",
-                        }}
-                        title="Contacter sur WhatsApp"
-                      >
-                        <MessageCircle size={13} /> WhatsApp
-                      </a>
-                    ) : null}
+                    
                   </div>
                 );
               })}

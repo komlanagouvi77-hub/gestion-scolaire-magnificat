@@ -4,7 +4,6 @@
 // Le compte n'est cree qu'apres validation manuelle par l'administration.
 import { useState, useEffect, useRef } from "react";
 import { soumettreDemandeAcces, obtenirIdentitePublique } from "../api.js";
-import SelecteurLangue from "../components/SelecteurLangue.jsx";
 import { traduireTexte } from "../localisation.js";
 
 function IconePersonne() {
@@ -699,7 +698,7 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
         </div>
         <div className="react-login-formulaire-zone">
           <div className="react-login-formulaire-carte react-demande-succes-carte">
-            <div className="react-demande-succes-icone">✓</div>
+            <div className="react-demande-succes-icone"><IconeCheck /></div>
             <h2 style={{ color: "var(--green-600)", textAlign: "center", marginBottom: "0.5rem" }}>
               {langue === "en" ? "Request Recorded" : "Demande enregistrée"}
             </h2>
@@ -708,14 +707,22 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 ? "Your access request has been sent with end-to-end encryption to the school administration. It will be reviewed by the school board. Once approved, you can log in immediately with your username and password."
                 : "Votre demande d'accès a été transmise avec chiffrement de bout en bout à l'administration de l'établissement. Elle sera examinée par la direction. Une fois validée, vous pourrez vous connecter immédiatement avec votre identifiant et votre mot de passe."}
             </p>
-            <div className="react-securite-carte" style={{ marginBottom: "1.5rem" }}>
-              <div className="react-securite-en-tete">
-                <div className="react-securite-badge-icone"><IconeBouclier /></div>
-                <div className="react-securite-titre-bloc">
-                  <strong>{langue === "en" ? "Confidentiality Preserved" : "Confidentialité préservée"}</strong>
-                  <span>{langue === "en" ? "Your password has been irreversibly hashed" : "Votre mot de passe a été haché de manière irréversible"}</span>
-                </div>
-              </div>
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "0.45rem",
+                margin: "1rem 0 1.5rem",
+                fontSize: "0.82rem",
+                color: "#64748B",
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#64748B" strokeWidth="2">
+                <rect x="5" y="11" width="14" height="9" rx="2"></rect>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+              </svg>
+              <span>{langue === "en" ? "Confidentiality preserved • Manual review by school administration" : "Confidentialité préservée • Examen par l'administration"}</span>
             </div>
             <a href="#/" className="mag-btn-primary" style={{ display: "block", textAlign: "center", textDecoration: "none" }}>
               {langue === "en" ? "Back to login page" : "Retour à la page de connexion"}
@@ -768,12 +775,8 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
       </div>
 
       {/* Zone du formulaire */}
-      <div className="react-login-formulaire-zone">
-        <div className="react-login-langue">
-          <SelecteurLangue langue={langue} onChangerLangue={onChangerLangue} />
-        </div>
-
-        <div className="react-login-formulaire-carte" style={{ maxWidth: "560px" }}>
+      <div className="react-login-formulaire-zone" style={{ paddingBottom: "3.5rem" }}>
+        <div className="react-login-formulaire-carte" style={{ maxWidth: "560px", marginBottom: "2.5rem" }}>
           <h2>{langue === "en" ? "Access Request" : "Demande d'accès"}</h2>
           <p className="react-login-sous-titre">
             {langue === "en"
@@ -933,16 +936,16 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
               <ChampFlottant
                 inputRef={inputRefs.confirmPassword}
                 nomChamp="champ_confirm_secret"
-                label={langue === "en" ? "Confirm password" : "Confirmer mot de passe"}
+                label={langue === "en" ? "Confirm password" : "Confirmation"}
                 type={confirmerVisible ? "text" : "password"}
                 valeur={confirmPassword}
                 requis={true}
-                placeholder={langue === "en" ? "Retype exact password" : "Retapez exactement le mot de passe"}
+                placeholder={langue === "en" ? "Confirm password" : "Confirmation"}
                 autoCompleteValeur="new-password"
                 onChange={function (e) { setConfirmPassword(e.target.value); }}
                 onBlur={function () { marquerTouche("confirmPassword"); }}
                 erreur={touches.confirmPassword && erreurs.confirmPassword}
-                succesMsg={confirmPassword && password && confirmPassword === password ? (langue === "en" ? "✓ Passwords match" : "✓ Mots de passe identiques") : null}
+                succesMsg={confirmPassword && password && confirmPassword === password ? "Mots de passe identiques" : null}
                 icone={<IconeCadenas />}
                 boutonAction={
                   <button
@@ -973,19 +976,19 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 </div>
                 <div className="react-force-criteres">
                   <div className={"react-critere-item" + (aAuMoins8 ? " valide" : "")}>
-                    {aAuMoins8 ? <IconeCheck /> : "○"} {langue === "en" ? "8 characters minimum" : "8 caractères minimum"}
+                    {aAuMoins8 ? <IconeCheck /> : "•"} 8 caractères minimum
                   </div>
                   <div className={"react-critere-item" + (aMajuscule && aMinuscule ? " valide" : "")}>
-                    {aMajuscule && aMinuscule ? <IconeCheck /> : "○"} {langue === "en" ? "Uppercase and lowercase" : "Majuscule et minuscule"}
+                    {aMajuscule && aMinuscule ? <IconeCheck /> : "•"} Majuscule et minuscule
                   </div>
                   <div className={"react-critere-item" + (aChiffre ? " valide" : "")}>
-                    {aChiffre ? <IconeCheck /> : "○"} {langue === "en" ? "At least 1 digit (0-9)" : "Au moins 1 chiffre (0-9)"}
+                    {aChiffre ? <IconeCheck /> : "•"} Au moins 1 chiffre (0-9)
                   </div>
                   <div className={"react-critere-item" + (aSpecial ? " valide" : "")}>
-                    {aSpecial ? <IconeCheck /> : "○"} {langue === "en" ? "Special character (@, #, !)" : "Caractère spécial (@, #, !)"}
+                    {aSpecial ? <IconeCheck /> : "•"} Caractère spécial (@, #, !)
                   </div>
                   <div className={"react-critere-item" + (pasDeDonneesPerso && !estTrivial ? " valide" : "")}>
-                    {pasDeDonneesPerso && !estTrivial ? <IconeCheck /> : "○"} {langue === "en" ? "Different from name & username" : "Distinct du nom & prénom"}
+                    {pasDeDonneesPerso && !estTrivial ? <IconeCheck /> : "•"} Distinct du nom &amp; prénom
                   </div>
                 </div>
               </div>
@@ -1069,101 +1072,10 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
               </div>
             )}
 
-            {/* Section 4 : Garantie Institutionnelle de Confidentialité & Sécurité Ultra Pro (Bilingue) */}
-            <div className="react-securite-carte">
-              <div className="react-securite-en-tete">
-                <div className="react-securite-badge-icone">
-                  <IconeBouclier />
-                </div>
-                <div className="react-securite-titre-bloc">
-                  <strong>
-                    {langue === "en"
-                      ? "Institutional Privacy & Security Guarantee"
-                      : "Garantie Institutionnelle de Confidentialité & Sécurité"}
-                  </strong>
-                  <span>
-                    {langue === "en"
-                      ? "Certified framework for school and personal data protection"
-                      : "Cadre certifié de protection des données scolaires et personnelles"}
-                  </span>
-                </div>
-              </div>
-
-              {/* Badges de confiance */}
-              <div className="react-securite-badges-ligne">
-                <span className="react-securite-badge-pill">
-                  <IconeCle /> {langue === "en" ? "TLS 256-bit Encryption" : "Chiffrement TLS 256-bit"}
-                </span>
-                <span className="react-securite-badge-pill">
-                  <IconeCadenas /> {langue === "en" ? "Salted PBKDF2 Hashing" : "Hachage PBKDF2 Salé"}
-                </span>
-                <span className="react-securite-badge-pill">
-                  <IconeBouclier /> {langue === "en" ? "Human Verification" : "Validation Humaine"}
-                </span>
-                <span className="react-securite-badge-pill">
-                  <IconeDocument /> {langue === "en" ? "Professional Confidentiality" : "Secret Professionnel"}
-                </span>
-              </div>
-
-              <ul className="react-securite-points">
-                <li>
-                  <div className="react-securite-point-icone">
-                    <IconeCheck />
-                  </div>
-                  <div className="react-securite-point-texte">
-                    <strong>
-                      {langue === "en" ? "Strong cryptographic hashing: " : "Hachage cryptographique fort : "}
-                    </strong>
-                    {langue === "en"
-                      ? "Your password is irreversibly converted via cryptographic algorithm upon submission. It is never stored in plain text and remains strictly inaccessible, even to administrators."
-                      : "Votre mot de passe est converti de manière irréversible par algorithme cryptographique dès l'envoi. Il n'est jamais stocké en clair et demeure strictement inaccessible, même aux administrateurs."}
-                  </div>
-                </li>
-                <li>
-                  <div className="react-securite-point-icone">
-                    <IconeCheck />
-                  </div>
-                  <div className="react-securite-point-texte">
-                    <strong>
-                      {langue === "en" ? "Access control and human verification: " : "Contrôle d'accès et validation humaine : "}
-                    </strong>
-                    {langue === "en"
-                      ? "To preserve institutional integrity, each registration undergoes a rigorous review by the administration prior to activation."
-                      : "Pour garantir l'intégrité de l'établissement, chaque inscription fait l'objet d'un examen minutieux par la direction avant toute activation."}
-                  </div>
-                </li>
-                <li>
-                  <div className="react-securite-point-icone">
-                    <IconeCheck />
-                  </div>
-                  <div className="react-securite-point-texte">
-                    <strong>
-                      {langue === "en" ? "Professional secrecy & exclusive purpose: " : "Secret professionnel et finalité exclusive : "}
-                    </strong>
-                    {langue === "en"
-                      ? "Your contact details and family relationships are reserved exclusively for school communications. Zero resale, zero soliciting, zero third-party disclosure."
-                      : "Vos coordonnées et liens de parenté sont réservés exclusivement à la communication scolaire de l'établissement. Zéro revente, zéro démarchage, zéro communication à des tiers."}
-                  </div>
-                </li>
-              </ul>
-
-              <button
-                type="button"
-                className="react-securite-btn-charte"
-                onClick={function () { setModalCharteOuverte(true); }}
-              >
-                <IconeDocument />
-                <span>
-                  {langue === "en"
-                    ? "View Complete Privacy Policy & Data Protection Charter"
-                    : "Consulter la Charte Intégrale de Confidentialité & Protection des Données"}
-                </span>
-              </button>
-            </div>
-
-            {/* Case à cocher obligatoire de consentement légal */}
+            {/* Case à cocher sobre de certification */}
             <div
               className={"react-consentement-zone" + (touches.consentement && erreurs.consentement ? " erreur" : "")}
+              style={{ marginTop: "1rem" }}
               onClick={function () {
                 setConsentement(!consentement);
                 marquerTouche("consentement");
@@ -1191,11 +1103,35 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
               </label>
             </div>
             {touches.consentement && erreurs.consentement ? (
-              <div className="react-champ-erreur-msg" style={{ marginBottom: "0.8rem" }}>
+              <div className="react-champ-erreur-msg" style={{ marginBottom: "0.6rem" }}>
                 <IconeAlerte />
                 <span>{erreurs.consentement}</span>
               </div>
             ) : null}
+
+            {/* Mention discrète de confidentialité */}
+            <div
+              style={{
+                display: "flex",
+                alignItems: "center",
+                gap: "0.45rem",
+                marginTop: "0.5rem",
+                marginBottom: "1.25rem",
+                fontSize: "0.78rem",
+                color: "#64748B",
+                lineHeight: "1.4",
+              }}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="#64748B" strokeWidth="2" style={{ flexShrink: 0 }}>
+                <rect x="5" y="11" width="14" height="9" rx="2"></rect>
+                <path d="M8 11V7a4 4 0 0 1 8 0v4"></path>
+              </svg>
+              <span>
+                {langue === "en"
+                  ? "Your information is strictly confidential and only accessible to the administration of Complexe Scolaire Magnificat."
+                  : "Vos informations sont strictement confidentielles et uniquement accessibles à l'administration du Complexe Scolaire Magnificat."}
+              </span>
+            </div>
 
             {/* Bouton de soumission */}
             <button
@@ -1204,13 +1140,17 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
               disabled={enCours}
               style={{ marginTop: "0.6rem", width: "100%" }}
             >
-              {enCours ? <span className="react-spinner"></span> : (langue === "en" ? "Submit Access Request" : "Transmettre ma demande d'accès sécurisée")}
+              {enCours ? (
+                <span className="react-spinner"></span>
+              ) : (
+                langue === "en" ? "Submit Access Request" : "Transmettre ma demande d'accès"
+              )}
             </button>
           </form>
 
-          <div style={{ textAlign: "center", marginTop: "1.2rem" }}>
+          <div style={{ textAlign: "center", marginTop: "1.25rem", paddingBottom: "0.5rem" }}>
             <a href="#/" className="react-lien-retour">
-              <span style={{ transform: "translateY(-1px)" }}>←</span> {langue === "en" ? "Back to login page" : "Retour à la page de connexion"}
+              {langue === "en" ? "Back to login page" : "Retour à la page de connexion"}
             </a>
           </div>
         </div>
@@ -1236,9 +1176,10 @@ export default function DemandeAcces({ langue, onChangerLangue }) {
                 type="button"
                 className="react-charte-fermer-btn"
                 onClick={function () { setModalCharteOuverte(false); }}
-                aria-label={langue === "en" ? "Close charter" : "Fermer la charte"}
+                aria-label="Fermer la charte"
+                style={{ fontSize: "0.85rem", padding: "0.2rem 0.5rem" }}
               >
-                ✕
+                Fermer
               </button>
             </div>
 

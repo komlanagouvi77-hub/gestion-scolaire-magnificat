@@ -74,7 +74,7 @@ export default function ResourcePage({ nom, token }) {
 
   return (
     <>
-      <div className="mag-page-title"><span className="eyebrow">Registre</span> {traduireTexte(config.label)}</div>
+      <div className="mag-page-title">{traduireTexte(config.label)}</div>
 
       {statut === "chargement" ? <Spinner texte={traduireTexte("Chargement de ") + traduireTexte(config.label.toLowerCase()) + "..."} /> : null}
       {statut === "refuse" ? <Alerte>Acces refuse ou aucune donnee pour ce compte sur cette ressource.</Alerte> : null}

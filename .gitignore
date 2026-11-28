@@ -11,6 +11,7 @@ env/
 .env
 *.log
 *.sqlite3
+*.backup*
 
 # Projet mobile
 mobile-android/

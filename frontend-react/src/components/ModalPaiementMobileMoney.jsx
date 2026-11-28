@@ -8,7 +8,7 @@ import { initierMobileMoney, validerMobileMoney, telechargerRecuPaiementPdf } fr
 import { traduireTexte, localeActive } from "../localisation.js";
 import { Alerte } from "./Widgets.jsx";
 import { LogoTMoney, LogoFlooz } from "./LogosOperateurs.jsx";
-import { Smartphone, Bell, FileText, Share2 } from "lucide-react";
+import { Smartphone, Bell, FileText, Share2, Check } from "lucide-react";
 
 const OPERATEURS = [
   {
@@ -133,30 +133,6 @@ export default function ModalPaiementMobileMoney({
     }
   };
 
-  const partagerWhatsAppRecu = function () {
-    if (!paiementValide) return;
-    const nomEleve = paiementValide.eleve_nom || "l'élève";
-    const montant = Number(paiementValide.montant || 0).toLocaleString(localeActive());
-    const tranche = paiementValide.tranche ? paiementValide.tranche + "e tranche" : "Frais de scolarité";
-    const ref = paiementValide.reference ? " (Réf: " + paiementValide.reference + ")" : "";
-    const opNom = operateur === "tmoney" ? "T-Money (Togocom)" : "Flooz (Moov Africa)";
-    const msg =
-      "*COMPLEXE SCOLAIRE PRIVÉ LAÏQUE MAGNIFICAT*\n" +
-      "*QUITTANCE DE PAIEMENT MOBILE MONEY*\n\n" +
-      "Confirmation officielle de versement :\n" +
-      "• Élève : *" + nomEleve + "*\n" +
-      "• Montant : *" + montant + " FCFA*\n" +
-      "• Affectation : " + tranche + ref + "\n" +
-      "• Mode : " + opNom + "\n" +
-      "• Statut : *Payé & Validé*\n\n" +
-      "Ce reçu numérique officiel fait foi de règlement auprès du secrétariat.\n" +
-      "_Direction des Affaires Financières — Lomé (Togo)_";
-
-    const telDest = telephone ? telephone.replace(/\D/g, "") : "";
-    const url = (telDest ? "https://wa.me/" + telDest + "?text=" : "https://wa.me/?text=") + encodeURIComponent(msg);
-    window.open(url, "_blank");
-  };
-
   const telechargerRecu = async function () {
     if (!paiementValide || !paiementValide.paiement_id) return;
     setEnCoursPdf(true);
@@ -181,7 +157,7 @@ export default function ModalPaiementMobileMoney({
         onClick={function (e) { e.stopPropagation(); }}
       >
         {/* Bandeau d'en-tete */}
-        <div style={{ background: "linear-gradient(135deg, #16324F 0%, #1e4a73 100%)", padding: "1.2rem 1.6rem", color: "#fff" }}>
+        <div style={{ background: "#0F172A", padding: "1.2rem 1.6rem", color: "#fff" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "0.8rem" }}>
               <div style={{ width: 44, height: 44, borderRadius: "10px", background: "rgba(255,255,255,0.15)", display: "flex", alignItems: "center", justifyContent: "center" }}>
@@ -256,7 +232,7 @@ export default function ModalPaiementMobileMoney({
                               boxShadow: "0 2px 4px rgba(0,0,0,0.2)",
                             }}
                           >
-                            ✓
+                            <Check size={12} strokeWidth={3} />
                           </span>
                         ) : null}
 
@@ -362,7 +338,7 @@ export default function ModalPaiementMobileMoney({
                   }}
                   disabled={chargement}
                 >
-                  {chargement ? <span className="react-spinner"></span> : "Lancer le paiement (" + Number(montant).toLocaleString(localeActive()) + " FCFA) →"}
+                  {chargement ? <span className="react-spinner"></span> : "Lancer le paiement (" + Number(montant).toLocaleString(localeActive()) + " FCFA)"}
                 </button>
               </div>
             </form>
@@ -373,7 +349,7 @@ export default function ModalPaiementMobileMoney({
             <div>
               <div style={{ textAlign: "center", marginBottom: "1rem" }}>
                 <span className="mag-badge" style={{ background: "#FEF3C7", color: "#92400E", fontWeight: 700, padding: "0.3rem 0.8rem", fontSize: "0.82rem" }}>
-                  ⏳ Notification USSD transmise au reseau
+                  Notification USSD transmise au réseau
                 </span>
               </div>
 
@@ -454,7 +430,7 @@ export default function ModalPaiementMobileMoney({
                       cursor: "pointer",
                     }}
                   >
-                    Autoriser le debit ✓
+                    Autoriser le débit
                   </button>
                 </div>
               </div>
@@ -498,7 +474,7 @@ export default function ModalPaiementMobileMoney({
                   boxShadow: "0 0 0 8px rgba(34, 197, 94, 0.15)",
                 }}
               >
-                ✓
+                <Check size={40} strokeWidth={2.5} />
               </div>
               <h4 style={{ margin: "0 0 0.4rem 0", fontSize: "1.3rem", color: "#166534", fontWeight: 800 }}>
                 Paiement valide avec succes !
@@ -546,25 +522,7 @@ export default function ModalPaiementMobileMoney({
                     </>
                   )}
                 </button>
-                                <button
-                  type="button"
-                  onClick={partagerWhatsAppRecu}
-                  className="mag-btn-secondary"
-                  style={{
-                    background: "#16A34A",
-                    color: "#FFFFFF",
-                    borderColor: "#16A34A",
-                    display: "inline-flex",
-                    alignItems: "center",
-                    gap: "0.5rem",
-                    padding: "0.65rem 1.4rem",
-                    fontWeight: 700,
-                  }}
-                  title="Envoyer la quittance officielle par WhatsApp au numéro du parent"
-                >
-                  <Share2 size={16} /> Envoyer par WhatsApp
-                </button>
-                <button type="button" onClick={onFermer} className="mag-btn-secondary" style={{ padding: "0.65rem 1.4rem" }}>
+                                <button type="button" onClick={onFermer} className="mag-btn-secondary" style={{ padding: "0.65rem 1.4rem" }}>
                   Fermer
                 </button>
               </div>

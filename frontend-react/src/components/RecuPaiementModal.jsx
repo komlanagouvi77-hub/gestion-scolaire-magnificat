@@ -89,7 +89,7 @@ export default function RecuPaiementModal({ paiement, parametres, onFermer }) {
               Partager
             </button>
           ) : null}
-          <button type="button" className="mag-btn-lien" style={{ marginLeft: "auto" }} onClick={onFermer}>Fermer ✕</button>
+          <button type="button" className="mag-btn-lien" style={{ marginLeft: "auto" }} onClick={onFermer}>Fermer</button>
         </div>
 
         <div className="react-recu-cadre">

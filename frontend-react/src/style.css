@@ -1,22 +1,22 @@
-@import url('https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,500;9..144,600;9..144,700&family=Inter:wght@400;500;600;700&family=IBM+Plex+Mono:wght@500;600&display=swap');
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
 
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
 :root {
-  --indigo-950: #0A2540;   /* bleu nuit profond - navbar, titres */
+  --indigo-950: #0F172A;   /* bleu nuit profond - navbar, titres */
   --indigo-800: #12345C;   /* bleu fonce - accents cartes */
   --indigo-700: #1D4E89;   /* bleu intermediaire */
-  --azur-500: #B08A2E;     /* or institutionnel - accent principal, bordures */
-  --azur-300: #E4CE8F;     /* or clair - texte sur fond fonce */
-  --paper-50: #FBFAF6;     /* papier ivoire - fond de page */
-  --paper-100: #F7F1DE;    /* ivoire dore tres clair - lignes alternees */
+  --azur-500: #2563EB;     /* or institutionnel - accent principal, bordures */
+  --azur-300: #93C5FD;     /* or clair - texte sur fond fonce */
+  --paper-50: #F8FAFC;     /* papier ivoire - fond de page */
+  --paper-100: #F1F5F9;    /* ivoire dore tres clair - lignes alternees */
   --ink-900: #0F172A;      /* texte principal */
   --ink-600: #55627A;      /* texte secondaire (assombri : #64748B ne passait pas le contraste WCAG AA 4.5:1 sur --paper-100, confirme par axe-core) */
   --green-600: #1F7A4D;
   --red-600: #A32424;
-  --line: #E3DAC0;         /* bordures ivoire/or - hairline institutionnel */
+  --line: #E2E8F0;         /* bordures ivoire/or - hairline institutionnel */
 }
 
 *, *::before, *::after {
@@ -39,11 +39,11 @@ body {
 
 .mag-navbar {
   background: var(--indigo-950);
-  border-bottom: 3px solid var(--azur-500);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
   padding: 0.9rem 0;
 }
 .mag-navbar .brand {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.35rem;
   color: #ffffff;
@@ -58,7 +58,7 @@ body {
   background: var(--azur-500);
   color: var(--indigo-950);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 700;
   font-size: 1rem;
 }
@@ -68,7 +68,7 @@ body {
   border: 2px solid var(--azur-500);
   color: #ffffff;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 0.95rem;
   background: var(--indigo-700);
@@ -90,59 +90,63 @@ body {
   color: var(--indigo-950);
 }
 
-.mag-page-title {
-  font-family: 'Fraunces', serif;
-  font-weight: 600;
-  color: var(--indigo-950);
-  font-size: 1.9rem;
-  border-bottom: 2px solid var(--line);
-  padding-bottom: 0.6rem;
-  margin-bottom: 1.6rem;
-  display: flex;
-  align-items: baseline;
-  gap: 0.6rem;
-}
 .mag-page-title-ligne {
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 1rem;
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
   flex-wrap: wrap;
 }
 .mag-page-title-ligne .mag-page-title {
-  flex: 1 1 auto;
-  min-width: 0;
+  border-bottom: none;
+  margin-bottom: 0;
+  padding-bottom: 0;
 }
+.mag-page-title,
+.mag-page-title h1,
+h1.mag-page-title {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 700;
+  color: var(--indigo-950);
+  font-size: 1.5rem;
+  margin: 0;
+  padding: 0;
+  line-height: 1.25;
+}
+.mag-page-title:not(.mag-page-title-ligne .mag-page-title) {
+  padding-bottom: 0.85rem;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid var(--line);
+}
+.eyebrow,
 .mag-page-title .eyebrow {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  color: var(--indigo-700);
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-weight: 600;
+  display: none !important;
 }
 
 .mag-card {
-  background: #fff;
+  background: #ffffff;
   border: 1px solid var(--line);
-  border-top: 3px solid var(--azur-500);
   border-radius: 8px;
-  padding: 1.4rem 1.5rem;
-  box-shadow: 0 1px 3px rgba(14, 116, 144, 0.06);
+  padding: 1.25rem 1.4rem;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
 }
 .mag-card .mag-stat-label {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.7rem;
-  letter-spacing: 0.07em;
-  text-transform: uppercase;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.8rem;
+  letter-spacing: normal;
+  text-transform: none;
   color: var(--ink-600);
+  font-weight: 500;
 }
 .mag-card .mag-stat-value {
-  font-family: 'Fraunces', serif;
-  font-weight: 600;
-  font-size: 2.6rem;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-weight: 700;
+  font-size: 2.25rem;
   color: var(--indigo-950);
-  line-height: 1;
+  line-height: 1.1;
   margin-top: 0.35rem;
 }
 
@@ -151,16 +155,15 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  background: linear-gradient(180deg, #F7F1DE 0%, #FBFAF6 100%);
+  background: #F8FAFC;
 }
 .mag-login-card {
   background: #fff;
   border: 1px solid var(--line);
-  border-top: 4px solid var(--azur-500);
-  border-radius: 10px;
+  border-radius: 8px;
   width: 400px;
   padding: 2.4rem 2.2rem;
-  box-shadow: 0 4px 20px rgba(14, 116, 144, 0.08);
+  box-shadow: 0 4px 20px rgba(15, 23, 42, 0.06);
 }
 .mag-login-card .crest-big {
   width: 56px; height: 56px;
@@ -168,13 +171,13 @@ body {
   background: var(--indigo-950);
   color: #ffffff;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 700;
   font-size: 1.5rem;
   margin: 0 auto 1rem;
 }
 .mag-login-card h1 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.35rem;
   text-align: center;
@@ -183,7 +186,7 @@ body {
 }
 .mag-login-card .sub {
   text-align: center;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.7rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -237,14 +240,15 @@ body {
   background: #fff;
 }
 .mag-table thead th {
-  background: var(--indigo-950);
-  color: #ffffff;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  padding: 0.7rem 0.9rem;
-  border-bottom: 2px solid var(--azur-500);
+  background: #F8FAFC;
+  color: var(--ink-700);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: normal;
+  text-transform: none;
+  font-weight: 600;
+  padding: 0.75rem 0.9rem;
+  border-bottom: 1px solid var(--line);
   text-align: left;
 }
 .mag-table td {
@@ -252,8 +256,8 @@ body {
   border-bottom: 1px solid var(--line);
   font-size: 0.92rem;
 }
-.mag-table tbody tr:nth-child(even) { background: var(--paper-100); }
-.mag-table tbody tr:hover { background: #F0E6C4; }
+.mag-table tbody tr:nth-child(even) { background: #F8FAFC; }
+.mag-table tbody tr:hover { background: #F1F5F9; }
 
 .mag-grid-2 {
   display: grid;
@@ -376,6 +380,16 @@ body {
   box-shadow: 0 8px 24px rgba(14, 116, 144, 0.12);
   border-color: var(--azur-500);
 }
+.mag-card-fixe,
+.mag-card-fixe:hover,
+.mag-card-fixe:focus,
+.mag-card-fixe:focus-visible,
+.mag-card-fixe:active {
+  transform: none !important;
+  border-color: #E2E8F0 !important;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05) !important;
+  outline: none !important;
+}
 .mag-card-cliquable {
   cursor: pointer;
   user-select: none;
@@ -414,19 +428,13 @@ body {
 
 .mag-btn-primary,
 .btn-mag-outline {
-  transition: background-color 0.18s ease, color 0.18s ease, transform 0.12s ease, box-shadow 0.18s ease, border-color 0.18s ease;
+  transition: background-color 0.15s ease, border-color 0.15s ease, color 0.15s ease;
 }
 .mag-btn-primary:hover {
-  box-shadow: 0 4px 14px rgba(12, 74, 110, 0.25);
-  transform: translateY(-1px);
-}
-.mag-btn-primary:active,
-.btn-mag-outline:active {
-  transform: translateY(0) scale(0.98);
+  background: var(--indigo-700);
 }
 .btn-mag-outline:hover {
-  transform: translateY(-1px);
-  box-shadow: 0 3px 10px rgba(56, 189, 248, 0.25);
+  background: #F1F5F9;
 }
 
 .mag-field input,
@@ -469,20 +477,6 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 .mag-page-title {
   position: relative;
 }
-.mag-page-title::after {
-  content: "";
-  position: absolute;
-  left: 0;
-  bottom: -2px;
-  height: 2px;
-  width: 60px;
-  background: var(--azur-500);
-  animation: magLigneTitre 0.6s ease-out 0.2s both;
-}
-@keyframes magLigneTitre {
-  from { width: 0; }
-  to   { width: 60px; }
-}
 
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after {
@@ -522,18 +516,25 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   position: absolute;
   top: 1.6rem;
   right: -13px;
-  width: 26px; height: 26px;
+  width: 26px;
+  height: 26px;
   padding: 0;
   border-radius: 50%;
   background: var(--azur-500);
-  color: var(--indigo-950);
+  color: #ffffff;
   border: 2px solid var(--indigo-950);
-  display: flex; align-items: center; justify-content: center;
+  display: flex;
+  align-items: center;
+  justify-content: center;
   cursor: pointer;
-  z-index: 2;
-  transition: transform 0.15s ease;
+  z-index: 10;
+  transition: transform 0.15s ease, background-color 0.15s ease;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.2);
 }
-.react-sidebar-repli:hover { transform: scale(1.1); }
+.react-sidebar-repli:hover {
+  transform: scale(1.08);
+  background: #1d4ed8;
+}
 
 .react-sidebar-logo-zone {
   display: flex;
@@ -552,7 +553,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   box-shadow: 0 0 0 6px rgba(56, 189, 248, 0.14), 0 4px 14px rgba(0,0,0,0.25);
   color: var(--azur-500);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 700;
   font-size: 1.4rem;
   margin-bottom: 0.6rem;
@@ -560,7 +561,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   overflow: hidden;
 }
 .react-sidebar-nom-ecole {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 0.95rem;
   line-height: 1.25;
@@ -574,7 +575,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   margin-bottom: 1.3rem;
 }
 .react-sidebar-section-titre {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.65rem;
   letter-spacing: 0.08em;
   text-transform: uppercase;
@@ -641,7 +642,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   border-top: 1px solid rgba(255,255,255,0.15);
 }
 .react-sidebar-badge-sys {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.62rem;
   letter-spacing: 0.05em;
   color: var(--azur-300);
@@ -780,19 +781,19 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 .react-blob-1 {
   width: 260px; height: 260px;
-  background: #B08A2E;
+  background: #2563EB;
   top: -60px; left: -60px;
   animation-delay: 0s;
 }
 .react-blob-2 {
   width: 200px; height: 200px;
-  background: #0A2540;
+  background: #0F172A;
   bottom: -50px; right: 8%;
   animation-delay: 2s;
 }
 .react-blob-3 {
   width: 160px; height: 160px;
-  background: #E4CE8F;
+  background: #93C5FD;
   top: 20%; right: -40px;
   animation-delay: 4s;
 }
@@ -850,32 +851,13 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 .react-panneau-fond {
   position: absolute;
   inset: 0;
-  background: linear-gradient(135deg, #0A2540 0%, #12345C 45%, #1D4E89 75%, #B08A2E 130%);
-  background-size: 200% 200%;
-  animation: reactDegrade 10s ease infinite;
+  background: #0F172A;
 }
 .react-panneau-fond::after {
-  content: "";
-  position: absolute;
-  inset: 0;
-  background-image: radial-gradient(rgba(255,255,255,0.16) 1.5px, transparent 1.5px);
-  background-size: 26px 26px;
-  opacity: 0.5;
+  display: none;
 }
 .react-panneau-fond::before {
-  content: "";
-  position: absolute;
-  right: -12%;
-  bottom: -18%;
-  width: 60%;
-  padding-bottom: 60%;
-  border-radius: 50%;
-  background: radial-gradient(circle, rgba(255,255,255,0.10) 0%, transparent 70%);
-}
-@keyframes reactDegrade {
-  0% { background-position: 0% 50%; }
-  50% { background-position: 100% 50%; }
-  100% { background-position: 0% 50%; }
+  display: none;
 }
 .react-panneau-contenu {
   position: relative;
@@ -891,7 +873,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   border: 2px solid var(--azur-500);
   box-shadow: 0 0 0 5px rgba(212, 175, 55, 0.16), 0 8px 24px rgba(0,0,0,0.25);
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 700;
   font-size: 1.7rem;
   color: var(--azur-500);
@@ -904,7 +886,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   50% { box-shadow: 0 0 0 9px rgba(212, 175, 55, 0.10), 0 8px 24px rgba(0,0,0,0.25); }
 }
 .react-panneau-contenu h1 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 1.9rem;
   font-weight: 600;
   margin: 0 0 0.7rem;
@@ -938,7 +920,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   display: flex; align-items: center; justify-content: center;
 }
 .react-panneau-pied {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.72rem;
   letter-spacing: 0.06em;
   color: rgba(255,255,255,0.6);
@@ -952,9 +934,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  background: var(--paper-100);
-  background-image: radial-gradient(rgba(12, 74, 110, 0.05) 1.5px, transparent 1.5px);
-  background-size: 22px 22px;
+  background: var(--paper-50);
   padding: 3rem 1.5rem 2rem;
   box-sizing: border-box;
   width: 100%;
@@ -971,15 +951,14 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   max-width: 420px;
   background: #fff;
   border: 1px solid var(--line);
-  border-top: 3px solid var(--azur-500);
-  border-radius: 14px;
+  border-radius: 8px;
   padding: 2.4rem 2.2rem;
-  box-shadow: 0 2px 6px rgba(15,23,42,0.04), 0 16px 40px rgba(12,74,110,0.08);
+  box-shadow: 0 2px 6px rgba(15,23,42,0.04), 0 16px 40px rgba(15,23,42,0.06);
   animation: magFadeInScale 0.5s ease-out;
   box-sizing: border-box;
 }
 .react-login-formulaire-carte h2 {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.7rem;
   color: var(--indigo-950);
@@ -1214,99 +1193,83 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
-  gap: 0.8rem;
-  margin-bottom: 1.2rem;
+  gap: 1rem;
+  margin-bottom: 1.25rem;
 }
 .react-eleves-recherche {
   flex: 1;
   min-width: 240px;
-  max-width: 420px;
-  padding: 0.6rem 0.9rem;
+  max-width: 380px;
+  padding: 0.55rem 0.85rem;
   border: 1px solid var(--line);
-  border-radius: 8px;
-  font-family: 'Inter', sans-serif;
-  font-size: 0.87rem;
+  border-radius: 6px;
+  font-family: inherit;
+  font-size: 0.88rem;
+  color: var(--ink-900);
+  background: #fff;
 }
 .react-eleves-recherche:focus {
   outline: none;
   border-color: var(--azur-500);
-  box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.18);
+  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.15);
 }
 .react-eleves-compteur {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.78rem;
+  font-family: inherit;
+  font-size: 0.85rem;
+  font-weight: 500;
   color: var(--ink-600);
   white-space: nowrap;
 }
 
 .react-bloc-classe {
   border: 1px solid var(--line);
-  border-radius: 8px;
+  border-radius: 6px;
   margin-bottom: 0.9rem;
   overflow: hidden;
   background: #fff;
-  animation: magFadeInUp 0.4s ease-out both;
 }
 .react-bloc-classe-entete {
   width: 100%;
   display: flex;
   align-items: center;
-  gap: 1rem;
-  padding: 0.9rem 1.2rem;
-  background: var(--paper-100);
-  border: none;
+  justify-content: space-between;
+  padding: 0.8rem 1.1rem;
+  background: #F8FAFC;
+  border-bottom: 1px solid var(--line);
   cursor: pointer;
   text-align: left;
   transition: background-color 0.15s ease;
 }
 .react-bloc-classe-entete:hover {
-  background: #F0E6C4;
+  background: #F1F5F9;
 }
 .react-bloc-classe-titre {
-  flex: 1;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
-  font-size: 1.1rem;
+  font-size: 1rem;
   color: var(--indigo-950);
-  display: flex;
-  align-items: center;
-  gap: 0.7rem;
 }
 .react-bloc-classe-niveau {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.68rem;
-  font-weight: 600;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: #fff;
-  background: var(--indigo-700);
-  padding: 0.2rem 0.55rem;
-  border-radius: 999px;
+  display: none !important;
 }
 .react-bloc-classe-compte {
   font-size: 0.82rem;
   color: var(--ink-600);
-  font-family: 'IBM Plex Mono', monospace;
 }
 .react-bloc-classe-chevron {
-  color: var(--indigo-700);
-  transition: transform 0.2s ease;
-  font-size: 0.9rem;
-}
-.react-bloc-classe-chevron.ouvert {
-  transform: rotate(180deg);
+  color: var(--ink-500);
+  font-size: 0.75rem;
+  margin-left: 0.5rem;
 }
 .react-table-wrap {
-  padding: 0 0.2rem;
-  animation: magFadeInUp 0.25s ease-out;
+  padding: 0;
   width: 100%;
   overflow-x: auto;
   -webkit-overflow-scrolling: touch;
 }
 .react-table-wrap .mag-table {
   border: none;
-  width: auto;
-  min-width: 100%;
+  width: 100%;
 }
 .react-table-wrap .mag-table th,
 .react-table-wrap .mag-table td {
@@ -1314,8 +1277,12 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 .react-table-wrap .mag-table thead th {
   background: #fff;
-  color: var(--ink-600);
+  color: var(--ink-700);
   border-bottom: 1px solid var(--line);
+  font-size: 0.82rem;
+  text-transform: none;
+  letter-spacing: normal;
+  font-weight: 600;
 }
 
 .react-pastille-statut {
@@ -1390,7 +1357,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 .mag-checkbox-list-wrap label:hover {
   border-color: var(--azur-500);
-  background: #F7F1DE;
+  background: #F1F5F9;
 }
 .mag-checkbox-list-wrap input[type="checkbox"] {
   accent-color: var(--indigo-950);
@@ -1413,7 +1380,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 0.85rem;
   flex-shrink: 0;
@@ -1430,7 +1397,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 .mag-personne-sous {
   font-size: 0.78rem;
   color: var(--ink-600);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 .mag-badge {
@@ -1474,7 +1441,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   flex-shrink: 0;
 }
 .react-bulletin-nom-ecole {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.05rem;
   color: var(--ink-900);
@@ -1495,7 +1462,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   font-size: 0.78rem;
 }
 .mag-compteur-pill {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.72rem;
   font-weight: 600;
   background: var(--indigo-950);
@@ -1505,10 +1472,9 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 
 .mag-panneau-form {
-  background: linear-gradient(180deg, #FBFAF6 0%, var(--paper-100) 100%);
+  background: #ffffff;
   border: 1px solid var(--line);
-  border-top: 3px solid var(--azur-500);
-  border-radius: 10px;
+  border-radius: 8px;
   padding: 1.6rem;
   box-shadow: 0 2px 6px rgba(15, 23, 42, 0.04);
 }
@@ -1563,7 +1529,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   transition: background-color 0.12s ease;
 }
 .mag-table-pro tbody tr:hover {
-  background: #F7F1DE !important;
+  background: #F1F5F9 !important;
 }
 
 .react-raccourcis-grille {
@@ -1578,40 +1544,39 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   position: relative;
   display: block;
   width: 100%;
-  background: #fff;
+  background: #ffffff;
   border: 1px solid var(--line);
-  border-radius: 14px;
-  padding: 1.2rem 1.2rem 1.2rem 1.5rem;
+  border-radius: 8px;
+  padding: 1.15rem 1.35rem;
   font: inherit;
   text-align: left;
   cursor: pointer;
-  box-shadow: 0 1px 2px rgba(15,23,42,0.04);
-  transition: transform 0.18s ease, box-shadow 0.18s ease;
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  transition: all 0.15s ease;
   overflow: hidden;
 }
 .react-raccourci-carte:hover {
-  transform: translateY(-3px);
-  box-shadow: 0 10px 26px rgba(15,23,42,0.10);
+  background: #f8fafc;
+  border-color: #cbd5e1;
+  box-shadow: 0 4px 12px rgba(15, 23, 42, 0.06);
+  transform: translateY(-1px);
 }
 .react-raccourci-carte:focus-visible {
   outline: 2px solid var(--azur-500);
   outline-offset: 2px;
 }
 .react-raccourci-barre {
-  position: absolute;
-  left: 0; top: 0; bottom: 0;
-  width: 5px;
-  background: var(--couleur-raccourci);
+  display: none;
 }
 .react-raccourci-titre {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
-  font-size: 1.02rem;
+  font-size: 0.98rem;
   color: var(--ink-900);
-  margin-bottom: 0.35rem;
+  margin-bottom: 0.25rem;
 }
 .react-raccourci-texte {
-  font-size: 0.83rem;
+  font-size: 0.82rem;
   color: var(--ink-600);
   line-height: 1.4;
 }
@@ -1639,7 +1604,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   display: flex;
   align-items: center;
   gap: 0.7rem;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   color: var(--indigo-950);
   font-size: 1.02rem;
@@ -1662,21 +1627,21 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 .react-header-hamburger:focus-visible { outline: 2px solid var(--azur-300); outline-offset: 2px; }
 .react-header-separateur { color: var(--line); font-weight: 400; }
 .react-header-espace {
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.72rem;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  color: var(--indigo-700);
-  font-weight: 600;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.82rem;
+  letter-spacing: normal;
+  text-transform: none;
+  color: var(--ink-700);
+  font-weight: 500;
 }
 .react-header-droite {
   display: flex;
   align-items: center;
-  gap: 0.6rem;
+  gap: 1.25rem;
   flex-wrap: wrap;
 }
 .react-header-badge {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--indigo-700);
@@ -1727,39 +1692,27 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 .react-header-utilisateur {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
-  padding-left: 0.6rem;
-  border-left: 1px solid var(--line);
-}
-.react-header-avatar {
-  width: 28px; height: 28px;
-  border-radius: 50%;
-  background: var(--indigo-950);
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
-  font-weight: 600;
-  font-size: 0.78rem;
-  flex-shrink: 0;
+  gap: 0.6rem;
 }
 .react-header-nom {
-  font-size: 0.85rem;
+  font-size: 0.88rem;
   color: var(--ink-900);
-  font-weight: 600;
+  font-weight: 500;
 }
 .react-header-deconnexion {
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--red-600);
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--ink-600);
   background: none;
-  border: 1px solid var(--red-600);
-  padding: 0.35rem 0.7rem;
-  border-radius: 6px;
+  border: none;
+  padding: 0;
   cursor: pointer;
-  transition: background-color 0.15s ease;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  transition: color 0.15s ease;
 }
 .react-header-deconnexion:hover {
-  background: rgba(220, 38, 38, 0.08);
+  color: var(--red-600);
 }
 
 @media (max-width: 1180px) {
@@ -1803,15 +1756,15 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  font-family: 'IBM Plex Mono', monospace;
-  font-size: 0.78rem;
-  font-weight: 600;
-  color: var(--indigo-800);
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 500;
+  color: var(--ink-600);
   background: #ffffff;
   border: 1px solid var(--line);
-  padding: 0.42rem 0.85rem;
-  border-radius: 999px;
-  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
+  padding: 0.4rem 0.8rem;
+  border-radius: 6px;
+  box-shadow: 0 1px 2px rgba(15, 23, 42, 0.04);
 }
 
 .react-banniere-accueil-pro {
@@ -1821,25 +1774,17 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   gap: 1.2rem;
   background: #ffffff;
   border: 1px solid var(--line);
-  border-left: 4px solid var(--green-600);
-  border-radius: 12px;
+  border-radius: 8px;
   padding: 0.95rem 1.25rem;
   margin-bottom: 1.6rem;
-  box-shadow: 0 2px 10px rgba(15, 23, 42, 0.04);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.04);
   transition: all 0.25s ease;
   position: relative;
   overflow: hidden;
 }
 
 .react-banniere-accueil-pro::before {
-  content: "";
-  position: absolute;
-  top: 0;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  background: linear-gradient(90deg, rgba(31, 122, 77, 0.04) 0%, rgba(247, 241, 222, 0.25) 100%);
-  pointer-events: none;
+  display: none;
 }
 
 .react-banniere-pro-gauche {
@@ -1898,7 +1843,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   display: flex;
   align-items: center;
   gap: 0.6rem;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 1.02rem;
   color: var(--indigo-950);
   font-weight: 500;
@@ -1910,7 +1855,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 
 .react-banniere-role-pill {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.65rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -1974,13 +1919,13 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 
 .react-banniere-accueil {
-  background: linear-gradient(90deg, #1F7A4D 0%, #175E3B 100%);
+  background: var(--indigo-950);
   color: #fff;
   padding: 0.9rem 1.3rem;
-  border-radius: 10px;
+  border-radius: 8px;
   font-size: 0.92rem;
   margin-bottom: 1.5rem;
-  box-shadow: 0 2px 8px rgba(22, 163, 74, 0.18);
+  border: 1px solid var(--line);
 }
 
 /* ============================================================
@@ -2006,7 +1951,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 
 .react-dataviz-badge-compte {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.7rem;
   font-weight: 600;
   color: var(--indigo-800);
@@ -2017,7 +1962,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 
 .react-dataviz-badge-attente {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.03em;
@@ -2037,9 +1982,9 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   justify-content: center;
   text-align: center;
   padding: 2.2rem 1.5rem;
-  border-radius: 10px;
-  background: linear-gradient(180deg, rgba(251, 250, 246, 0.6) 0%, rgba(247, 241, 222, 0.35) 100%);
-  border: 1.5px dashed var(--line);
+  border-radius: 8px;
+  background: var(--paper-50);
+  border: 1px dashed var(--line);
   overflow: hidden;
 }
 
@@ -2061,9 +2006,9 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 
 .react-dataviz-ghost-bar {
   width: 44px;
-  background: linear-gradient(180deg, var(--azur-500) 0%, rgba(176, 138, 46, 0.2) 100%);
+  background: var(--paper-100);
   border-radius: 6px 6px 0 0;
-  border: 1px dashed var(--azur-500);
+  border: 1px dashed var(--line);
   border-bottom: none;
 }
 
@@ -2105,7 +2050,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 
 .react-dataviz-empty-titre {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.12rem;
   color: var(--indigo-950);
@@ -2210,7 +2155,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 .react-fiche-identite strong {
   font-size: 0.9rem;
   color: var(--ink-900);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 /* ============================================================
@@ -2237,13 +2182,13 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   background: var(--indigo-950);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 0.9rem;
   flex-shrink: 0;
 }
 .react-enfant-nom {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 0.92rem;
   color: var(--ink-900);
@@ -2274,7 +2219,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 .react-prochains-cours li:last-child { border-bottom: none; }
 .react-prochain-jour {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.68rem;
   font-weight: 600;
   letter-spacing: 0.04em;
@@ -2287,7 +2232,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   flex-shrink: 0;
 }
 .react-prochain-heure {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.8rem;
   color: var(--ink-900);
   flex-shrink: 0;
@@ -2353,7 +2298,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 .react-modal-barre-drapeau {
   height: 8px;
-  background: linear-gradient(90deg, #1F7A4D 0%, #1F7A4D 33%, #D4AF37 33%, #D4AF37 66%, #A32424 66%, #A32424 100%);
+  background: var(--azur-500);
   border-radius: 16px 16px 0 0;
   display: flex;
   align-items: center;
@@ -2383,14 +2328,14 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 .react-modal-progres svg { position: absolute; }
 .react-modal-progres-texte {
   position: relative;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.72rem;
   font-weight: 700;
   color: var(--green-600);
 }
 .react-modal-entete-texte { flex: 1; }
 .react-modal-titre {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.3rem;
   color: var(--indigo-950);
@@ -2431,7 +2376,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   transition: border-color 0.15s ease, background-color 0.15s ease;
 }
 .react-modal-etape.complete {
-  background: #FBFAF6;
+  background: #F8FAFC;
   border-color: #BFE0C9;
 }
 .react-modal-etape-icone {
@@ -2460,7 +2405,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   color: var(--ink-900);
 }
 .react-modal-badge-statut {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.65rem;
   font-weight: 700;
   letter-spacing: 0.03em;
@@ -2544,7 +2489,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   animation: magFadeInScale 0.2s ease-out;
 }
 .react-confirm-titre {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.08rem;
   color: var(--ink-900);
@@ -2640,7 +2585,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 
 .react-demande-section-titre {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.68rem;
   letter-spacing: 0.06em;
   text-transform: uppercase;
@@ -2749,7 +2694,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   min-height: 140px;
 }
 .react-planning-jour-titre {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 0.95rem;
   color: var(--indigo-950);
@@ -2773,7 +2718,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 .react-planning-creneau:last-child { margin-bottom: 0; }
 .react-planning-heure {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.68rem;
   font-weight: 600;
   /* Fixe (pas la couleur dynamique de la matiere) : plusieurs des 8
@@ -2876,7 +2821,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   font-size: 0.78rem;
 }
 .react-bulle-eleve {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.65rem;
   letter-spacing: 0.03em;
   text-transform: uppercase;
@@ -2924,7 +2869,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   display: flex;
   align-items: center;
   gap: 1rem;
-  border-bottom: 2px solid var(--gold-500, #B08A2E);
+  border-bottom: 1px solid var(--line);
   padding-bottom: 1.2rem;
   margin-bottom: 1.5rem;
 }
@@ -2934,7 +2879,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   background: var(--indigo-950);
   color: #fff;
   display: flex; align-items: center; justify-content: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 700;
   font-size: 1.4rem;
   flex-shrink: 0;
@@ -2947,13 +2892,13 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   border: 1px solid var(--line);
 }
 .react-recu-nom-ecole {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.2rem;
   color: var(--indigo-950);
 }
 .react-recu-sous-titre {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.72rem;
   color: var(--ink-600);
   text-transform: uppercase;
@@ -2961,7 +2906,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 }
 .react-recu-titre-doc {
   text-align: center;
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 600;
   font-size: 1.4rem;
   color: var(--indigo-950);
@@ -2984,14 +2929,14 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   border-radius: 8px;
 }
 .react-recu-montant-label {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.72rem;
   color: var(--ink-600);
   text-transform: uppercase;
   letter-spacing: 0.05em;
 }
 .react-recu-montant-valeur {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-weight: 700;
   font-size: 2.2rem;
   color: var(--indigo-950);
@@ -3001,12 +2946,14 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   margin-top: 2rem;
   font-size: 0.78rem;
   color: var(--ink-600);
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 }
 
 @media print {
   body * { visibility: hidden; }
-  .react-recu-cadre, .react-recu-cadre * { visibility: visible; }
+  .react-recu-cadre, .react-recu-cadre *,
+  .react-emploi-imprimable, .react-emploi-imprimable *,
+  .print-only, .print-only * { visibility: visible; }
   .react-recu-cadre {
     position: fixed;
     top: 0; left: 50%;
@@ -3015,6 +2962,15 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
     border: none;
     width: 100%;
     max-width: 620px;
+  }
+  .react-emploi-imprimable {
+    position: absolute;
+    top: 0; left: 0;
+    width: 100%;
+    box-shadow: none !important;
+  }
+  .print-only {
+    display: block !important;
   }
   .no-print { display: none !important; }
 }
@@ -3133,21 +3089,17 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
 
 /* Carte Confidentialite & Securite Institutionnelle Ultra Pro */
 .react-securite-carte {
-  background: linear-gradient(145deg, #f0fdf4 0%, #ffffff 40%, #f8fafc 100%);
-  border: 1.5px solid #86efac;
-  border-radius: 12px;
+  background: #ffffff;
+  border: 1px solid var(--line);
+  border-radius: 8px;
   padding: 1.2rem 1.25rem;
   margin: 1.3rem 0;
-  box-shadow: 0 4px 16px rgba(22, 101, 52, 0.06), 0 1px 3px rgba(0, 0, 0, 0.04);
+  box-shadow: 0 1px 3px rgba(15, 23, 42, 0.05);
   position: relative;
   overflow: hidden;
 }
 .react-securite-carte::before {
-  content: "";
-  position: absolute;
-  top: 0; left: 0; right: 0;
-  height: 3px;
-  background: linear-gradient(90deg, #16a34a, #b08a2e, #16a34a);
+  display: none;
 }
 .react-securite-en-tete {
   display: flex;
@@ -3338,7 +3290,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   justify-content: space-between;
   padding: 1.2rem 1.4rem;
   border-bottom: 1px solid var(--line);
-  background: linear-gradient(135deg, #0a2540 0%, #12345c 100%);
+  background: var(--indigo-950);
   color: #ffffff;
 }
 .react-charte-header-gauche {
@@ -3347,7 +3299,7 @@ input[type="number"]:focus, input[type="email"]:focus, select:focus, textarea:fo
   gap: 0.75rem;
 }
 .react-charte-titre {
-  font-family: 'Fraunces', serif;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 1.15rem;
   font-weight: 600;
   margin: 0;
@@ -3686,7 +3638,7 @@ html.dark .react-theme-toggle:hover {
   color: var(--ink-600);
 }
 .react-header-recherche-kbd {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.68rem;
   background: var(--paper-100);
   color: var(--ink-600);
@@ -3779,7 +3731,7 @@ html.dark .react-cmd-input {
   color: #f8fafc;
 }
 .react-cmd-badge-esc {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.7rem;
   padding: 0.15rem 0.4rem;
   background: var(--paper-100);
@@ -3869,7 +3821,7 @@ html.dark .react-cmd-item-desc {
   color: #94a3b8;
 }
 .react-cmd-item-entree {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.8rem;
   color: var(--azur-500);
   font-weight: 700;
@@ -3911,7 +3863,7 @@ html.dark .react-cmd-pied {
   color: #94a3b8;
 }
 .react-cmd-aide kbd {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   padding: 0.1rem 0.3rem;
   background: #ffffff;
   border: 1px solid var(--line);
@@ -3964,7 +3916,7 @@ html.dark .react-notif-bouton:hover, html.dark .react-notif-bouton.actif {
   border-radius: 999px;
   background: #ef4444;
   color: #ffffff;
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.62rem;
   font-weight: 700;
   display: flex;
@@ -4250,7 +4202,7 @@ html.dark .react-pdf-entete {
   width: 36px;
   height: 36px;
   border-radius: 8px;
-  background: rgba(176, 138, 46, 0.12);
+  background: rgba(37, 99, 235, 0.1);
   color: var(--azur-500);
   display: flex;
   align-items: center;
@@ -4266,7 +4218,7 @@ html.dark .react-pdf-titre {
   color: #f8fafc;
 }
 .react-pdf-nom-fichier {
-  font-family: 'IBM Plex Mono', monospace;
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
   font-size: 0.72rem;
   color: var(--ink-600);
 }
@@ -4310,8 +4262,8 @@ html.dark .react-pdf-btn-action:hover {
   border-color: var(--azur-500);
 }
 .react-pdf-btn-primaire:hover {
-  background: #967426;
-  border-color: #967426;
+  background: #1d4ed8;
+  border-color: #1d4ed8;
 }
 .react-pdf-btn-fermer {
   display: inline-flex;
@@ -4383,3 +4335,77 @@ html.dark .react-pdf-pied {
   from { opacity: 0; }
   to { opacity: 1; }
 }
+
+/* Titres épurés du tableau de bord */
+.react-dashboard-titre-wrap {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.react-dashboard-titre {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 1.65rem;
+  font-weight: 700;
+  color: var(--indigo-950);
+  margin: 0;
+  letter-spacing: -0.02em;
+}
+.react-dashboard-sous-titre {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  font-size: 0.85rem;
+  color: var(--ink-600);
+  margin: 0;
+}
+
+/* Grilles asymétriques pour Dashboard métier dense */
+.react-grille-asymetrique-2-1 {
+  display: grid;
+  grid-template-columns: minmax(0, 2.2fr) minmax(0, 1fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+.react-grille-asymetrique-1-2 {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.6fr);
+  gap: 1.25rem;
+  margin-bottom: 1.5rem;
+}
+@media (max-width: 960px) {
+  .react-grille-asymetrique-2-1,
+  .react-grille-asymetrique-1-2 {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Grille asymétrique pour la situation financière et les congés (col-span-7 / col-span-5) */
+.mag-finance-grid,
+.mag-conges-grid {
+  display: grid;
+  grid-template-columns: minmax(0, 7fr) minmax(0, 5fr);
+  gap: 1.25rem;
+  margin-bottom: 2rem;
+  align-items: stretch;
+}
+@media (max-width: 960px) {
+  .mag-finance-grid,
+  .mag-conges-grid {
+    grid-template-columns: 1fr;
+  }
+}
+
+/* Grille 2 colonnes égales (50% / 50%) pour l'import d'élèves */
+.mag-grid-2col-equal {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: 1.5rem;
+  margin-bottom: 2rem;
+  align-items: stretch;
+}
+@media (max-width: 900px) {
+  .mag-grid-2col-equal {
+    grid-template-columns: 1fr;
+  }
+}
+
+
+

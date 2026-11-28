@@ -597,7 +597,10 @@ def importer_eleves_csv(request):
     except UnicodeDecodeError:
         return Response({"detail": "Le fichier doit etre encode en UTF-8 (ou UTF-8 avec BOM)."}, status=400)
 
-    lecteur = csv.DictReader(io.StringIO(contenu))
+    lignes_texte = contenu.splitlines()
+    premiere_ligne = lignes_texte[0] if lignes_texte else ""
+    separateur = ";" if ";" in premiere_ligne and ("," not in premiere_ligne or premiere_ligne.count(";") > premiere_ligne.count(",")) else ","
+    lecteur = csv.DictReader(io.StringIO(contenu), delimiter=separateur)
     colonnes_requises = {"matricule", "nom", "prenom", "date_naissance", "sexe", "classe"}
     if lecteur.fieldnames is None or not colonnes_requises.issubset(set(lecteur.fieldnames)):
         return Response({

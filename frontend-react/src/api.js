@@ -65,7 +65,24 @@ export async function connecter(utilisateur, motDePasse) {
     );
   }
   if (!resp.ok) {
-    throw new Error(traduireTexte("Identifiants incorrects."));
+    let messageErreur = traduireTexte("Identifiants incorrects.");
+    let donnees = null;
+    try {
+      donnees = await resp.json();
+      if (donnees && donnees.detail) {
+        messageErreur = donnees.detail;
+      } else if (donnees && Array.isArray(donnees.non_field_errors) && donnees.non_field_errors[0]) {
+        messageErreur = donnees.non_field_errors[0];
+      }
+    } catch {
+      // Ignorer si la réponse n'est pas du JSON
+    }
+    const err = new Error(messageErreur);
+    err.status = resp.status;
+    err.data = donnees;
+    err.retry_after = donnees ? (donnees.retry_after || donnees.temps_restant) : null;
+    err.tentatives_restantes = donnees ? donnees.tentatives_restantes : null;
+    throw err;
   }
   const donnees = await resp.json();
   return donnees.token;
@@ -238,8 +255,11 @@ export async function soumettreDemandeAcces(donnees) {
   return contenu;
 }
 
-export function listerDemandesAcces(token) {
-  return lister("demandes-acces", token);
+export async function listerDemandesAcces(token, statut = "tous") {
+  const params = statut ? "?statut=" + encodeURIComponent(statut) : "";
+  const json = await requete("demandes-acces/" + params, token);
+  if (Array.isArray(json)) return json;
+  return json.results || [];
 }
 
 export function approuverDemandeAcces(token, id) {

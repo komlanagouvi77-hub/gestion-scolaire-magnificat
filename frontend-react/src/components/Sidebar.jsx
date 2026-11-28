@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import {
   IconeGrille, IconeEleves, IconeCasquette, IconeCalendrier, IconeCarnet,
-  IconePresseCahier, IconeMedaille, IconeBouclier, IconeDossier, IconeCarte,
+  IconePresseCahier, IconeMedaille, IconeUserX, IconeDossier, IconeCarte,
   IconeCle, IconePersonne, IconeHorloge, IconeEngrenage, IconeAnnonce,
   IconeImport, IconeDeconnexion, IconeFleche,
 } from "./IconesSidebar.jsx";
@@ -17,14 +17,14 @@ const SECTIONS_NAV = [
   {
     titre: "Gestion scolaire",
     items: [
-      { cle: "eleves", label: "Eleves", icone: IconeEleves },
+      { cle: "eleves", label: "Élèves", icone: IconeEleves },
       { cle: "classes-gestion", label: "Classes", icone: IconeCasquette },
-      { cle: "matieres-gestion", label: "Matieres", icone: IconeCarnet },
+      { cle: "matieres-gestion", label: "Matières", icone: IconeCarnet },
       { cle: "bulletins", label: "Bulletins", icone: IconeMedaille },
       { cle: "notes", label: "Notes", icone: IconePresseCahier },
-      { cle: "absences", label: "Absences", icone: IconeBouclier },
+      { cle: "absences", label: "Absences", icone: IconeUserX },
       { cle: "emploi-du-temps", label: "Emploi du temps", icone: IconeCalendrier },
-      { cle: "evenements", label: "Evenements", icone: IconeCalendrier },
+      { cle: "evenements", label: "Événements", icone: IconeCalendrier },
       { cle: "messagerie", label: "Messagerie", icone: IconeDossier },
       { cle: "suivi", label: "Suivi des notes", icone: IconeMedaille },
     ],
@@ -36,12 +36,12 @@ const SECTIONS_NAV = [
       { cle: "parents-gestion", label: "Parents", icone: IconePersonne },
       { cle: "paiements-gestion", label: "Paiements", icone: IconeCarte },
       { cle: "paiements", label: "Paiements", icone: IconeCarte },
-      { cle: "situation-financiere", label: "Situation financiere", icone: IconeCarte },
-      { cle: "conges", label: "Conges", icone: IconeHorloge },
+      { cle: "situation-financiere", label: "Situation financière", icone: IconeCarte },
+      { cle: "conges", label: "Congés", icone: IconeHorloge },
       { cle: "annonces", label: "Annonces", icone: IconeAnnonce },
-      { cle: "demandes-acces", label: "Demandes d'acces", icone: IconeCle },
-      { cle: "import", label: "Import eleves", icone: IconeImport },
-      { cle: "parametres", label: "Parametres", icone: IconeEngrenage },
+      { cle: "demandes-acces", label: "Demandes d'accès", icone: IconeCle },
+      { cle: "import", label: "Import élèves", icone: IconeImport },
+      { cle: "parametres", label: "Paramètres", icone: IconeEngrenage },
     ],
   },
 ];
@@ -56,27 +56,13 @@ function allerA(cle) {
   window.location.hash = "/" + cle;
 }
 
-const TRADUCTIONS_NAV_EN = {
-  "Menu principal": "Main menu", "Tableau de bord": "Dashboard", "Gestion scolaire": "School management",
-  "Eleves": "Students", "Classes": "Classes", "Matieres": "Subjects", "Bulletins": "Report cards",
-  "Notes": "Grades", "Absences": "Attendance", "Emploi du temps": "Timetable", "Evenements": "Events",
-  "Messagerie": "Messages", "Suivi des notes": "Grade tracking", "Administration & outils": "Administration & tools",
-  "Enseignants": "Teachers", "Parents": "Parents", "Paiements": "Payments",
-  "Situation financiere": "Financial overview", "Conges": "Leave requests", "Annonces": "Announcements",
-  "Demandes d'acces": "Access requests", "Import eleves": "Import students", "Parametres": "Settings",
-  "Administrateur": "Administrator", "Enseignant": "Teacher", "Deplier le menu": "Expand menu",
-  "Replier le menu": "Collapse menu", "Navigation principale": "Main navigation", "Deconnexion": "Sign out",
-};
-
-export default function Sidebar({ pageActive, utilisateur, role, langue, nomEcole, logoUrl, onDeconnexion, mobileOuvert, onFermerMobile }) {
+export default function Sidebar({ pageActive, utilisateur, role, nomEcole, logoUrl, onDeconnexion, mobileOuvert, onFermerMobile }) {
   const [replie, setReplie] = useState(false);
   const onglets = ONGLETS_PAR_ROLE[role] || SECTIONS_NAV.flatMap(function (s) { return s.items.map(function (i) { return i.cle; }); });
 
-  const etiquetteRoleFr = role === "administrateur" ? "Administrateur" : role === "enseignant" ? "Enseignant" : role === "parent" ? "Parent" : "";
-  const traduire = function (texte) { return langue === "en" ? (TRADUCTIONS_NAV_EN[texte] || texte) : texte; };
-  const etiquetteRole = traduire(etiquetteRoleFr);
+  const etiquetteRole = role === "administrateur" ? "Administrateur" : role === "enseignant" ? "Enseignant" : role === "parent" ? "Parent" : "";
+  const traduire = function (texte) { return texte; };
   const nomAffiche = nomEcole || "Magnificat";
-  const initiale = nomAffiche.charAt(0).toUpperCase();
 
   useEffect(function () {
     if (!mobileOuvert) return undefined;
@@ -102,8 +88,9 @@ export default function Sidebar({ pageActive, utilisateur, role, langue, nomEcol
         type="button"
         className="react-sidebar-repli"
         onClick={function () { setReplie(!replie); }}
-        aria-label={traduire(replie ? "Deplier le menu" : "Replier le menu")}
+        aria-label={replie ? "Déplier le menu" : "Replier le menu"}
         aria-expanded={!replie}
+        title={replie ? "Déplier le menu" : "Replier le menu"}
       >
         <span style={{ transform: replie ? "rotate(180deg)" : "none", display: "flex" }}><IconeFleche /></span>
       </button>
@@ -131,8 +118,8 @@ export default function Sidebar({ pageActive, utilisateur, role, langue, nomEcol
                   const estActif = pageActive === item.cle || (item.cle === "paiements-gestion" && pageActive === "paiements");
                   const Icone = item.icone;
                   const labelItem = (role === "parent" && item.cle === "eleves")
-                    ? (langue === "en" ? "My Children" : "Mes Enfants")
-                    : traduire(item.label);
+                    ? "Mes Enfants"
+                    : item.label;
                   return (
                     <li key={item.cle + section.titre}>
                       <button
@@ -156,21 +143,27 @@ export default function Sidebar({ pageActive, utilisateur, role, langue, nomEcol
       </nav>
 
       <div className="react-sidebar-bas">
+        {/* Encart d'état système professionnel en bas du menu */}
         {!replie ? (
-          <div className="react-sidebar-badge-sys">● SYS : {langue === "en" ? "BILINGUAL" : "BILINGUE"}</div>
+          <div style={{ padding: "0.65rem 0.9rem", margin: "0.4rem 0.6rem 0.6rem 0.6rem", background: "rgba(255,255,255,0.05)", borderRadius: "6px", border: "1px solid rgba(255,255,255,0.08)", fontSize: "0.76rem" }}>
+            <div style={{ color: "#94A3B8", fontWeight: 500, marginBottom: "0.2rem" }}>
+              Année 2026-2027 • Trimestre 1
+            </div>
+            <div style={{ display: "flex", alignItems: "center", gap: "0.45rem", color: "#F8FAFC", fontWeight: 600 }}>
+              <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#22C55E", display: "inline-block" }}></span>
+              <span>{etiquetteRole || "Utilisateur"} connecté</span>
+            </div>
+          </div>
         ) : null}
-        <div className="react-user-pill">
-          {!replie ? utilisateur : initiale}
-          {etiquetteRole && !replie ? <div className="react-role-tag">{etiquetteRole}</div> : null}
-        </div>
+
         <button
           type="button"
           className="react-sidebar-deconnexion"
           onClick={onDeconnexion}
-          aria-label={replie ? traduire("Deconnexion") : undefined}
+          aria-label={replie ? traduire("Déconnexion") : undefined}
         >
           <span className="react-nav-icone"><IconeDeconnexion /></span>
-          {!replie ? traduire("Deconnexion") : null}
+          {!replie ? traduire("Déconnexion") : null}
         </button>
       </div>
     </aside>
